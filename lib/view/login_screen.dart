@@ -26,7 +26,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _handleLogin() {
     if (_formKey.currentState!.validate()) {
-      // Handle login - Navigate to main screen
       Navigator.pushReplacementNamed(context, NavigationRoute.mainRoute.path);
     }
   }
@@ -43,7 +42,6 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Column(
               children: [
                 const SizedBox(height: 60),
-                // Logo
                 Image.asset('assets/logo.png', height: 120),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -66,13 +64,11 @@ class _LoginScreenState extends State<LoginScreen> {
                   ],
                 ),
                 const SizedBox(height: 40),
-                // Title
                 const Text(
                   'Selamat Datang Kembali 👋',
                   style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 40),
-                // Email TextField
                 TextFormField(
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
@@ -109,7 +105,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                // Password TextField
                 TextFormField(
                   controller: _passwordController,
                   obscureText: !_isPasswordVisible,
@@ -159,7 +154,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
                 const SizedBox(height: 32),
-                // Login Button
                 SizedBox(
                   width: double.infinity,
                   height: 56,
@@ -183,7 +177,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
                 const SizedBox(height: 24),
-                // Register Text
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [

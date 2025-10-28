@@ -25,7 +25,7 @@ class _HomeScreenState extends State<HomeScreen> {
     ChartData(value: 85, label: '27', isHighlighted: true),
     ChartData(value: 45, label: '28'),
     ChartData(value: 75, label: '29'),
-    ChartData(value: 90, label: '30', isHighlighted: true),
+    ChartData(value: 100, label: '30', isHighlighted: true),
   ];
 
   @override

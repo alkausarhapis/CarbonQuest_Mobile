@@ -92,7 +92,7 @@ class _ChartBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final normalizedHeight = (value / 100) * 120;
-    final displayHeight = normalizedHeight.clamp(0.0, 120.0);
+    final displayHeight = normalizedHeight.clamp(0.0, 100.0);
 
     return Flexible(
       child: GestureDetector(

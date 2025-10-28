@@ -8,6 +8,8 @@ class AppTheme {
     return ThemeData(
       useMaterial3: true,
       fontFamily: GoogleFonts.poppins().fontFamily,
+      splashColor: Colors.transparent,
+      highlightColor: Colors.transparent,
 
       bottomNavigationBarTheme: BottomNavigationBarThemeData(
         backgroundColor: AppColor.cyan.color,

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:iconsax_plus/iconsax_plus.dart';
 
+import 'home_screen.dart';
+
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
 
@@ -45,7 +47,7 @@ class _MainScreenState extends State<MainScreen> {
         controller: _pageController,
         onPageChanged: _onPageChanged,
         children: const [
-          PlaceholderScreen(title: 'Home'),
+          HomeScreen(),
           PlaceholderScreen(title: 'Quiz'),
           PlaceholderScreen(title: 'Mission'),
           PlaceholderScreen(title: 'Leaderboard'),

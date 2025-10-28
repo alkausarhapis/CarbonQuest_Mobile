@@ -20,9 +20,22 @@ class _RegisterScreenState extends State<RegisterScreen> {
   bool _isPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
 
+  bool get _hasMinLength => _passwordController.text.length >= 8;
+  bool get _hasUpperAndLower {
+    final text = _passwordController.text;
+    return text.contains(RegExp(r'[A-Z]')) && text.contains(RegExp(r'[a-z]'));
+  }
+
+  bool get _hasLetterAndNumber {
+    final text = _passwordController.text;
+    return text.contains(RegExp(r'[a-zA-Z]')) &&
+        text.contains(RegExp(r'[0-9]'));
+  }
+
   @override
   void dispose() {
     _emailController.dispose();
+    _usernameController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
     super.dispose();
@@ -46,7 +59,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
             child: Column(
               children: [
                 const SizedBox(height: 60),
-                // Logo
                 Image.asset('assets/logo.png', height: 120),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -69,13 +81,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ],
                 ),
                 const SizedBox(height: 40),
-                // Title
                 const Text(
                   'Daftar Untuk Memulai 🚀',
                   style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 40),
-                // Email TextField
                 TextFormField(
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
@@ -145,16 +155,26 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                // Password TextField
                 TextFormField(
                   controller: _passwordController,
                   obscureText: !_isPasswordVisible,
+                  onChanged: (value) {
+                    setState(() {});
+                  },
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Password tidak boleh kosong';
                     }
-                    if (value.length < 6) {
-                      return 'Password minimal 6 karakter';
+                    if (value.length < 8) {
+                      return 'Password minimal 8 karakter';
+                    }
+                    if (!RegExp(r'[A-Z]').hasMatch(value) ||
+                        !RegExp(r'[a-z]').hasMatch(value)) {
+                      return 'Password mengandung kombinasi huruf kapital dan kecil';
+                    }
+                    if (!RegExp(r'[a-zA-Z]').hasMatch(value) ||
+                        !RegExp(r'[0-9]').hasMatch(value)) {
+                      return 'Password harus kombinasi huruf dan angka';
                     }
                     return null;
                   },
@@ -195,7 +215,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                // Confirm Password TextField
                 TextFormField(
                   controller: _confirmPasswordController,
                   obscureText: !_isConfirmPasswordVisible,
@@ -245,8 +264,22 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                   ),
                 ),
+                const SizedBox(height: 24),
+                _buildPasswordRequirement(
+                  'Password minimal 8 karakter',
+                  _hasMinLength,
+                ),
+                const SizedBox(height: 8),
+                _buildPasswordRequirement(
+                  'Password mengandung kombinasi huruf kapital dan kecil',
+                  _hasUpperAndLower,
+                ),
+                const SizedBox(height: 8),
+                _buildPasswordRequirement(
+                  'Password harus kombinasi huruf dan angka',
+                  _hasLetterAndNumber,
+                ),
                 const SizedBox(height: 32),
-                // Register Button
                 SizedBox(
                   width: double.infinity,
                   height: 56,
@@ -270,7 +303,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                 ),
                 const SizedBox(height: 24),
-                // Register Text
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -303,6 +335,26 @@ class _RegisterScreenState extends State<RegisterScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildPasswordRequirement(String text, bool isMet) {
+    return Row(
+      children: [
+        Icon(
+          isMet ? Icons.check_circle : Icons.check_circle_outline,
+          color: isMet ? AppColor.primary.color : Colors.grey[400],
+          size: 20,
+        ),
+        const SizedBox(width: 8),
+        Text(
+          text,
+          style: TextStyle(
+            color: isMet ? AppColor.primary.color : Colors.grey[600],
+            fontSize: 13,
+          ),
+        ),
+      ],
     );
   }
 }

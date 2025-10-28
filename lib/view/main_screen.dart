@@ -1,3 +1,4 @@
+import 'package:carbonquest/view/mission_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:iconsax_plus/iconsax_plus.dart';
 
@@ -47,7 +48,7 @@ class _MainScreenState extends State<MainScreen> {
         children: const [
           PlaceholderScreen(title: 'Home'),
           PlaceholderScreen(title: 'Quiz'),
-          PlaceholderScreen(title: 'Mission'),
+          MissionScreen(),
           PlaceholderScreen(title: 'Leaderboard'),
           PlaceholderScreen(title: 'Article'),
           PlaceholderScreen(title: 'History'),

@@ -45,10 +45,11 @@ class _MainScreenState extends State<MainScreen> {
         controller: _pageController,
         onPageChanged: _onPageChanged,
         children: const [
-          PlaceholderScreen(title: 'Clipboard'),
-          PlaceholderScreen(title: 'Crown'),
           PlaceholderScreen(title: 'Home'),
-          PlaceholderScreen(title: 'Book'),
+          PlaceholderScreen(title: 'Quiz'),
+          PlaceholderScreen(title: 'Mission'),
+          PlaceholderScreen(title: 'Leaderboard'),
+          PlaceholderScreen(title: 'Article'),
           PlaceholderScreen(title: 'History'),
         ],
       ),
@@ -58,14 +59,18 @@ class _MainScreenState extends State<MainScreen> {
         onTap: _onItemTapped,
         items: const [
           BottomNavigationBarItem(
-            icon: Icon(IconsaxPlusBold.clipboard_text),
-            label: '',
-          ),
-          BottomNavigationBarItem(icon: Icon(IconsaxPlusBold.crown), label: ''),
-          BottomNavigationBarItem(
             icon: Icon(IconsaxPlusBold.home_2),
             label: '',
           ),
+          BottomNavigationBarItem(
+            icon: Icon(IconsaxPlusBold.clipboard_text),
+            label: '',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(IconsaxPlusBold.warning_2),
+            label: '',
+          ),
+          BottomNavigationBarItem(icon: Icon(IconsaxPlusBold.crown), label: ''),
           BottomNavigationBarItem(icon: Icon(IconsaxPlusBold.book), label: ''),
           BottomNavigationBarItem(icon: Icon(IconsaxPlusBold.clock), label: ''),
         ],

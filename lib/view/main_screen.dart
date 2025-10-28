@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:iconsax_plus/iconsax_plus.dart';
+import 'package:carbonquest/view/settings_page.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -48,7 +49,7 @@ class _MainScreenState extends State<MainScreen> {
           PlaceholderScreen(title: 'Home'),
           PlaceholderScreen(title: 'Quiz'),
           PlaceholderScreen(title: 'Mission'),
-          PlaceholderScreen(title: 'Leaderboard'),
+          SettingsScreen(),// PlaceholderScreen(title: 'Leaderboard'),
           PlaceholderScreen(title: 'Article'),
           PlaceholderScreen(title: 'History'),
         ],

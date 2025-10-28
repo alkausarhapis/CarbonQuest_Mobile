@@ -1,6 +1,8 @@
 import 'package:carbonquest/view/login_screen.dart';
 import 'package:carbonquest/view/main_screen.dart';
 import 'package:carbonquest/view/register_screen.dart';
+import 'package:carbonquest/view/quiz_menu_screen.dart';
+import 'package:carbonquest/view/quiz_question_screen.dart';
 import 'package:flutter/material.dart';
 
 import 'core/navigation_route.dart';
@@ -23,6 +25,9 @@ class MainApp extends StatelessWidget {
         NavigationRoute.mainRoute.path: (context) => const MainScreen(),
         NavigationRoute.loginRoute.path: (context) => const LoginScreen(),
         NavigationRoute.registerRoute.path: (context) => const RegisterScreen(),
+        NavigationRoute.quizRoot.path: (context) => const QuizMenuScreen(),
+        NavigationRoute.quizQuestion.path: (context) =>
+            const QuizQuestionScreen(),
       },
     );
   }

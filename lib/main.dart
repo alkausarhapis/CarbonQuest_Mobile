@@ -3,6 +3,7 @@ import 'package:carbonquest/view/main_screen.dart';
 import 'package:carbonquest/view/register_screen.dart';
 import 'package:carbonquest/view/quiz_menu_screen.dart';
 import 'package:carbonquest/view/quiz_question_screen.dart';
+import 'package:carbonquest/view/mission_screen.dart';
 import 'package:flutter/material.dart';
 
 import 'core/navigation_route.dart';
@@ -20,7 +21,7 @@ class MainApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: AppTheme.theme,
-      initialRoute: NavigationRoute.loginRoute.path,
+      initialRoute: NavigationRoute.missionRoute.path,
       routes: {
         NavigationRoute.mainRoute.path: (context) => const MainScreen(),
         NavigationRoute.loginRoute.path: (context) => const LoginScreen(),
@@ -28,6 +29,7 @@ class MainApp extends StatelessWidget {
         NavigationRoute.quizRoot.path: (context) => const QuizMenuScreen(),
         NavigationRoute.quizQuestion.path: (context) =>
             const QuizQuestionScreen(),
+        NavigationRoute.missionRoute.path: (context) => const MissionScreen(),
       },
     );
   }

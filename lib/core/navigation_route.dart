@@ -1,7 +1,8 @@
 enum NavigationRoute {
   mainRoute("/"),
   loginRoute("/login"),
-  registerRoute("/register");
+  registerRoute("/register"),
+  missionRoute("/mission");
 
   final String path;
   const NavigationRoute(this.path);

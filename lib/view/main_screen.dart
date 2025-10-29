@@ -1,3 +1,4 @@
+import 'package:carbonquest/view/quiz_menu_screen.dart';
 import 'package:carbonquest/view/mission_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:iconsax_plus/iconsax_plus.dart';
@@ -50,9 +51,9 @@ class _MainScreenState extends State<MainScreen> {
         onPageChanged: _onPageChanged,
         children: const [
           HomeScreen(),
-          PlaceholderScreen(title: 'Quiz'),
+          QuizMenuScreen(),
           MissionScreen(),
-          PlaceholderScreen(title: 'Leaderboard'),
+          SettingsScreen(),
           PlaceholderScreen(title: 'Article'),
           PlaceholderScreen(title: 'History'),
         ],

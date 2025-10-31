@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:iconsax_plus/iconsax_plus.dart';
+
 import '../core/styles/app_color.dart';
 
 class MissionScreen extends StatefulWidget {
@@ -9,35 +9,7 @@ class MissionScreen extends StatefulWidget {
 }
 
 class _MissionScreenState extends State<MissionScreen> {
-  int _selectedIndex = 0;
   int _categoryIndex = 0;
-  late PageController _pageController;
-
-  @override
-  void initState() {
-    super.initState();
-    _pageController = PageController();
-  }
-
-  @override
-  void dispose() {
-    _pageController.dispose();
-    super.dispose();
-  }
-
-  void _onPageChanged(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
-
-  void _onItemTapped(int index) {
-    _pageController.animateToPage(
-      index,
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeInOut,
-    );
-  }
 
   final List<String> _categories = [
     'Transportasi',
@@ -56,155 +28,155 @@ class _MissionScreenState extends State<MissionScreen> {
   final Map<String, List<Map<String, dynamic>>> _missions = {
     'Transportasi': [
       {
-        'title': 'Bike to Work Week',
+        'title': 'Minggu Bersepeda ke Kantor',
         'desc':
-            'Commute to work or school by bicycle for at least 3 days this week instead of using a car.',
+            'Pergi ke kantor atau sekolah dengan sepeda setidaknya 3 hari minggu ini daripada menggunakan mobil.',
         'points': 65,
         'icon': 'assets/car.png',
       },
       {
-        'title': 'Use Public Transport',
+        'title': 'Gunakan Transportasi Umum',
         'desc':
-            'Take public transportation for your daily commute at least 5 times this week.',
+            'Gunakan transportasi umum untuk perjalanan harian Anda setidaknya 5 kali minggu ini.',
         'points': 50,
         'icon': 'assets/car.png',
       },
       {
-        'title': 'Walk More',
+        'title': 'Lebih Banyak Berjalan',
         'desc':
-            'Walk to your nearby destinations instead of driving. Complete at least 3 walks.',
+            'Berjalan ke tujuan terdekat Anda daripada berkendara. Selesaikan setidaknya 3 kali berjalan.',
         'points': 40,
         'icon': 'assets/car.png',
       },
       {
-        'title': 'Running Errands on Foot',
+        'title': 'Urusan dengan Berjalan Kaki',
         'desc':
-            'Walk to your nearby destinations instead of driving. Complete at least 3 walks.',
+            'Berjalan ke tujuan terdekat Anda daripada berkendara. Selesaikan setidaknya 3 kali berjalan.',
         'points': 40,
         'icon': 'assets/car.png',
       },
       {
-        'title': 'Walking Challenge',
+        'title': 'Tantangan Berjalan Kaki',
         'desc':
-            'Walk to your nearby destinations instead of driving. Complete at least 3 walks.',
+            'Berjalan ke tujuan terdekat Anda daripada berkendara. Selesaikan setidaknya 3 kali berjalan.',
         'points': 40,
         'icon': 'assets/car.png',
       },
     ],
     'Energi': [
       {
-        'title': 'Power Save Challenge',
+        'title': 'Tantangan Hemat Listrik',
         'desc':
-            'Reduce your electricity usage by turning off unused lights, unplugging devices and lowering energy consumption for at least 3 days.',
+            'Kurangi penggunaan listrik Anda dengan mematikan lampu yang tidak digunakan, mencabut perangkat dan menurunkan konsumsi energi setidaknya 3 hari.',
         'points': 45,
         'icon': 'assets/listrik.png',
       },
       {
-        'title': 'Solar Power Usage',
+        'title': 'Penggunaan Tenaga Surya',
         'desc':
-            'Use solar-powered chargers or devices for at least one week to reduce electricity usage.',
+            'Gunakan pengisi daya atau perangkat bertenaga surya setidaknya satu minggu untuk mengurangi penggunaan listrik.',
         'points': 55,
         'icon': 'assets/listrik.png',
       },
       {
-        'title': 'Cold Shower Challenge',
+        'title': 'Tantangan Mandi Air Dingin',
         'desc':
-            'Take cold showers to reduce hot water usage and energy consumption for 5 days.',
+            'Mandi air dingin untuk mengurangi penggunaan air panas dan konsumsi energi selama 5 hari.',
         'points': 30,
         'icon': 'assets/listrik.png',
       },
       {
-        'title': 'No Sauna Challenge',
+        'title': 'Tantangan Tanpa Sauna',
         'desc':
-            'Take cold showers to reduce hot water usage and energy consumption for 5 days.',
+            'Mandi air dingin untuk mengurangi penggunaan air panas dan konsumsi energi selama 5 hari.',
         'points': 30,
         'icon': 'assets/listrik.png',
       },
       {
-        'title': 'Power Down Challenge',
+        'title': 'Tantangan Matikan Daya',
         'desc':
-            'Take cold showers to reduce hot water usage and energy consumption for 5 days.',
+            'Mandi air dingin untuk mengurangi penggunaan air panas dan konsumsi energi selama 5 hari.',
         'points': 30,
         'icon': 'assets/listrik.png',
       },
       {
-        'title': 'Cold Shower Challenge',
+        'title': 'Tantangan Mandi Air Dingin',
         'desc':
-            'Take cold showers to reduce hot water usage and energy consumption for 5 days.',
+            'Mandi air dingin untuk mengurangi penggunaan air panas dan konsumsi energi selama 5 hari.',
         'points': 30,
         'icon': 'assets/listrik.png',
       },
     ],
     'Lingkungan': [
       {
-        'title': 'Plant a Tree',
+        'title': 'Tanam Pohon',
         'desc':
-            'Plant at least one tree in your garden, park, or any other green space in your area.',
+            'Tanam setidaknya satu pohon di taman Anda, taman kota, atau ruang hijau lainnya di area Anda.',
         'points': 57,
         'icon': 'assets/daun.png',
       },
       {
-        'title': 'Reduce Plastic Usage',
+        'title': 'Kurangi Penggunaan Plastik',
         'desc':
-            'Avoid using single-use plastics for a whole week. Use reusable bags and bottles instead.',
+            'Hindari penggunaan plastik sekali pakai selama seminggu penuh. Gunakan tas dan botol yang dapat digunakan kembali.',
         'points': 48,
         'icon': 'assets/daun.png',
       },
       {
-        'title': 'Garden Green Space',
+        'title': 'Taman Ruang Hijau',
         'desc':
-            'Create a small garden or plant flowers in your home to improve local air quality.',
+            'Buat taman kecil atau tanam bunga di rumah Anda untuk meningkatkan kualitas udara lokal.',
         'points': 60,
         'icon': 'assets/daun.png',
       },
       {
-        'title': 'Recycle More',
+        'title': 'Lebih Banyak Daur Ulang',
         'desc':
-            'Create a small garden or plant flowers in your home to improve local air quality.',
+            'Buat taman kecil atau tanam bunga di rumah Anda untuk meningkatkan kualitas udara lokal.',
         'points': 60,
         'icon': 'assets/daun.png',
       },
       {
-        'title': 'Reuse Challenge',
+        'title': 'Tantangan Pakai Ulang',
         'desc':
-            'Create a small garden or plant flowers in your home to improve local air quality.',
+            'Buat taman kecil atau tanam bunga di rumah Anda untuk meningkatkan kualitas udara lokal.',
         'points': 60,
         'icon': 'assets/daun.png',
       },
     ],
     'Hewan': [
       {
-        'title': 'Skip the Red Meat',
+        'title': 'Lewati Daging Merah',
         'desc':
-            'Avoid eating red meat (such as beef and lamb) for at least 3 days this week to reduce your carbon footprint.',
+            'Hindari makan daging merah (seperti sapi dan kambing) setidaknya 3 hari minggu ini untuk mengurangi jejak karbon Anda.',
         'points': 40,
         'icon': 'assets/makanan.png',
       },
       {
-        'title': 'Vegetarian Week',
+        'title': 'Minggu Vegetarian',
         'desc':
-            'Follow a vegetarian diet for an entire week to significantly reduce your environmental impact.',
+            'Ikuti diet vegetarian selama seminggu penuh untuk mengurangi dampak lingkungan Anda secara signifikan.',
         'points': 70,
         'icon': 'assets/makanan.png',
       },
       {
-        'title': 'Support Local Farmers',
+        'title': 'Dukung Petani Lokal',
         'desc':
-            'Buy food from local farmers markets instead of supermarkets to support sustainable agriculture.',
+            'Beli makanan dari pasar petani lokal daripada supermarket untuk mendukung pertanian berkelanjutan.',
         'points': 35,
         'icon': 'assets/makanan.png',
       },
       {
-        'title': 'Eat Seasonal Produce',
+        'title': 'Makan Produk Musiman',
         'desc':
-            'Buy food from local farmers markets instead of supermarkets to support sustainable agriculture.',
+            'Beli makanan dari pasar petani lokal daripada supermarket untuk mendukung pertanian berkelanjutan.',
         'points': 35,
         'icon': 'assets/makanan.png',
       },
       {
-        'title': 'Meatless Monday',
+        'title': 'Senin Tanpa Daging',
         'desc':
-            'Buy food from local farmers markets instead of supermarkets to support sustainable agriculture.',
+            'Beli makanan dari pasar petani lokal daripada supermarket untuk mendukung pertanian berkelanjutan.',
         'points': 35,
         'icon': 'assets/makanan.png',
       },
@@ -213,42 +185,7 @@ class _MissionScreenState extends State<MissionScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: PageView(
-        controller: _pageController,
-        onPageChanged: _onPageChanged,
-        children: [
-          PlaceholderScreen(title: 'Home'),
-          PlaceholderScreen(title: 'Quiz'),
-          _missionContent(),
-          PlaceholderScreen(title: 'Leaderboard'),
-          PlaceholderScreen(title: 'Article'),
-          PlaceholderScreen(title: 'History'),
-        ],
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        iconSize: 35,
-        currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(IconsaxPlusBold.home_2),
-            label: '',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(IconsaxPlusBold.clipboard_text),
-            label: '',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(IconsaxPlusBold.warning_2),
-            label: '',
-          ),
-          BottomNavigationBarItem(icon: Icon(IconsaxPlusBold.crown), label: ''),
-          BottomNavigationBarItem(icon: Icon(IconsaxPlusBold.book), label: ''),
-          BottomNavigationBarItem(icon: Icon(IconsaxPlusBold.clock), label: ''),
-        ],
-      ),
-    );
+    return Scaffold(body: _missionContent());
   }
 
   Widget _missionContent() {
@@ -258,9 +195,7 @@ class _MissionScreenState extends State<MissionScreen> {
     return SafeArea(
       child: Stack(
         children: [
-          // Background - Blue top
           Container(color: AppColor.primary.color),
-          // Curved divider with white bottom
           Positioned(
             top: 170,
             left: 0,
@@ -291,19 +226,17 @@ class _MissionScreenState extends State<MissionScreen> {
               height: 100,
             ),
           ),
-          // Main content
           Column(
             children: [
               SizedBox(height: 20),
               Text(
-                "Chose your mission category",
+                "Pilih kategori misi Anda",
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
                 ),
               ),
-              // Custom Tab Bar with Icons
               Container(
                 margin: EdgeInsets.all(20),
                 height: 110,
@@ -377,7 +310,7 @@ class _MissionScreenState extends State<MissionScreen> {
         color: Colors.blue[50],
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
+            color: Colors.grey.withValues(alpha: 0.1),
             spreadRadius: 1,
             blurRadius: 3,
           ),
@@ -388,12 +321,8 @@ class _MissionScreenState extends State<MissionScreen> {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // Icon
-            Container(
-              child: Image.asset(mission['icon'], width: 70, height: 70),
-            ),
+            Image.asset(mission['icon'], width: 70, height: 70),
             const SizedBox(width: 16),
-            // Content
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -416,7 +345,6 @@ class _MissionScreenState extends State<MissionScreen> {
               ),
             ),
             const SizedBox(width: 12),
-            // Points
             Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -447,7 +375,6 @@ class CurvedClipper extends CustomClipper<Path> {
     Path path = Path();
     path.lineTo(0, 40);
 
-    // Quadratic bezier untuk curve yang melengkung
     path.quadraticBezierTo(size.width / 2, 0, size.width, 40);
 
     path.lineTo(size.width, size.height);

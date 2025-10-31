@@ -71,13 +71,19 @@ class _HomeScreenState extends State<HomeScreen> {
                                         height: 32,
                                       ),
                                     ),
-                                    CircleAvatar(
-                                      radius: 20,
-                                      backgroundColor: Colors.grey[800],
-                                      child: const Icon(
-                                        Icons.person,
-                                        color: Colors.white,
-                                        size: 24,
+                                    GestureDetector(
+                                      onTap: () {
+                                        Navigator.pushNamed(
+                                          context,
+                                          '/profile',
+                                        );
+                                      },
+                                      child: CircleAvatar(
+                                        radius: 20,
+                                        backgroundColor: Color(0xFFD9E3E8),
+                                        backgroundImage: const AssetImage(
+                                          'assets/profile.png',
+                                        ),
                                       ),
                                     ),
                                   ],

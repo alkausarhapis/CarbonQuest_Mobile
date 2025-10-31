@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:carbonquest/core/navigation_route.dart';
 import 'package:carbonquest/core/styles/app_color.dart';
+import 'package:flutter/material.dart';
 
 class QuizMenuScreen extends StatelessWidget {
   const QuizMenuScreen({super.key});
@@ -14,13 +14,13 @@ class QuizMenuScreen extends StatelessWidget {
   ) {
     Color primaryColor = AppColor.primary.color;
     Color cyanColor = AppColor.cyan.color;
-    Color lightBlueBg = primaryColor.withOpacity(0.4);
-    Color darkTextColor = cyanColor.withOpacity(0.9);
-    Color secondaryTextColor = cyanColor.withOpacity(0.7);
+    Color lightBlueBg = primaryColor.withValues(alpha: 0.4);
+    Color darkTextColor = cyanColor.withValues(alpha: 0.9);
+    Color secondaryTextColor = cyanColor.withValues(alpha: 0.7);
 
     return Card(
       elevation: 0,
-      color: lightBlueBg.withOpacity(0.2),
+      color: lightBlueBg.withValues(alpha: 0.2),
       margin: const EdgeInsets.only(bottom: 20),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: InkWell(
@@ -120,77 +120,100 @@ class QuizMenuScreen extends StatelessWidget {
     Color headerBg = AppColor.primary.color;
 
     return Scaffold(
-      body: Column(
-        children: <Widget>[
-          // Header Biru Muda
-          Container(
-            padding: const EdgeInsets.fromLTRB(16, 40, 16, 20),
-            decoration: BoxDecoration(color: headerBg),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.arrow_back, color: Colors.white),
-                  onPressed: () => Navigator.pop(context),
-                ),
-                Text(
-                  'Quiz',
-                  style: TextStyle(
-                    fontSize: 30,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-                const CircleAvatar(
-                  backgroundColor: Colors.white,
-                  radius: 15,
-                  child: Padding(
-                    padding: EdgeInsets.all(3.0),
-                    child: Image(
-                      image: AssetImage('assets/profile.png'),
-                      width: 20,
-                      height: 20,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          Expanded(
-            child: Container(
-              color: Colors.white,
+      backgroundColor: headerBg,
+      body: SafeArea(
+        child: Column(
+          children: <Widget>[
+            SizedBox(
+              height: 80,
               child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: ListView(
-                  children: <Widget>[
-                    _buildQuizItem(
-                      context,
-                      'Daily Quiz',
-                      '3 questions left',
-                      '15 Qs',
-                      Icons.chat_bubble_outline,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 16,
+                ),
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    Positioned(
+                      top: 0,
+                      right: 0,
+                      child: Image.asset('assets/CloudVector.png', height: 80),
                     ),
-                    _buildQuizItem(
-                      context,
-                      'Weekly Quiz',
-                      'Open in 5 days',
-                      '15 Qs',
-                      Icons.chat_bubble_outline,
+                    Positioned(
+                      top: 50,
+                      left: 0,
+                      child: Image.asset('assets/CloudVector.png', height: 40),
                     ),
-                    _buildQuizItem(
-                      context,
-                      'Survey',
-                      'Open in 2 days',
-                      '15 Qs',
-                      Icons.chat_bubble_outline,
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Quiz',
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.pushNamed(context, '/profile');
+                          },
+                          child: CircleAvatar(
+                            radius: 20,
+                            backgroundColor: Color(0xFFD9E3E8),
+                            backgroundImage: const AssetImage(
+                              'assets/profile.png',
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
               ),
             ),
-          ),
-        ],
+            Expanded(
+              child: Container(
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(30),
+                    topRight: Radius.circular(30),
+                  ),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: ListView(
+                    children: <Widget>[
+                      _buildQuizItem(
+                        context,
+                        'Daily Quiz',
+                        '3 questions left',
+                        '15 Qs',
+                        Icons.chat_bubble_outline,
+                      ),
+                      _buildQuizItem(
+                        context,
+                        'Weekly Quiz',
+                        'Open in 5 days',
+                        '15 Qs',
+                        Icons.chat_bubble_outline,
+                      ),
+                      _buildQuizItem(
+                        context,
+                        'Survey',
+                        'Open in 2 days',
+                        '15 Qs',
+                        Icons.chat_bubble_outline,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

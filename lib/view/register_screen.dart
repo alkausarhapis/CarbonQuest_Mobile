@@ -347,11 +347,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
           size: 20,
         ),
         const SizedBox(width: 8),
-        Text(
-          text,
-          style: TextStyle(
-            color: isMet ? AppColor.primary.color : Colors.grey[600],
-            fontSize: 13,
+        Expanded(
+          child: Text(
+            text,
+            style: TextStyle(
+              color: isMet ? AppColor.primary.color : Colors.grey[600],
+              fontSize: 13,
+            ),
           ),
         ),
       ],

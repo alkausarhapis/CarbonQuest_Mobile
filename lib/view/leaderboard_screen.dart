@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:iconsax_plus/iconsax_plus.dart';
 
 import '../core/styles/app_color.dart';
-import '../model/Users.dart';
+import '../model/users.dart';
 
 class LeaderboardScreen extends StatefulWidget {
   const LeaderboardScreen({super.key});

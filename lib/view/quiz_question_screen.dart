@@ -1,7 +1,7 @@
 // lib/view/quiz_question_screen.dart
 
-import 'package:flutter/material.dart';
 import 'package:carbonquest/core/styles/app_color.dart';
+import 'package:flutter/material.dart';
 
 class QuizQuestionScreen extends StatefulWidget {
   const QuizQuestionScreen({super.key});
@@ -15,7 +15,7 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen> {
 
   Widget _buildNavButton(String text, bool isPrimary, VoidCallback onTap) {
     Color primaryColor = AppColor.primary.color;
-    Color secondaryColor = AppColor.cyan.color.withOpacity(0.5);
+    Color secondaryColor = AppColor.cyan.color.withValues(alpha: 0.5);
 
     return InkWell(
       onTap: onTap,
@@ -54,7 +54,9 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen> {
         margin: const EdgeInsets.only(bottom: 15),
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
         decoration: BoxDecoration(
-          color: isSelected ? primaryColor.withOpacity(0.2) : Colors.white,
+          color: isSelected
+              ? primaryColor.withValues(alpha: 0.2)
+              : Colors.white,
           borderRadius: BorderRadius.circular(15),
           border: Border.all(
             color: isSelected ? primaryColor : Colors.grey.shade300,
@@ -151,7 +153,7 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen> {
                           border: Border.all(color: Colors.white, width: 3),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.1),
+                              color: Colors.black.withValues(alpha: 0.1),
                               blurRadius: 5,
                             ),
                           ],

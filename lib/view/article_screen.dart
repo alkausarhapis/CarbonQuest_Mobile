@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../core/styles/app_color.dart';
-import '../model/Articles.dart';
+import '../model/articles.dart';
 
 class ArticleScreen extends StatefulWidget {
   final String articleId;

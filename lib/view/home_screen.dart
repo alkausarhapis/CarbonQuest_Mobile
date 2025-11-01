@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 
 import '../core/styles/app_color.dart';
-import '../model/Articles.dart';
+import '../model/articles.dart';
+import '../model/missions.dart';
 import 'article_screen.dart';
+import 'widgets/active_mission_widget.dart';
 import 'widgets/article_widget.dart';
+import 'widgets/mission_detail_bottom_sheet.dart';
 import 'widgets/quiz_card_home_widget.dart';
 import 'widgets/weekly_chart_widget.dart';
 
@@ -97,10 +100,56 @@ class _HomeScreenState extends State<HomeScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const SizedBox(height: 120),
-                              const SizedBox(height: 24),
+                              const SizedBox(height: 144),
                               WeeklyChartWidget(data: weeklyData),
                               const SizedBox(height: 40),
+                              // Active Missions Section
+                              if (MissionsData.getActiveMissions().isNotEmpty)
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Padding(
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: 20,
+                                      ),
+                                      child: Text(
+                                        'Misi Aktif',
+                                        style: TextStyle(
+                                          fontSize: 24,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 16),
+                                    SizedBox(
+                                      height: 140,
+                                      child: ListView.builder(
+                                        scrollDirection: Axis.horizontal,
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 20,
+                                        ),
+                                        itemCount:
+                                            MissionsData.getActiveMissions()
+                                                .length,
+                                        itemBuilder: (context, index) {
+                                          final mission =
+                                              MissionsData.getActiveMissions()[index];
+                                          return ActiveMissionWidget(
+                                            mission: mission,
+                                            onTap: () {
+                                              MissionDetailBottomSheet.show(
+                                                context,
+                                                mission,
+                                                () => setState(() {}),
+                                              );
+                                            },
+                                          );
+                                        },
+                                      ),
+                                    ),
+                                    const SizedBox(height: 40),
+                                  ],
+                                ),
                               // Quiz Section
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,

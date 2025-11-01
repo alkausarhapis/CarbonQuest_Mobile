@@ -14,10 +14,7 @@ void main() {
   runApp(const MainApp());
 }
 
-// TODO: Leaderboard page
-// TODO: Article page
-// TODO: History page
-// TODO: Implement components/widgets for reusability
+// TODO: clean comments and unused code
 
 class MainApp extends StatelessWidget {
   const MainApp({super.key});
@@ -33,8 +30,11 @@ class MainApp extends StatelessWidget {
         NavigationRoute.loginRoute.path: (context) => const LoginScreen(),
         NavigationRoute.registerRoute.path: (context) => const RegisterScreen(),
         NavigationRoute.quizRoot.path: (context) => const QuizMenuScreen(),
-        NavigationRoute.quizQuestion.path: (context) =>
-            const QuizQuestionScreen(),
+        NavigationRoute.quizQuestion.path: (context) {
+          final quizType =
+              ModalRoute.of(context)?.settings.arguments as String?;
+          return QuizQuestionScreen(quizType: quizType ?? 'daily');
+        },
         NavigationRoute.missionRoute.path: (context) => const MissionScreen(),
         NavigationRoute.profileRoute.path: (context) => const SettingsScreen(),
       },

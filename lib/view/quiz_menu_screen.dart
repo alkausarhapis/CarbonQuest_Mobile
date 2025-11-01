@@ -11,6 +11,7 @@ class QuizMenuScreen extends StatelessWidget {
     String subtitle,
     String badgeText,
     IconData icon,
+    String quizType, // Add quizType parameter
   ) {
     Color primaryColor = AppColor.primary.color;
     Color cyanColor = AppColor.cyan.color;
@@ -25,7 +26,11 @@ class QuizMenuScreen extends StatelessWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: InkWell(
         onTap: () {
-          Navigator.pushNamed(context, NavigationRoute.quizQuestion.path);
+          Navigator.pushNamed(
+            context,
+            NavigationRoute.quizQuestion.path,
+            arguments: quizType, // Pass quizType
+          );
         },
         borderRadius: BorderRadius.circular(20),
         child: Container(
@@ -188,24 +193,27 @@ class QuizMenuScreen extends StatelessWidget {
                     children: <Widget>[
                       _buildQuizItem(
                         context,
-                        'Daily Quiz',
-                        '3 questions left',
-                        '15 Qs',
-                        Icons.chat_bubble_outline,
+                        'Kuis Harian',
+                        '10 pertanyaan',
+                        '10 Qs',
+                        Icons.today,
+                        'daily',
                       ),
                       _buildQuizItem(
                         context,
-                        'Weekly Quiz',
-                        'Open in 5 days',
-                        '15 Qs',
-                        Icons.chat_bubble_outline,
+                        'Kuis Mingguan',
+                        '5 pertanyaan',
+                        '5 Qs',
+                        Icons.calendar_view_week,
+                        'weekly',
                       ),
                       _buildQuizItem(
                         context,
-                        'Survey',
-                        'Open in 2 days',
-                        '15 Qs',
-                        Icons.chat_bubble_outline,
+                        'Kuis Bulanan',
+                        '3 pertanyaan',
+                        '3 Qs',
+                        Icons.calendar_month,
+                        'monthly',
                       ),
                     ],
                   ),

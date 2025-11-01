@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../core/navigation_route.dart';
 import '../core/styles/app_color.dart';
 import '../model/articles.dart';
 import '../model/missions.dart';
@@ -178,19 +179,37 @@ class _HomeScreenState extends State<HomeScreen> {
                                         QuizCardHomeWidget(
                                           title: 'Kuis Harian',
                                           points: '10 Pts',
-                                          onTap: () {},
+                                          onTap: () {
+                                            Navigator.pushNamed(
+                                              context,
+                                              NavigationRoute.quizQuestion.path,
+                                              arguments: 'daily',
+                                            );
+                                          },
                                         ),
                                         const SizedBox(width: 12),
                                         QuizCardHomeWidget(
                                           title: 'Kuis Mingguan',
                                           points: '50 Pts',
-                                          onTap: () {},
+                                          onTap: () {
+                                            Navigator.pushNamed(
+                                              context,
+                                              NavigationRoute.quizQuestion.path,
+                                              arguments: 'weekly',
+                                            );
+                                          },
                                         ),
                                         const SizedBox(width: 12),
                                         QuizCardHomeWidget(
                                           title: 'Kuis Bulanan',
                                           points: '100 Pts',
-                                          onTap: () {},
+                                          onTap: () {
+                                            Navigator.pushNamed(
+                                              context,
+                                              NavigationRoute.quizQuestion.path,
+                                              arguments: 'monthly',
+                                            );
+                                          },
                                         ),
                                       ],
                                     ),

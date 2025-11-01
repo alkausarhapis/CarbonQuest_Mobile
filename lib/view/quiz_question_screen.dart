@@ -1,17 +1,86 @@
 // lib/view/quiz_question_screen.dart
 
 import 'package:carbonquest/core/styles/app_color.dart';
+import 'package:carbonquest/view/quiz_score_screen.dart';
 import 'package:flutter/material.dart';
 
+import '../model/questions.dart';
+
 class QuizQuestionScreen extends StatefulWidget {
-  const QuizQuestionScreen({super.key});
+  final String quizType;
+
+  const QuizQuestionScreen({super.key, this.quizType = 'daily'});
 
   @override
   State<QuizQuestionScreen> createState() => _QuizQuestionScreenState();
 }
 
 class _QuizQuestionScreenState extends State<QuizQuestionScreen> {
-  String? _selectedAnswer = '1-2 buah';
+  late List<QuizQuestion> _questions;
+  int _currentQuestionIndex = 0;
+  int? _selectedAnswer;
+  List<int?> _userAnswers = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _questions = QuestionsData.getQuizByType(widget.quizType);
+    _userAnswers = List.filled(_questions.length, null);
+  }
+
+  void _goToNextQuestion() {
+    if (_selectedAnswer != null) {
+      _userAnswers[_currentQuestionIndex] = _selectedAnswer;
+
+      if (_currentQuestionIndex < _questions.length - 1) {
+        setState(() {
+          _currentQuestionIndex++;
+          _selectedAnswer = _userAnswers[_currentQuestionIndex];
+        });
+      } else {
+        _finishQuiz();
+      }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Silakan pilih jawaban terlebih dahulu'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+    }
+  }
+
+  void _goToPreviousQuestion() {
+    if (_currentQuestionIndex > 0) {
+      setState(() {
+        _currentQuestionIndex--;
+        _selectedAnswer = _userAnswers[_currentQuestionIndex];
+      });
+    }
+  }
+
+  void _finishQuiz() {
+    int score = 0;
+    int maxScore = 0;
+
+    for (int i = 0; i < _questions.length; i++) {
+      if (_userAnswers[i] != null) {
+        score += _questions[i].pointsPerOption[_userAnswers[i]!];
+      }
+      maxScore += _questions[i].pointsPerOption.reduce((a, b) => a > b ? a : b);
+    }
+
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => QuizScoreScreen(
+          score: score,
+          maxScore: maxScore,
+          quizType: widget.quizType,
+        ),
+      ),
+    );
+  }
 
   Widget _buildNavButton(String text, bool isPrimary, VoidCallback onTap) {
     Color primaryColor = AppColor.primary.color;
@@ -38,7 +107,7 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen> {
     );
   }
 
-  Widget _buildAnswerOption(String text, String value) {
+  Widget _buildAnswerOption(String text, int value) {
     bool isSelected = _selectedAnswer == value;
 
     Color primaryColor = AppColor.primary.color;
@@ -65,17 +134,22 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen> {
         ),
         child: Row(
           children: [
-            Radio<String>(
+            Radio<int>(
               value: value,
               groupValue: _selectedAnswer,
-              onChanged: (String? val) {
+              onChanged: (int? val) {
                 setState(() {
                   _selectedAnswer = val;
                 });
               },
               activeColor: primaryColor,
             ),
-            Text(text, style: TextStyle(fontSize: 16, color: darkTextColor)),
+            Expanded(
+              child: Text(
+                text,
+                style: TextStyle(fontSize: 16, color: darkTextColor),
+              ),
+            ),
           ],
         ),
       ),
@@ -86,6 +160,9 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen> {
   Widget build(BuildContext context) {
     Color headerBg = AppColor.primary.color;
     Color quizTitleColor = Colors.white;
+
+    final currentQuestion = _questions[_currentQuestionIndex];
+    final progress = (_currentQuestionIndex + 1) / _questions.length;
 
     return Scaffold(
       body: Stack(
@@ -105,9 +182,13 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen> {
                         onPressed: () => Navigator.pop(context),
                       ),
                       Text(
-                        'Quiz',
+                        'Kuis ${widget.quizType == 'daily'
+                            ? 'Harian'
+                            : widget.quizType == 'weekly'
+                            ? 'Mingguan'
+                            : 'Bulanan'}',
                         style: TextStyle(
-                          fontSize: 30,
+                          fontSize: 24,
                           fontWeight: FontWeight.bold,
                           color: quizTitleColor,
                         ),
@@ -128,6 +209,50 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen> {
                   ),
                 ),
 
+                // Progress bar
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Pertanyaan ${_currentQuestionIndex + 1} dari ${_questions.length}',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          Text(
+                            '${(progress * 100).toInt()}%',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: LinearProgressIndicator(
+                          value: progress,
+                          minHeight: 8,
+                          backgroundColor: Colors.white.withValues(alpha: 0.3),
+                          valueColor: const AlwaysStoppedAnimation<Color>(
+                            Colors.amber,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
                 Container(
                   margin: const EdgeInsets.symmetric(horizontal: 16.0),
                   padding: const EdgeInsets.all(25),
@@ -136,7 +261,7 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen> {
                     borderRadius: BorderRadius.circular(25),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
+                        color: Colors.black.withValues(alpha: 0.05),
                         blurRadius: 10,
                         offset: const Offset(0, 5),
                       ),
@@ -158,10 +283,10 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen> {
                             ),
                           ],
                         ),
-                        child: const Center(
+                        child: Center(
                           child: Text(
-                            '15',
-                            style: TextStyle(
+                            '${_currentQuestionIndex + 1}',
+                            style: const TextStyle(
                               color: Colors.white,
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
@@ -170,9 +295,9 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen> {
                         ),
                       ),
                       const SizedBox(height: 25),
-                      const Text(
-                        'Berapa banyak sampah plastik sekali pakai (contoh: botol minum, kantong kresek, sedotan) yang Anda gunakan hari ini?',
-                        style: TextStyle(fontSize: 17, height: 1.4),
+                      Text(
+                        currentQuestion.question,
+                        style: const TextStyle(fontSize: 17, height: 1.4),
                         textAlign: TextAlign.center,
                       ),
                     ],
@@ -184,15 +309,13 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen> {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   child: Column(
-                    children: <Widget>[
-                      _buildAnswerOption('0 buah', '0 buah'),
-                      _buildAnswerOption('1-2 buah', '1-2 buah'),
-                      _buildAnswerOption('3-5 buah', '3-5 buah'),
-                      _buildAnswerOption(
-                        'Lebih dari 5 buah',
-                        'Lebih dari 5 buah',
+                    children: List.generate(
+                      currentQuestion.options.length,
+                      (index) => _buildAnswerOption(
+                        currentQuestion.options[index],
+                        index,
                       ),
-                    ],
+                    ),
                   ),
                 ),
 
@@ -203,9 +326,16 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      _buildNavButton('<<', false, () {}),
-                      const SizedBox(width: 30),
-                      _buildNavButton('>>', true, () {}),
+                      if (_currentQuestionIndex > 0)
+                        _buildNavButton('<<', false, _goToPreviousQuestion),
+                      if (_currentQuestionIndex > 0) const SizedBox(width: 30),
+                      _buildNavButton(
+                        _currentQuestionIndex < _questions.length - 1
+                            ? '>>'
+                            : 'Selesai',
+                        true,
+                        _goToNextQuestion,
+                      ),
                     ],
                   ),
                 ),

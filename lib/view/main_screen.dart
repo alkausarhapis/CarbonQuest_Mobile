@@ -53,8 +53,6 @@ class _MainScreenState extends State<MainScreen> {
           QuizMenuScreen(),
           MissionScreen(),
           PlaceholderScreen(title: 'Leaderboard'),
-          PlaceholderScreen(title: 'Article'),
-          PlaceholderScreen(title: 'History'),
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
@@ -75,8 +73,6 @@ class _MainScreenState extends State<MainScreen> {
             label: '',
           ),
           BottomNavigationBarItem(icon: Icon(IconsaxPlusBold.crown), label: ''),
-          BottomNavigationBarItem(icon: Icon(IconsaxPlusBold.book), label: ''),
-          BottomNavigationBarItem(icon: Icon(IconsaxPlusBold.clock), label: ''),
         ],
       ),
     );

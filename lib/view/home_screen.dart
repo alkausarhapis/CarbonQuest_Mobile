@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:iconsax_plus/iconsax_plus.dart';
 
 import '../core/styles/app_color.dart';
+import '../model/Articles.dart';
+import 'article_screen.dart';
 import 'widgets/article_widget.dart';
-import 'widgets/category_icon_widget.dart';
-import 'widgets/mission_card_widget.dart';
 import 'widgets/quiz_card_home_widget.dart';
 import 'widgets/weekly_chart_widget.dart';
 
@@ -102,63 +101,6 @@ class _HomeScreenState extends State<HomeScreen> {
                               const SizedBox(height: 24),
                               WeeklyChartWidget(data: weeklyData),
                               const SizedBox(height: 40),
-                              // Category Section
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Padding(
-                                    padding: EdgeInsets.symmetric(
-                                      horizontal: 20,
-                                    ),
-                                    child: Text(
-                                      'Kategori',
-                                      style: TextStyle(
-                                        fontSize: 24,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 16),
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 20,
-                                    ),
-                                    child: Wrap(
-                                      spacing: 12,
-                                      runSpacing: 16,
-                                      alignment: WrapAlignment.spaceBetween,
-                                      children: [
-                                        CategoryIconWidget(
-                                          icon: IconsaxPlusBold.task_square,
-                                          label: 'Misi',
-                                          onTap: () {},
-                                        ),
-                                        CategoryIconWidget(
-                                          icon: IconsaxPlusBold.note_2,
-                                          label: 'Kuis',
-                                          onTap: () {},
-                                        ),
-                                        CategoryIconWidget(
-                                          icon: IconsaxPlusBold.crown_1,
-                                          label: 'Peringkat',
-                                          onTap: () {},
-                                        ),
-                                        CategoryIconWidget(
-                                          icon: IconsaxPlusBold.refresh_2,
-                                          label: 'Riwayat',
-                                          onTap: () {},
-                                        ),
-                                        CategoryIconWidget(
-                                          icon: IconsaxPlusBold.book_1,
-                                          label: 'Artikel',
-                                          onTap: () {},
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 40),
                               // Quiz Section
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -207,78 +149,6 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ],
                               ),
                               const SizedBox(height: 40),
-                              // Missions Section
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Padding(
-                                    padding: EdgeInsets.symmetric(
-                                      horizontal: 20,
-                                    ),
-                                    child: Text(
-                                      'Misi',
-                                      style: TextStyle(
-                                        fontSize: 24,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 16),
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 20,
-                                    ),
-                                    child: Column(
-                                      children: [
-                                        MissionCardWidget(
-                                          title: 'Tanam Pohon',
-                                          description:
-                                              'Tanam setidaknya satu pohon di lingkungan Anda, baik di halaman rumah atau di taman umum lainnya',
-                                          points: '07 Pts',
-                                          backgroundColor: const Color(
-                                            0xFFD4F1F4,
-                                          ),
-                                          iconBackgroundColor: const Color(
-                                            0xFF75E6DA,
-                                          ),
-                                          icon: IconsaxPlusBold.tree,
-                                          onTap: () {},
-                                        ),
-                                        MissionCardWidget(
-                                          title: 'Lewati Makan Daging Merah',
-                                          description:
-                                              'Cobalah untuk menggantikan daging merah dalam makanan Anda dengan alternatif nabati',
-                                          points: '50 Pts',
-                                          backgroundColor: const Color(
-                                            0xFFFEE5D7,
-                                          ),
-                                          iconBackgroundColor: const Color(
-                                            0xFFFF9A76,
-                                          ),
-                                          icon: IconsaxPlusBold.cake,
-                                          onTap: () {},
-                                        ),
-                                        MissionCardWidget(
-                                          title:
-                                              'Bersepeda ke Kantor Minggu Ini',
-                                          description:
-                                              'Bersepeda ke kantor atau sekolah untuk mengurangi jejak karbon Anda',
-                                          points: '65 Pts',
-                                          backgroundColor: const Color(
-                                            0xFFE8E3FF,
-                                          ),
-                                          iconBackgroundColor: const Color(
-                                            0xFFB8A4FF,
-                                          ),
-                                          icon: IconsaxPlusBold.car,
-                                          onTap: () {},
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 40),
                               // Article Section
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -301,29 +171,27 @@ class _HomeScreenState extends State<HomeScreen> {
                                       horizontal: 20,
                                     ),
                                     child: Column(
-                                      children: [
-                                        ArticleWidget(
-                                          imageUrl: '',
-                                          title:
-                                              'Merawat adalah pemasaran baru',
-                                          author: 'Kathryn Murphy',
-                                          onTap: () {},
-                                        ),
-                                        ArticleWidget(
-                                          imageUrl: '',
-                                          title:
-                                              'Bagaimana membangun komunitas setia secara online dan offline',
-                                          author: 'Wade Warren',
-                                          onTap: () {},
-                                        ),
-                                        ArticleWidget(
-                                          imageUrl: '',
-                                          title:
-                                              'Pelajaran dan wawasan dari 8 tahun Pixelgrade',
-                                          author: 'Esther Howard',
-                                          onTap: () {},
-                                        ),
-                                      ],
+                                      children: ArticlesData.articles
+                                          .take(3)
+                                          .map((article) {
+                                            return ArticleWidget(
+                                              imageUrl: article.imageUrl,
+                                              title: article.title,
+                                              author: article.author,
+                                              onTap: () {
+                                                Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        ArticleScreen(
+                                                          articleId: article.id,
+                                                        ),
+                                                  ),
+                                                );
+                                              },
+                                            );
+                                          })
+                                          .toList(),
                                     ),
                                   ),
                                 ],

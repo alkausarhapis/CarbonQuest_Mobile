@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:iconsax_plus/iconsax_plus.dart';
 
 import 'home_screen.dart';
+import 'leaderboard_screen.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -52,7 +53,7 @@ class _MainScreenState extends State<MainScreen> {
           HomeScreen(),
           QuizMenuScreen(),
           MissionScreen(),
-          PlaceholderScreen(title: 'Leaderboard'),
+          LeaderboardScreen(),
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(

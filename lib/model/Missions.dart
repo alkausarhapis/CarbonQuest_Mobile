@@ -1,0 +1,192 @@
+class Mission {
+  final String title;
+  final String desc;
+  final int points;
+  final String icon;
+
+  Mission({
+    required this.title,
+    required this.desc,
+    required this.points,
+    required this.icon,
+  });
+
+  Map<String, dynamic> toMap() {
+    return {'title': title, 'desc': desc, 'points': points, 'icon': icon};
+  }
+
+  factory Mission.fromMap(Map<String, dynamic> map) {
+    return Mission(
+      title: map['title'],
+      desc: map['desc'],
+      points: map['points'],
+      icon: map['icon'],
+    );
+  }
+}
+
+class MissionsData {
+  static final Map<String, List<Mission>> missions = {
+    'Transportasi': [
+      Mission(
+        title: 'Minggu Bersepeda ke Kantor',
+        desc:
+            'Pergi ke kantor atau sekolah dengan sepeda setidaknya 3 hari minggu ini daripada menggunakan mobil.',
+        points: 65,
+        icon: 'assets/car.png',
+      ),
+      Mission(
+        title: 'Gunakan Transportasi Umum',
+        desc:
+            'Gunakan transportasi umum untuk perjalanan harian Anda setidaknya 5 kali minggu ini.',
+        points: 50,
+        icon: 'assets/car.png',
+      ),
+      Mission(
+        title: 'Lebih Banyak Berjalan',
+        desc:
+            'Berjalan ke tujuan terdekat Anda daripada berkendara. Selesaikan setidaknya 3 kali berjalan.',
+        points: 40,
+        icon: 'assets/car.png',
+      ),
+      Mission(
+        title: 'Urusan dengan Berjalan Kaki',
+        desc:
+            'Berjalan ke tujuan terdekat Anda daripada berkendara. Selesaikan setidaknya 3 kali berjalan.',
+        points: 40,
+        icon: 'assets/car.png',
+      ),
+      Mission(
+        title: 'Tantangan Berjalan Kaki',
+        desc:
+            'Berjalan ke tujuan terdekat Anda daripada berkendara. Selesaikan setidaknya 3 kali berjalan.',
+        points: 40,
+        icon: 'assets/car.png',
+      ),
+    ],
+    'Energi': [
+      Mission(
+        title: 'Tantangan Hemat Listrik',
+        desc:
+            'Kurangi penggunaan listrik Anda dengan mematikan lampu yang tidak digunakan, mencabut perangkat dan menurunkan konsumsi energi setidaknya 3 hari.',
+        points: 45,
+        icon: 'assets/listrik.png',
+      ),
+      Mission(
+        title: 'Penggunaan Tenaga Surya',
+        desc:
+            'Gunakan pengisi daya atau perangkat bertenaga surya setidaknya satu minggu untuk mengurangi penggunaan listrik.',
+        points: 55,
+        icon: 'assets/listrik.png',
+      ),
+      Mission(
+        title: 'Tantangan Mandi Air Dingin',
+        desc:
+            'Mandi air dingin untuk mengurangi penggunaan air panas dan konsumsi energi selama 5 hari.',
+        points: 30,
+        icon: 'assets/listrik.png',
+      ),
+      Mission(
+        title: 'Tantangan Tanpa Sauna',
+        desc:
+            'Mandi air dingin untuk mengurangi penggunaan air panas dan konsumsi energi selama 5 hari.',
+        points: 30,
+        icon: 'assets/listrik.png',
+      ),
+      Mission(
+        title: 'Tantangan Matikan Daya',
+        desc:
+            'Mandi air dingin untuk mengurangi penggunaan air panas dan konsumsi energi selama 5 hari.',
+        points: 30,
+        icon: 'assets/listrik.png',
+      ),
+      Mission(
+        title: 'Tantangan Mandi Air Dingin',
+        desc:
+            'Mandi air dingin untuk mengurangi penggunaan air panas dan konsumsi energi selama 5 hari.',
+        points: 30,
+        icon: 'assets/listrik.png',
+      ),
+    ],
+    'Lingkungan': [
+      Mission(
+        title: 'Tanam Pohon',
+        desc:
+            'Tanam setidaknya satu pohon di taman Anda, taman kota, atau ruang hijau lainnya di area Anda.',
+        points: 57,
+        icon: 'assets/daun.png',
+      ),
+      Mission(
+        title: 'Kurangi Penggunaan Plastik',
+        desc:
+            'Hindari penggunaan plastik sekali pakai selama seminggu penuh. Gunakan tas dan botol yang dapat digunakan kembali.',
+        points: 48,
+        icon: 'assets/daun.png',
+      ),
+      Mission(
+        title: 'Taman Ruang Hijau',
+        desc:
+            'Buat taman kecil atau tanam bunga di rumah Anda untuk meningkatkan kualitas udara lokal.',
+        points: 60,
+        icon: 'assets/daun.png',
+      ),
+      Mission(
+        title: 'Lebih Banyak Daur Ulang',
+        desc:
+            'Buat taman kecil atau tanam bunga di rumah Anda untuk meningkatkan kualitas udara lokal.',
+        points: 60,
+        icon: 'assets/daun.png',
+      ),
+      Mission(
+        title: 'Tantangan Pakai Ulang',
+        desc:
+            'Buat taman kecil atau tanam bunga di rumah Anda untuk meningkatkan kualitas udara lokal.',
+        points: 60,
+        icon: 'assets/daun.png',
+      ),
+    ],
+    'Makanan': [
+      Mission(
+        title: 'Lewati Daging Merah',
+        desc:
+            'Hindari makan daging merah (seperti sapi dan kambing) setidaknya 3 hari minggu ini untuk mengurangi jejak karbon Anda.',
+        points: 40,
+        icon: 'assets/makanan.png',
+      ),
+      Mission(
+        title: 'Minggu Vegetarian',
+        desc:
+            'Ikuti diet vegetarian selama seminggu penuh untuk mengurangi dampak lingkungan Anda secara signifikan.',
+        points: 70,
+        icon: 'assets/makanan.png',
+      ),
+      Mission(
+        title: 'Dukung Petani Lokal',
+        desc:
+            'Beli makanan dari pasar petani lokal daripada supermarket untuk mendukung pertanian berkelanjutan.',
+        points: 35,
+        icon: 'assets/makanan.png',
+      ),
+      Mission(
+        title: 'Makan Produk Musiman',
+        desc:
+            'Beli makanan dari pasar petani lokal daripada supermarket untuk mendukung pertanian berkelanjutan.',
+        points: 35,
+        icon: 'assets/makanan.png',
+      ),
+      Mission(
+        title: 'Senin Tanpa Daging',
+        desc:
+            'Beli makanan dari pasar petani lokal daripada supermarket untuk mendukung pertanian berkelanjutan.',
+        points: 35,
+        icon: 'assets/makanan.png',
+      ),
+    ],
+  };
+
+  static List<String> get categories => missions.keys.toList();
+
+  static List<Mission> getMissionsByCategory(String category) {
+    return missions[category] ?? [];
+  }
+}

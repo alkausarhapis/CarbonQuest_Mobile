@@ -1,22 +1,29 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../core/styles/app_color.dart';
+import '../model/Missions.dart';
 
 class MissionScreen extends StatefulWidget {
   const MissionScreen({super.key});
   @override
-  _MissionScreenState createState() => _MissionScreenState();
+  State<MissionScreen> createState() => _MissionScreenState();
 }
 
 class _MissionScreenState extends State<MissionScreen> {
   int _categoryIndex = 0;
 
-  final List<String> _categories = [
-    'Transportasi',
-    'Energi',
-    'Lingkungan',
-    'Hewan',
-  ];
+  @override
+  void initState() {
+    super.initState();
+    SystemChrome.setSystemUIOverlayStyle(
+      SystemUiOverlayStyle(
+        statusBarColor: AppColor.primary.color,
+        statusBarIconBrightness: Brightness.light,
+        statusBarBrightness: Brightness.dark,
+      ),
+    );
+  }
 
   final List<String> _categoryIcons = [
     'assets/car.png',
@@ -25,172 +32,17 @@ class _MissionScreenState extends State<MissionScreen> {
     'assets/makanan.png',
   ];
 
-  final Map<String, List<Map<String, dynamic>>> _missions = {
-    'Transportasi': [
-      {
-        'title': 'Minggu Bersepeda ke Kantor',
-        'desc':
-            'Pergi ke kantor atau sekolah dengan sepeda setidaknya 3 hari minggu ini daripada menggunakan mobil.',
-        'points': 65,
-        'icon': 'assets/car.png',
-      },
-      {
-        'title': 'Gunakan Transportasi Umum',
-        'desc':
-            'Gunakan transportasi umum untuk perjalanan harian Anda setidaknya 5 kali minggu ini.',
-        'points': 50,
-        'icon': 'assets/car.png',
-      },
-      {
-        'title': 'Lebih Banyak Berjalan',
-        'desc':
-            'Berjalan ke tujuan terdekat Anda daripada berkendara. Selesaikan setidaknya 3 kali berjalan.',
-        'points': 40,
-        'icon': 'assets/car.png',
-      },
-      {
-        'title': 'Urusan dengan Berjalan Kaki',
-        'desc':
-            'Berjalan ke tujuan terdekat Anda daripada berkendara. Selesaikan setidaknya 3 kali berjalan.',
-        'points': 40,
-        'icon': 'assets/car.png',
-      },
-      {
-        'title': 'Tantangan Berjalan Kaki',
-        'desc':
-            'Berjalan ke tujuan terdekat Anda daripada berkendara. Selesaikan setidaknya 3 kali berjalan.',
-        'points': 40,
-        'icon': 'assets/car.png',
-      },
-    ],
-    'Energi': [
-      {
-        'title': 'Tantangan Hemat Listrik',
-        'desc':
-            'Kurangi penggunaan listrik Anda dengan mematikan lampu yang tidak digunakan, mencabut perangkat dan menurunkan konsumsi energi setidaknya 3 hari.',
-        'points': 45,
-        'icon': 'assets/listrik.png',
-      },
-      {
-        'title': 'Penggunaan Tenaga Surya',
-        'desc':
-            'Gunakan pengisi daya atau perangkat bertenaga surya setidaknya satu minggu untuk mengurangi penggunaan listrik.',
-        'points': 55,
-        'icon': 'assets/listrik.png',
-      },
-      {
-        'title': 'Tantangan Mandi Air Dingin',
-        'desc':
-            'Mandi air dingin untuk mengurangi penggunaan air panas dan konsumsi energi selama 5 hari.',
-        'points': 30,
-        'icon': 'assets/listrik.png',
-      },
-      {
-        'title': 'Tantangan Tanpa Sauna',
-        'desc':
-            'Mandi air dingin untuk mengurangi penggunaan air panas dan konsumsi energi selama 5 hari.',
-        'points': 30,
-        'icon': 'assets/listrik.png',
-      },
-      {
-        'title': 'Tantangan Matikan Daya',
-        'desc':
-            'Mandi air dingin untuk mengurangi penggunaan air panas dan konsumsi energi selama 5 hari.',
-        'points': 30,
-        'icon': 'assets/listrik.png',
-      },
-      {
-        'title': 'Tantangan Mandi Air Dingin',
-        'desc':
-            'Mandi air dingin untuk mengurangi penggunaan air panas dan konsumsi energi selama 5 hari.',
-        'points': 30,
-        'icon': 'assets/listrik.png',
-      },
-    ],
-    'Lingkungan': [
-      {
-        'title': 'Tanam Pohon',
-        'desc':
-            'Tanam setidaknya satu pohon di taman Anda, taman kota, atau ruang hijau lainnya di area Anda.',
-        'points': 57,
-        'icon': 'assets/daun.png',
-      },
-      {
-        'title': 'Kurangi Penggunaan Plastik',
-        'desc':
-            'Hindari penggunaan plastik sekali pakai selama seminggu penuh. Gunakan tas dan botol yang dapat digunakan kembali.',
-        'points': 48,
-        'icon': 'assets/daun.png',
-      },
-      {
-        'title': 'Taman Ruang Hijau',
-        'desc':
-            'Buat taman kecil atau tanam bunga di rumah Anda untuk meningkatkan kualitas udara lokal.',
-        'points': 60,
-        'icon': 'assets/daun.png',
-      },
-      {
-        'title': 'Lebih Banyak Daur Ulang',
-        'desc':
-            'Buat taman kecil atau tanam bunga di rumah Anda untuk meningkatkan kualitas udara lokal.',
-        'points': 60,
-        'icon': 'assets/daun.png',
-      },
-      {
-        'title': 'Tantangan Pakai Ulang',
-        'desc':
-            'Buat taman kecil atau tanam bunga di rumah Anda untuk meningkatkan kualitas udara lokal.',
-        'points': 60,
-        'icon': 'assets/daun.png',
-      },
-    ],
-    'Hewan': [
-      {
-        'title': 'Lewati Daging Merah',
-        'desc':
-            'Hindari makan daging merah (seperti sapi dan kambing) setidaknya 3 hari minggu ini untuk mengurangi jejak karbon Anda.',
-        'points': 40,
-        'icon': 'assets/makanan.png',
-      },
-      {
-        'title': 'Minggu Vegetarian',
-        'desc':
-            'Ikuti diet vegetarian selama seminggu penuh untuk mengurangi dampak lingkungan Anda secara signifikan.',
-        'points': 70,
-        'icon': 'assets/makanan.png',
-      },
-      {
-        'title': 'Dukung Petani Lokal',
-        'desc':
-            'Beli makanan dari pasar petani lokal daripada supermarket untuk mendukung pertanian berkelanjutan.',
-        'points': 35,
-        'icon': 'assets/makanan.png',
-      },
-      {
-        'title': 'Makan Produk Musiman',
-        'desc':
-            'Beli makanan dari pasar petani lokal daripada supermarket untuk mendukung pertanian berkelanjutan.',
-        'points': 35,
-        'icon': 'assets/makanan.png',
-      },
-      {
-        'title': 'Senin Tanpa Daging',
-        'desc':
-            'Beli makanan dari pasar petani lokal daripada supermarket untuk mendukung pertanian berkelanjutan.',
-        'points': 35,
-        'icon': 'assets/makanan.png',
-      },
-    ],
-  };
-
   @override
   Widget build(BuildContext context) {
-    return Scaffold(body: _missionContent());
+    return Scaffold(
+      backgroundColor: AppColor.primary.color,
+      body: _missionContent(),
+    );
   }
 
   Widget _missionContent() {
-    final currentCategory = _categories[_categoryIndex];
-    final currentMissions = _missions[currentCategory] ?? [];
+    final currentCategory = MissionsData.categories[_categoryIndex];
+    final currentMissions = MissionsData.getMissionsByCategory(currentCategory);
 
     return SafeArea(
       child: Stack(
@@ -250,38 +102,46 @@ class _MissionScreenState extends State<MissionScreen> {
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: List.generate(_categories.length, (index) {
+                  children: List.generate(MissionsData.categories.length, (
+                    index,
+                  ) {
+                    bool isSelected = _categoryIndex == index;
                     return GestureDetector(
                       onTap: () {
                         setState(() => _categoryIndex = index);
                       },
-                      child: Image.asset(
-                        _categoryIcons[index],
-                        width: 80,
-                        height: 80,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          boxShadow: isSelected
+                              ? [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.1),
+                                    blurRadius: 12,
+                                    spreadRadius: 2,
+                                    offset: Offset(0, 4),
+                                  ),
+                                ]
+                              : null,
+                        ),
+                        child: Image.asset(
+                          _categoryIcons[index],
+                          width: isSelected ? 75 : 60,
+                          height: isSelected ? 75 : 60,
+                        ),
                       ),
                     );
                   }),
                 ),
               ),
-              // Title "All Mission"
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
-                ),
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    currentCategory,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+              Text(
+                currentCategory,
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
                 ),
               ),
-              // ListView Mission
               Expanded(
                 child: ListView.builder(
                   padding: const EdgeInsets.symmetric(
@@ -302,7 +162,7 @@ class _MissionScreenState extends State<MissionScreen> {
     );
   }
 
-  Widget _buildMissionCard(Map<String, dynamic> mission) {
+  Widget _buildMissionCard(Mission mission) {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 12),
       decoration: BoxDecoration(
@@ -321,14 +181,14 @@ class _MissionScreenState extends State<MissionScreen> {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Image.asset(mission['icon'], width: 70, height: 70),
+            Image.asset(mission.icon, width: 70, height: 70),
             const SizedBox(width: 16),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    mission['title'],
+                    mission.title,
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 14,
@@ -336,7 +196,7 @@ class _MissionScreenState extends State<MissionScreen> {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    mission['desc'],
+                    mission.desc,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(fontSize: 12, color: Colors.grey[600]),
@@ -349,7 +209,7 @@ class _MissionScreenState extends State<MissionScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  '${mission['points']}',
+                  '${mission.points}',
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,

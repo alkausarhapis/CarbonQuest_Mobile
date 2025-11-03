@@ -1,9 +1,11 @@
-// lib/view/quiz_question_screen.dart
+import 'dart:io';
 
 import 'package:carbonquest/core/styles/app_color.dart';
 import 'package:carbonquest/view/quiz_score_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
+import '../controller/auth_controller.dart';
 import '../model/questions.dart';
 
 class QuizQuestionScreen extends StatefulWidget {
@@ -20,6 +22,7 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen> {
   int _currentQuestionIndex = 0;
   int? _selectedAnswer;
   List<int?> _userAnswers = [];
+  final AuthController _authController = Get.find<AuthController>();
 
   @override
   void initState() {
@@ -193,18 +196,20 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen> {
                           color: quizTitleColor,
                         ),
                       ),
-                      CircleAvatar(
-                        backgroundColor: Colors.white,
-                        radius: 15,
-                        child: Padding(
-                          padding: const EdgeInsets.all(3.0),
-                          child: Image.asset(
-                            'assets/profile.png',
-                            width: 20,
-                            height: 20,
-                          ),
-                        ),
-                      ),
+                      Obx(() {
+                        final profileImagePath =
+                            _authController.currentUser.value?.profileImagePath;
+                        return CircleAvatar(
+                          backgroundColor: Colors.white,
+                          radius: 15,
+                          backgroundImage:
+                              profileImagePath != null &&
+                                  File(profileImagePath).existsSync()
+                              ? FileImage(File(profileImagePath))
+                              : const AssetImage('assets/profile.png')
+                                    as ImageProvider,
+                        );
+                      }),
                     ],
                   ),
                 ),

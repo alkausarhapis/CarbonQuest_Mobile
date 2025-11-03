@@ -1,6 +1,11 @@
+import 'dart:io';
+
 import 'package:carbonquest/core/navigation_route.dart';
 import 'package:carbonquest/core/styles/app_color.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+
+import '../controller/auth_controller.dart';
 
 class QuizMenuScreen extends StatelessWidget {
   const QuizMenuScreen({super.key});
@@ -11,7 +16,7 @@ class QuizMenuScreen extends StatelessWidget {
     String subtitle,
     String badgeText,
     IconData icon,
-    String quizType, // Add quizType parameter
+    String quizType,
   ) {
     Color primaryColor = AppColor.primary.color;
     Color cyanColor = AppColor.cyan.color;
@@ -122,6 +127,7 @@ class QuizMenuScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AuthController authController = Get.find<AuthController>();
     Color headerBg = AppColor.primary.color;
 
     return Scaffold(
@@ -164,13 +170,22 @@ class QuizMenuScreen extends StatelessWidget {
                           onTap: () {
                             Navigator.pushNamed(context, '/profile');
                           },
-                          child: CircleAvatar(
-                            radius: 20,
-                            backgroundColor: Color(0xFFD9E3E8),
-                            backgroundImage: const AssetImage(
-                              'assets/profile.png',
-                            ),
-                          ),
+                          child: Obx(() {
+                            final profileImagePath = authController
+                                .currentUser
+                                .value
+                                ?.profileImagePath;
+                            return CircleAvatar(
+                              radius: 20,
+                              backgroundColor: Color(0xFFD9E3E8),
+                              backgroundImage:
+                                  profileImagePath != null &&
+                                      File(profileImagePath).existsSync()
+                                  ? FileImage(File(profileImagePath))
+                                  : const AssetImage('assets/profile.png')
+                                        as ImageProvider,
+                            );
+                          }),
                         ),
                       ],
                     ),

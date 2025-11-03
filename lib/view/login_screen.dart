@@ -1,7 +1,9 @@
 import 'package:carbonquest/core/navigation_route.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:iconsax_plus/iconsax_plus.dart';
 
+import '../controller/auth_controller.dart';
 import '../core/styles/app_color.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -16,6 +18,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isPasswordVisible = false;
+  final AuthController _authController = Get.find<AuthController>();
 
   @override
   void dispose() {
@@ -24,9 +27,17 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  void _handleLogin() {
+  void _handleLogin() async {
     if (_formKey.currentState!.validate()) {
-      Navigator.pushReplacementNamed(context, NavigationRoute.mainRoute.path);
+      final success = await _authController.login(
+        _emailController.text,
+        _passwordController.text,
+      );
+
+      if (success) {
+        if (!mounted) return;
+        Navigator.pushReplacementNamed(context, NavigationRoute.mainRoute.path);
+      }
     }
   }
 

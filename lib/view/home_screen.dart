@@ -1,5 +1,9 @@
-import 'package:flutter/material.dart';
+import 'dart:io';
 
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+
+import '../controller/auth_controller.dart';
 import '../core/navigation_route.dart';
 import '../core/styles/app_color.dart';
 import '../model/articles.dart';
@@ -20,6 +24,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   String selectedPeriod = 'Week';
+  final AuthController _authController = Get.find<AuthController>();
 
   final List<ChartData> weeklyData = [
     ChartData(value: 60, label: '24'),
@@ -81,13 +86,28 @@ class _HomeScreenState extends State<HomeScreen> {
                                           '/profile',
                                         );
                                       },
-                                      child: CircleAvatar(
-                                        radius: 20,
-                                        backgroundColor: Color(0xFFD9E3E8),
-                                        backgroundImage: const AssetImage(
-                                          'assets/profile.png',
-                                        ),
-                                      ),
+                                      child: Obx(() {
+                                        final profileImagePath = _authController
+                                            .currentUser
+                                            .value
+                                            ?.profileImagePath;
+                                        return CircleAvatar(
+                                          radius: 20,
+                                          backgroundColor: Color(0xFFD9E3E8),
+                                          backgroundImage:
+                                              profileImagePath != null &&
+                                                  File(
+                                                    profileImagePath,
+                                                  ).existsSync()
+                                              ? FileImage(
+                                                  File(profileImagePath),
+                                                )
+                                              : const AssetImage(
+                                                      'assets/profile.png',
+                                                    )
+                                                    as ImageProvider,
+                                        );
+                                      }),
                                     ),
                                   ],
                                 ),

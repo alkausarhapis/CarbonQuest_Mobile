@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:get/get.dart';
 import 'package:iconsax_plus/iconsax_plus.dart';
+import 'package:share_plus/share_plus.dart';
 
+import '../controller/auth_controller.dart';
 import '../core/styles/app_color.dart';
 import '../model/users.dart';
 
@@ -13,6 +16,8 @@ class LeaderboardScreen extends StatefulWidget {
 }
 
 class _LeaderboardScreenState extends State<LeaderboardScreen> {
+  final AuthController _authController = Get.find<AuthController>();
+
   @override
   void initState() {
     super.initState();
@@ -25,6 +30,59 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
     );
   }
 
+  Future<void> _shareLeaderboard() async {
+    try {
+      final currentUser = _authController.currentUser.value;
+      if (currentUser == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Silakan login terlebih dahulu')),
+        );
+        return;
+      }
+
+      final userRank = UsersData.leaderboard.indexWhere(
+        (user) => user.name == currentUser.fullName,
+      );
+
+      final rankText = userRank != -1
+          ? '#${userRank + 1}'
+          : 'Belum masuk peringkat';
+      final topUsers = UsersData.getTopUsers(3);
+
+      final shareText =
+          '''🌱 CarbonQuest Leaderboard 🌱
+
+Saya ${currentUser.fullName}!
+Peringkat: $rankText
+
+🏆 Top 3:
+1️⃣ ${topUsers.isNotEmpty ? '${topUsers[0].name} - ${topUsers[0].points} pts' : '-'}
+2️⃣ ${topUsers.length > 1 ? '${topUsers[1].name} - ${topUsers[1].points} pts' : '-'}
+3️⃣ ${topUsers.length > 2 ? '${topUsers[2].name} - ${topUsers[2].points} pts' : '-'}
+
+Bergabunglah dengan CarbonQuest dan kurangi jejak karbon Anda! 🌍''';
+
+      final result = await Share.share(
+        shareText,
+        subject: 'CarbonQuest Leaderboard',
+      );
+
+      if (result.status == ShareResultStatus.success) {
+        if (mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('Berhasil dibagikan!')));
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final topThree = UsersData.getTopUsers(3);
@@ -32,6 +90,12 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
 
     return Scaffold(
       backgroundColor: Colors.grey[50],
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+      floatingActionButton: FloatingActionButton(
+        onPressed: _shareLeaderboard,
+        backgroundColor: AppColor.primary.color,
+        child: const Icon(Icons.share, color: Colors.white),
+      ),
       body: Column(
         children: [
           // Header

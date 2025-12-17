@@ -81,9 +81,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                     ),
                                     GestureDetector(
                                       onTap: () {
-                                        Navigator.pushNamed(
-                                          context,
-                                          '/profile',
+                                        Get.toNamed(
+                                          NavigationRoute.profileRoute.path,
                                         );
                                       },
                                       child: Obx(() {
@@ -200,8 +199,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                           title: 'Kuis Harian',
                                           points: '10 Pts',
                                           onTap: () {
-                                            Navigator.pushNamed(
-                                              context,
+                                            Get.toNamed(
                                               NavigationRoute.quizQuestion.path,
                                               arguments: 'daily',
                                             );
@@ -212,8 +210,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                           title: 'Kuis Mingguan',
                                           points: '50 Pts',
                                           onTap: () {
-                                            Navigator.pushNamed(
-                                              context,
+                                            Get.toNamed(
                                               NavigationRoute.quizQuestion.path,
                                               arguments: 'weekly',
                                             );
@@ -224,8 +221,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                           title: 'Kuis Bulanan',
                                           points: '100 Pts',
                                           onTap: () {
-                                            Navigator.pushNamed(
-                                              context,
+                                            Get.toNamed(
                                               NavigationRoute.quizQuestion.path,
                                               arguments: 'monthly',
                                             );

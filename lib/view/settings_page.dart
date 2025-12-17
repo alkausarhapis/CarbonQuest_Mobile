@@ -142,15 +142,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   Expanded(
                     child: ElevatedButton(
                       onPressed: () async {
-                        Navigator.of(context).pop();
+                        Get.back();
                         await _authController.logout();
-                        if (context.mounted) {
-                          Navigator.pushNamedAndRemoveUntil(
-                            context,
-                            NavigationRoute.loginRoute.path,
-                            (route) => false,
-                          );
-                        }
+                        Get.offAllNamed(NavigationRoute.loginRoute.path);
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.red,

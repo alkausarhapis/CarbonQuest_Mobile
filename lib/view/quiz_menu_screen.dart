@@ -31,11 +31,7 @@ class QuizMenuScreen extends StatelessWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: InkWell(
         onTap: () {
-          Navigator.pushNamed(
-            context,
-            NavigationRoute.quizQuestion.path,
-            arguments: quizType, // Pass quizType
-          );
+          Get.toNamed(NavigationRoute.quizQuestion.path, arguments: quizType);
         },
         borderRadius: BorderRadius.circular(20),
         child: Container(
@@ -168,7 +164,7 @@ class QuizMenuScreen extends StatelessWidget {
                         ),
                         GestureDetector(
                           onTap: () {
-                            Navigator.pushNamed(context, '/profile');
+                            Get.toNamed(NavigationRoute.profileRoute.path);
                           },
                           child: Obx(() {
                             final profileImagePath = authController

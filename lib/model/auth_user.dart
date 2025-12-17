@@ -7,7 +7,6 @@ class AuthUser {
   String telepon;
   String bio;
   String? profileImagePath;
-  final String password;
 
   AuthUser({
     required this.id,
@@ -18,7 +17,6 @@ class AuthUser {
     required this.telepon,
     this.bio = '',
     this.profileImagePath,
-    required this.password,
   });
 
   String get fullName => '$nama $namaBelakang';
@@ -26,28 +24,58 @@ class AuthUser {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'nama': nama,
-      'namaBelakang': namaBelakang,
-      'tanggalLahir': tanggalLahir,
+      'name': nama,
+      'last_name': namaBelakang,
+      'birth_date': tanggalLahir,
       'email': email,
-      'telepon': telepon,
+      'phone': telepon,
       'bio': bio,
-      'profileImagePath': profileImagePath,
-      'password': password,
+      'profile_image': profileImagePath ?? '',
     };
+  }
+
+  Map<String, dynamic> toRegisterJson(String password) {
+    return {
+      'name': nama,
+      'last_name': namaBelakang,
+      'birth_date': tanggalLahir,
+      'email': email,
+      'phone': telepon,
+      'password': password,
+      'profile_image': profileImagePath ?? '',
+    };
+  }
+
+  static Map<String, dynamic> toLoginJson(String email, String password) {
+    return {'email': email, 'password': password};
   }
 
   factory AuthUser.fromJson(Map<String, dynamic> json) {
     return AuthUser(
-      id: json['id'],
-      nama: json['nama'],
-      namaBelakang: json['namaBelakang'],
-      tanggalLahir: json['tanggalLahir'],
-      email: json['email'],
-      telepon: json['telepon'],
+      id: json['id']?.toString() ?? json['user_id']?.toString() ?? '',
+      nama: json['nama'] ?? json['name'] ?? '',
+      namaBelakang: json['namaBelakang'] ?? json['last_name'] ?? '',
+      tanggalLahir: json['tanggalLahir'] ?? json['birth_date'] ?? '',
+      email: json['email'] ?? '',
+      telepon: json['telepon'] ?? json['phone'] ?? '',
       bio: json['bio'] ?? '',
-      profileImagePath: json['profileImagePath'],
-      password: json['password'],
+      profileImagePath: json['profileImagePath'] ?? json['profile_image'],
+    );
+  }
+
+  factory AuthUser.fromApiResponse(Map<String, dynamic> json) {
+    final userData =
+        json['data']?['user'] ?? json['user'] ?? json['data'] ?? json;
+    return AuthUser(
+      id: (userData['id_user'] ?? userData['id'] ?? userData['user_id'] ?? '')
+          .toString(),
+      nama: (userData['name'] ?? '').toString(),
+      namaBelakang: (userData['last_name'] ?? '').toString(),
+      tanggalLahir: (userData['birth_date'] ?? '').toString(),
+      email: (userData['email'] ?? '').toString(),
+      telepon: (userData['phone'] ?? '').toString(),
+      bio: (userData['bio'] ?? '').toString(),
+      profileImagePath: userData['profile_image']?.toString(),
     );
   }
 }

@@ -4,9 +4,36 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../controller/auth_controller.dart';
+import '../controller/quiz_controller.dart';
 
-class QuizMenuScreen extends StatelessWidget {
+class QuizMenuScreen extends StatefulWidget {
   const QuizMenuScreen({super.key});
+
+  @override
+  State<QuizMenuScreen> createState() => _QuizMenuScreenState();
+}
+
+class _QuizMenuScreenState extends State<QuizMenuScreen> {
+  late final QuizController _quizController;
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize or get QuizController
+    if (Get.isRegistered<QuizController>()) {
+      _quizController = Get.find<QuizController>();
+    } else {
+      _quizController = Get.put(QuizController());
+    }
+    // Load completion status for all quizzes
+    _loadQuizCompletionStatus();
+  }
+
+  Future<void> _loadQuizCompletionStatus() async {
+    for (var quiz in _quizController.quizzes) {
+      await _quizController.isQuizCompleted(quiz.idQuiz);
+    }
+  }
 
   Widget _buildQuizItem(
     BuildContext context,
@@ -15,6 +42,8 @@ class QuizMenuScreen extends StatelessWidget {
     String badgeText,
     IconData icon,
     String quizType,
+    int quizId,
+    bool isCompleted,
   ) {
     Color primaryColor = AppColor.primary.color;
     Color cyanColor = AppColor.cyan.color;
@@ -24,13 +53,28 @@ class QuizMenuScreen extends StatelessWidget {
 
     return Card(
       elevation: 0,
-      color: lightBlueBg.withValues(alpha: 0.2),
+      color: isCompleted
+          ? Colors.grey.withValues(alpha: 0.2)
+          : lightBlueBg.withValues(alpha: 0.2),
       margin: const EdgeInsets.only(bottom: 20),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: InkWell(
-        onTap: () {
-          Get.toNamed(NavigationRoute.quizQuestion.path, arguments: quizType);
-        },
+        onTap: isCompleted
+            ? () {
+                Get.snackbar(
+                  'Kuis Sudah Selesai',
+                  'Anda sudah menyelesaikan kuis ini!',
+                  snackPosition: SnackPosition.BOTTOM,
+                  backgroundColor: Colors.orange,
+                  colorText: Colors.white,
+                );
+              }
+            : () {
+                Get.toNamed(
+                  NavigationRoute.quizQuestion.path,
+                  arguments: quizType,
+                );
+              },
         borderRadius: BorderRadius.circular(20),
         child: Container(
           height: 90,
@@ -43,10 +87,14 @@ class QuizMenuScreen extends StatelessWidget {
                 height: 60,
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: isCompleted ? Colors.grey.shade300 : Colors.white,
                   borderRadius: BorderRadius.circular(15),
                 ),
-                child: Icon(icon, color: primaryColor, size: 30),
+                child: Icon(
+                  icon,
+                  color: isCompleted ? Colors.grey : primaryColor,
+                  size: 30,
+                ),
               ),
               const SizedBox(width: 15),
 
@@ -55,59 +103,101 @@ class QuizMenuScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(
-                      title,
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                        color: darkTextColor,
-                      ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            title,
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                              color: isCompleted ? Colors.grey : darkTextColor,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 4),
                     Text(
                       subtitle,
-                      style: TextStyle(fontSize: 12, color: secondaryTextColor),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: isCompleted ? Colors.grey : secondaryTextColor,
+                      ),
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 5),
                     // Badge "15 Qs"
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 6,
-                        vertical: 2,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Text(
-                        badgeText,
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                          color: primaryColor,
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Text(
+                            badgeText,
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                              color: isCompleted ? Colors.grey : primaryColor,
+                            ),
+                          ),
                         ),
-                      ),
+                        const SizedBox(width: 8),
+                        if (isCompleted)
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.green,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.check_circle,
+                                  size: 14,
+                                  color: Colors.white,
+                                ),
+                                SizedBox(width: 4),
+                                Text(
+                                  'Selesai',
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                      ],
                     ),
                   ],
                 ),
               ),
 
-              // Arrow ke kanan dan Bentuk Biru Muda di belakangnya
               Stack(
                 alignment: Alignment.center,
                 children: [
-                  // Bentuk Biru Muda di Belakang Arrow
                   Container(
                     width: 70,
                     height: 70,
                     decoration: BoxDecoration(
-                      color: lightBlueBg,
+                      color: isCompleted ? Colors.grey.shade300 : lightBlueBg,
                       borderRadius: BorderRadius.circular(15),
                     ),
                   ),
-                  const Icon(
+                  Icon(
                     Icons.arrow_forward_ios,
-                    color: Colors.blue,
+                    color: isCompleted ? Colors.grey : primaryColor,
                     size: 20,
                   ),
                 ],
@@ -196,34 +286,74 @@ class QuizMenuScreen extends StatelessWidget {
                 ),
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
-                  child: ListView(
-                    children: <Widget>[
-                      _buildQuizItem(
-                        context,
-                        'Kuis Harian',
-                        '10 pertanyaan',
-                        '10 Qs',
-                        Icons.today,
-                        'daily',
+                  child: Obx(() {
+                    if (_quizController.isLoading.value) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+
+                    if (_quizController.quizzes.isEmpty) {
+                      return const Center(
+                        child: Text(
+                          'Tidak ada kuis tersedia',
+                          style: TextStyle(fontSize: 16, color: Colors.grey),
+                        ),
+                      );
+                    }
+
+                    return RefreshIndicator(
+                      onRefresh: () => _quizController.loadQuizzes(),
+                      child: ListView(
+                        children: _quizController.quizzes.map((quiz) {
+                          String quizType;
+                          switch (quiz.category) {
+                            case 'Harian':
+                              quizType = 'daily';
+                              break;
+                            case 'Mingguan':
+                              quizType = 'weekly';
+                              break;
+                            case 'Bulanan':
+                              quizType = 'monthly';
+                              break;
+                            default:
+                              quizType = 'daily';
+                          }
+
+                          IconData icon;
+                          switch (quiz.category) {
+                            case 'Harian':
+                              icon = Icons.today;
+                              break;
+                            case 'Mingguan':
+                              icon = Icons.calendar_view_week;
+                              break;
+                            case 'Bulanan':
+                              icon = Icons.calendar_month;
+                              break;
+                            default:
+                              icon = Icons.quiz;
+                          }
+
+                          // Check if quiz is completed
+                          final isCompleted =
+                              _quizController.quizCompletionStatus[quiz
+                                  .idQuiz] ??
+                              false;
+
+                          return _buildQuizItem(
+                            context,
+                            quiz.title,
+                            '${quiz.questionCount} pertanyaan',
+                            '${quiz.questionCount} Qs',
+                            icon,
+                            quizType,
+                            quiz.idQuiz,
+                            isCompleted,
+                          );
+                        }).toList(),
                       ),
-                      _buildQuizItem(
-                        context,
-                        'Kuis Mingguan',
-                        '5 pertanyaan',
-                        '5 Qs',
-                        Icons.calendar_view_week,
-                        'weekly',
-                      ),
-                      _buildQuizItem(
-                        context,
-                        'Kuis Bulanan',
-                        '3 pertanyaan',
-                        '3 Qs',
-                        Icons.calendar_month,
-                        'monthly',
-                      ),
-                    ],
-                  ),
+                    );
+                  }),
                 ),
               ),
             ),

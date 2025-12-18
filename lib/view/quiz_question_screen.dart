@@ -1,12 +1,11 @@
-import 'dart:io';
-
 import 'package:carbonquest/core/styles/app_color.dart';
 import 'package:carbonquest/view/quiz_score_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../controller/auth_controller.dart';
-import '../model/questions.dart';
+import '../controller/quiz_controller.dart';
+import '../model/quiz.dart';
 
 class QuizQuestionScreen extends StatefulWidget {
   final String quizType;
@@ -18,28 +17,44 @@ class QuizQuestionScreen extends StatefulWidget {
 }
 
 class _QuizQuestionScreenState extends State<QuizQuestionScreen> {
-  late List<QuizQuestion> _questions;
-  int _currentQuestionIndex = 0;
-  int? _selectedAnswer;
-  List<int?> _userAnswers = [];
+  late final QuizController _quizController;
   final AuthController _authController = Get.find<AuthController>();
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _questions = QuestionsData.getQuizByType(widget.quizType);
-    _userAnswers = List.filled(_questions.length, null);
+    // Initialize or get QuizController
+    if (Get.isRegistered<QuizController>()) {
+      _quizController = Get.find<QuizController>();
+    } else {
+      _quizController = Get.put(QuizController());
+    }
+    // Load quiz after the first frame to avoid setState during build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadQuiz();
+    });
+  }
+
+  Future<void> _loadQuiz() async {
+    final success = await _quizController.startQuiz(widget.quizType);
+    if (mounted) {
+      setState(() {
+        _isLoading = false;
+      });
+      if (!success) {
+        Navigator.pop(context);
+      }
+    }
   }
 
   void _goToNextQuestion() {
-    if (_selectedAnswer != null) {
-      _userAnswers[_currentQuestionIndex] = _selectedAnswer;
+    final selectedAnswer =
+        _quizController.userAnswers[_quizController.currentQuestionIndex.value];
 
-      if (_currentQuestionIndex < _questions.length - 1) {
-        setState(() {
-          _currentQuestionIndex++;
-          _selectedAnswer = _userAnswers[_currentQuestionIndex];
-        });
+    if (selectedAnswer != null) {
+      if (_quizController.goToNextQuestion()) {
+        setState(() {});
       } else {
         _finishQuiz();
       }
@@ -54,35 +69,30 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen> {
   }
 
   void _goToPreviousQuestion() {
-    if (_currentQuestionIndex > 0) {
-      setState(() {
-        _currentQuestionIndex--;
-        _selectedAnswer = _userAnswers[_currentQuestionIndex];
-      });
+    if (_quizController.goToPreviousQuestion()) {
+      setState(() {});
     }
   }
 
-  void _finishQuiz() {
-    int score = 0;
-    int maxScore = 0;
+  Future<void> _finishQuiz() async {
+    // Submit quiz to API - this will set totalScore in controller
+    await _quizController.submitQuiz();
 
-    for (int i = 0; i < _questions.length; i++) {
-      if (_userAnswers[i] != null) {
-        score += _questions[i].pointsPerOption[_userAnswers[i]!];
-      }
-      maxScore += _questions[i].pointsPerOption.reduce((a, b) => a > b ? a : b);
-    }
+    final score = _quizController.totalScore.value;
+    final maxScore = _quizController.getMaxScore();
 
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (context) => QuizScoreScreen(
-          score: score,
-          maxScore: maxScore,
-          quizType: widget.quizType,
+    if (mounted) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => QuizScoreScreen(
+            score: score,
+            maxScore: maxScore,
+            quizType: widget.quizType,
+          ),
         ),
-      ),
-    );
+      );
+    }
   }
 
   Widget _buildNavButton(String text, bool isPrimary, VoidCallback onTap) {
@@ -110,8 +120,10 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen> {
     );
   }
 
-  Widget _buildAnswerOption(String text, int value) {
-    bool isSelected = _selectedAnswer == value;
+  Widget _buildAnswerOption(Answer answer, int index) {
+    final currentIndex = _quizController.currentQuestionIndex.value;
+    final selectedAnswer = _quizController.userAnswers[currentIndex];
+    bool isSelected = selectedAnswer == index;
 
     Color primaryColor = AppColor.primary.color;
     Color darkTextColor = AppColor.cyan.color;
@@ -119,7 +131,7 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen> {
     return InkWell(
       onTap: () {
         setState(() {
-          _selectedAnswer = value;
+          _quizController.selectAnswer(index);
         });
       },
       child: Container(
@@ -138,18 +150,18 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen> {
         child: Row(
           children: [
             Radio<int>(
-              value: value,
-              groupValue: _selectedAnswer,
+              value: index,
+              groupValue: selectedAnswer,
               onChanged: (int? val) {
                 setState(() {
-                  _selectedAnswer = val;
+                  _quizController.selectAnswer(val!);
                 });
               },
               activeColor: primaryColor,
             ),
             Expanded(
               child: Text(
-                text,
+                answer.content,
                 style: TextStyle(fontSize: 16, color: darkTextColor),
               ),
             ),
@@ -161,11 +173,34 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return Scaffold(
+        backgroundColor: AppColor.primary.color,
+        body: const Center(
+          child: CircularProgressIndicator(color: Colors.white),
+        ),
+      );
+    }
+
+    if (_quizController.currentQuestions.isEmpty) {
+      return Scaffold(
+        backgroundColor: AppColor.primary.color,
+        body: const Center(
+          child: Text(
+            'Tidak ada pertanyaan tersedia',
+            style: TextStyle(color: Colors.white),
+          ),
+        ),
+      );
+    }
+
     Color headerBg = AppColor.primary.color;
     Color quizTitleColor = Colors.white;
 
-    final currentQuestion = _questions[_currentQuestionIndex];
-    final progress = (_currentQuestionIndex + 1) / _questions.length;
+    final currentIndex = _quizController.currentQuestionIndex.value;
+    final currentQuestion = _quizController.currentQuestions[currentIndex];
+    final progress =
+        (currentIndex + 1) / _quizController.currentQuestions.length;
 
     return Scaffold(
       body: Stack(
@@ -197,15 +232,13 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen> {
                         ),
                       ),
                       Obx(() {
-                        final profileImagePath =
-                            _authController.currentUser.value?.profileImagePath;
+                        final profileImageUrl =
+                            _authController.currentUser.value?.profileImageUrl;
                         return CircleAvatar(
                           backgroundColor: Colors.white,
                           radius: 15,
-                          backgroundImage:
-                              profileImagePath != null &&
-                                  File(profileImagePath).existsSync()
-                              ? FileImage(File(profileImagePath))
+                          backgroundImage: profileImageUrl != null
+                              ? NetworkImage(profileImageUrl)
                               : const AssetImage('assets/profile.png')
                                     as ImageProvider,
                         );
@@ -223,7 +256,7 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            'Pertanyaan ${_currentQuestionIndex + 1} dari ${_questions.length}',
+                            'Pertanyaan ${_quizController.currentQuestionIndex.value + 1} dari ${_quizController.currentQuestions.length}',
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 14,
@@ -290,7 +323,7 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen> {
                         ),
                         child: Center(
                           child: Text(
-                            '${_currentQuestionIndex + 1}',
+                            '${currentIndex + 1}',
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 16,
@@ -301,7 +334,7 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen> {
                       ),
                       const SizedBox(height: 25),
                       Text(
-                        currentQuestion.question,
+                        currentQuestion.content,
                         style: const TextStyle(fontSize: 17, height: 1.4),
                         textAlign: TextAlign.center,
                       ),
@@ -315,9 +348,9 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   child: Column(
                     children: List.generate(
-                      currentQuestion.options.length,
+                      currentQuestion.answers.length,
                       (index) => _buildAnswerOption(
-                        currentQuestion.options[index],
+                        currentQuestion.answers[index],
                         index,
                       ),
                     ),
@@ -331,11 +364,13 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      if (_currentQuestionIndex > 0)
+                      if (_quizController.currentQuestionIndex.value > 0)
                         _buildNavButton('<<', false, _goToPreviousQuestion),
-                      if (_currentQuestionIndex > 0) const SizedBox(width: 30),
+                      if (_quizController.currentQuestionIndex.value > 0)
+                        const SizedBox(width: 30),
                       _buildNavButton(
-                        _currentQuestionIndex < _questions.length - 1
+                        _quizController.currentQuestionIndex.value <
+                                _quizController.currentQuestions.length - 1
                             ? '>>'
                             : 'Selesai',
                         true,

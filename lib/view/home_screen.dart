@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 
 import '../controller/auth_controller.dart';
 import '../controller/mission_controller.dart';
+import '../controller/quiz_controller.dart';
 import '../core/navigation_route.dart';
 import '../core/styles/app_color.dart';
 import '../model/articles.dart';
@@ -24,6 +25,7 @@ class _HomeScreenState extends State<HomeScreen> {
   String selectedPeriod = 'Week';
   final AuthController _authController = Get.find<AuthController>();
   late final MissionController _missionController;
+  late final QuizController _quizController;
   List<Article> _articles = [];
   bool _isLoadingArticles = false;
 
@@ -45,6 +47,12 @@ class _HomeScreenState extends State<HomeScreen> {
       _missionController = Get.find<MissionController>();
     } else {
       _missionController = Get.put(MissionController());
+    }
+    // Initialize or get QuizController
+    if (Get.isRegistered<QuizController>()) {
+      _quizController = Get.find<QuizController>();
+    } else {
+      _quizController = Get.put(QuizController());
     }
     _loadArticles();
   }
@@ -218,73 +226,91 @@ class _HomeScreenState extends State<HomeScreen> {
                                   );
                                 }),
                                 // Quiz Section
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Padding(
-                                      padding: EdgeInsets.symmetric(
-                                        horizontal: 20,
-                                      ),
-                                      child: Text(
-                                        'Kuis',
-                                        style: TextStyle(
-                                          fontSize: 24,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 16),
-                                    SizedBox(
-                                      height: 140,
-                                      child: ListView(
-                                        scrollDirection: Axis.horizontal,
-                                        padding: const EdgeInsets.symmetric(
+                                Obx(() {
+                                  final quizzes = _quizController.quizzes
+                                      .take(3)
+                                      .toList();
+
+                                  return Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const Padding(
+                                        padding: EdgeInsets.symmetric(
                                           horizontal: 20,
                                         ),
-                                        children: [
-                                          QuizCardHomeWidget(
-                                            title: 'Kuis Harian',
-                                            points: '10 Pts',
-                                            onTap: () {
-                                              Get.toNamed(
-                                                NavigationRoute
-                                                    .quizQuestion
-                                                    .path,
-                                                arguments: 'daily',
-                                              );
-                                            },
+                                        child: Text(
+                                          'Kuis',
+                                          style: TextStyle(
+                                            fontSize: 24,
+                                            fontWeight: FontWeight.bold,
                                           ),
-                                          const SizedBox(width: 12),
-                                          QuizCardHomeWidget(
-                                            title: 'Kuis Mingguan',
-                                            points: '50 Pts',
-                                            onTap: () {
-                                              Get.toNamed(
-                                                NavigationRoute
-                                                    .quizQuestion
-                                                    .path,
-                                                arguments: 'weekly',
-                                              );
-                                            },
-                                          ),
-                                          const SizedBox(width: 12),
-                                          QuizCardHomeWidget(
-                                            title: 'Kuis Bulanan',
-                                            points: '100 Pts',
-                                            onTap: () {
-                                              Get.toNamed(
-                                                NavigationRoute
-                                                    .quizQuestion
-                                                    .path,
-                                                arguments: 'monthly',
-                                              );
-                                            },
-                                          ),
-                                        ],
+                                        ),
                                       ),
-                                    ),
-                                  ],
-                                ),
+                                      const SizedBox(height: 16),
+                                      SizedBox(
+                                        height: 140,
+                                        child: quizzes.isEmpty
+                                            ? const Center(
+                                                child: Padding(
+                                                  padding: EdgeInsets.all(20),
+                                                  child: Text(
+                                                    'Tidak ada kuis tersedia',
+                                                    style: TextStyle(
+                                                      fontSize: 14,
+                                                      color: Colors.grey,
+                                                    ),
+                                                  ),
+                                                ),
+                                              )
+                                            : ListView(
+                                                scrollDirection:
+                                                    Axis.horizontal,
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      horizontal: 20,
+                                                    ),
+                                                children: quizzes.map((quiz) {
+                                                  String quizType;
+                                                  switch (quiz.category) {
+                                                    case 'Harian':
+                                                      quizType = 'daily';
+                                                      break;
+                                                    case 'Mingguan':
+                                                      quizType = 'weekly';
+                                                      break;
+                                                    case 'Bulanan':
+                                                      quizType = 'monthly';
+                                                      break;
+                                                    default:
+                                                      quizType = 'daily';
+                                                  }
+
+                                                  return Padding(
+                                                    padding:
+                                                        const EdgeInsets.only(
+                                                          right: 12,
+                                                        ),
+                                                    child: QuizCardHomeWidget(
+                                                      title: quiz.title,
+                                                      points:
+                                                          '${quiz.totalPoints} Pts',
+                                                      onTap: () {
+                                                        Get.toNamed(
+                                                          NavigationRoute
+                                                              .quizQuestion
+                                                              .path,
+                                                          arguments: quizType,
+                                                        );
+                                                      },
+                                                    ),
+                                                  );
+                                                }).toList(),
+                                              ),
+                                      ),
+                                    ],
+                                  );
+                                }),
                                 const SizedBox(height: 40),
                                 // Article Section
                                 Column(

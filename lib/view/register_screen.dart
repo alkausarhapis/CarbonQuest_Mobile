@@ -62,11 +62,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       );
 
       if (success) {
-        if (!mounted) return;
-        Navigator.pushReplacementNamed(
-          context,
-          NavigationRoute.loginRoute.path,
-        );
+        Get.offAllNamed(NavigationRoute.loginRoute.path);
       }
     }
   }
@@ -435,10 +431,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                     GestureDetector(
                       onTap: () {
-                        Navigator.pushReplacementNamed(
-                          context,
-                          NavigationRoute.loginRoute.path,
-                        );
+                        Get.offNamed(NavigationRoute.loginRoute.path);
                       },
                       child: Text(
                         'Login',

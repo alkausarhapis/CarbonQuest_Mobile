@@ -1,4 +1,5 @@
 import 'package:carbonquest/controller/auth_controller.dart';
+import 'package:carbonquest/core/auth_middleware.dart';
 import 'package:carbonquest/view/login_screen.dart';
 import 'package:carbonquest/view/main_screen.dart';
 import 'package:carbonquest/view/mission_screen.dart';
@@ -8,24 +9,20 @@ import 'package:carbonquest/view/register_screen.dart';
 import 'package:carbonquest/view/settings_page.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get_storage/get_storage.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import 'core/navigation_route.dart';
 import 'core/styles/app_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await GetStorage.init();
 
-  Get.put(AuthController());
+  final authController = Get.put(AuthController());
 
-  final prefs = await SharedPreferences.getInstance();
-  final isLoggedIn = prefs.getBool(AuthController.loggedInKey) ?? false;
+  await Future.delayed(const Duration(milliseconds: 100));
 
   runApp(
     MainApp(
-      initialRoute: isLoggedIn
+      initialRoute: authController.isAuthenticated.value
           ? NavigationRoute.mainRoute.path
           : NavigationRoute.loginRoute.path,
     ),
@@ -43,19 +40,46 @@ class MainApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.theme,
       initialRoute: initialRoute,
-      routes: {
-        NavigationRoute.mainRoute.path: (context) => const MainScreen(),
-        NavigationRoute.loginRoute.path: (context) => const LoginScreen(),
-        NavigationRoute.registerRoute.path: (context) => const RegisterScreen(),
-        NavigationRoute.quizRoot.path: (context) => const QuizMenuScreen(),
-        NavigationRoute.quizQuestion.path: (context) {
-          final quizType =
-              ModalRoute.of(context)?.settings.arguments as String?;
-          return QuizQuestionScreen(quizType: quizType ?? 'daily');
-        },
-        NavigationRoute.missionRoute.path: (context) => const MissionScreen(),
-        NavigationRoute.profileRoute.path: (context) => const SettingsScreen(),
-      },
+      getPages: [
+        GetPage(
+          name: NavigationRoute.loginRoute.path,
+          page: () => const LoginScreen(),
+          middlewares: [GuestMiddleware()],
+        ),
+        GetPage(
+          name: NavigationRoute.registerRoute.path,
+          page: () => const RegisterScreen(),
+          middlewares: [GuestMiddleware()],
+        ),
+        GetPage(
+          name: NavigationRoute.mainRoute.path,
+          page: () => const MainScreen(),
+          middlewares: [AuthMiddleware()],
+        ),
+        GetPage(
+          name: NavigationRoute.quizRoot.path,
+          page: () => const QuizMenuScreen(),
+          middlewares: [AuthMiddleware()],
+        ),
+        GetPage(
+          name: NavigationRoute.quizQuestion.path,
+          page: () {
+            final quizType = Get.arguments as String?;
+            return QuizQuestionScreen(quizType: quizType ?? 'daily');
+          },
+          middlewares: [AuthMiddleware()],
+        ),
+        GetPage(
+          name: NavigationRoute.missionRoute.path,
+          page: () => const MissionScreen(),
+          middlewares: [AuthMiddleware()],
+        ),
+        GetPage(
+          name: NavigationRoute.profileRoute.path,
+          page: () => const SettingsScreen(),
+          middlewares: [AuthMiddleware()],
+        ),
+      ],
     );
   }
 }

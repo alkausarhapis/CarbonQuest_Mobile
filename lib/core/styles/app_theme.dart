@@ -10,7 +10,7 @@ class AppTheme {
       fontFamily: GoogleFonts.poppins().fontFamily,
       splashColor: Colors.transparent,
       highlightColor: Colors.transparent,
-
+      colorScheme: ColorScheme.fromSeed(seedColor: AppColor.cyan.color),
       bottomNavigationBarTheme: BottomNavigationBarThemeData(
         backgroundColor: AppColor.cyan.color,
         selectedItemColor: Colors.white,

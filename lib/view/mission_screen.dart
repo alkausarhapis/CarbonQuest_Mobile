@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:get/get.dart';
 
+import '../controller/mission_controller.dart';
 import '../core/styles/app_color.dart';
 import '../model/missions.dart';
 import 'widgets/mission_detail_bottom_sheet.dart';
@@ -13,6 +15,7 @@ class MissionScreen extends StatefulWidget {
 
 class _MissionScreenState extends State<MissionScreen> {
   int _categoryIndex = 0;
+  late final MissionController _missionController;
 
   @override
   void initState() {
@@ -24,7 +27,20 @@ class _MissionScreenState extends State<MissionScreen> {
         statusBarBrightness: Brightness.dark,
       ),
     );
+    // Get or initialize MissionController
+    if (Get.isRegistered<MissionController>()) {
+      _missionController = Get.find<MissionController>();
+    } else {
+      _missionController = Get.put(MissionController());
+    }
   }
+
+  final List<String> _categories = [
+    'Transportasi',
+    'Energi',
+    'Lingkungan',
+    'Makanan',
+  ];
 
   final List<String> _categoryIcons = [
     'assets/car.png',
@@ -42,125 +58,165 @@ class _MissionScreenState extends State<MissionScreen> {
   }
 
   Widget _missionContent() {
-    final currentCategory = MissionsData.categories[_categoryIndex];
-    final currentMissions = MissionsData.getMissionsByCategory(currentCategory);
+    return Obx(() {
+      if (_missionController.isLoading.value) {
+        return const Center(
+          child: CircularProgressIndicator(color: Colors.white),
+        );
+      }
 
-    return SafeArea(
-      child: Stack(
-        children: [
-          Container(color: AppColor.primary.color),
-          Positioned(
-            top: 170,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: ClipPath(
-              clipper: CurvedClipper(),
-              child: Container(color: Colors.white),
-            ),
-          ),
-          // Left cloud
-          Positioned(
-            left: -70,
-            top: 10,
-            child: Image.asset(
-              'assets/CloudVector.png',
-              width: 200,
-              height: 100,
-            ),
-          ),
-          // Right cloud
-          Positioned(
-            right: -50,
-            top: 50,
-            child: Image.asset(
-              'assets/CloudVector.png',
-              width: 200,
-              height: 100,
-            ),
-          ),
-          Column(
-            children: [
-              SizedBox(height: 20),
-              Text(
-                "Pilih kategori misi Anda",
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
+      final currentCategory = _categories[_categoryIndex];
+      final currentMissions = _missionController.getMissionsByCategory(
+        currentCategory,
+      );
+
+      return SafeArea(
+        child: Stack(
+          children: [
+            Container(color: AppColor.primary.color),
+            Positioned(
+              top: 170,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: ClipPath(
+                clipper: CurvedClipper(),
+                child: Container(color: Colors.white),
               ),
-              Container(
-                margin: EdgeInsets.all(20),
-                height: 110,
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.6),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                padding: const EdgeInsets.symmetric(
-                  vertical: 20,
-                  horizontal: 16,
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: List.generate(MissionsData.categories.length, (
-                    index,
-                  ) {
-                    bool isSelected = _categoryIndex == index;
-                    return GestureDetector(
-                      onTap: () {
-                        setState(() => _categoryIndex = index);
-                      },
-                      child: Container(
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          boxShadow: isSelected
-                              ? [
-                                  BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.1),
-                                    blurRadius: 12,
-                                    spreadRadius: 2,
-                                    offset: Offset(0, 4),
-                                  ),
-                                ]
-                              : null,
-                        ),
-                        child: Image.asset(
-                          _categoryIcons[index],
-                          width: isSelected ? 75 : 60,
-                          height: isSelected ? 75 : 60,
-                        ),
-                      ),
-                    );
-                  }),
-                ),
+            ),
+            // Left cloud
+            Positioned(
+              left: -70,
+              top: 10,
+              child: Image.asset(
+                'assets/CloudVector.png',
+                width: 200,
+                height: 100,
               ),
-              Text(
-                currentCategory,
-                style: const TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
+            ),
+            // Right cloud
+            Positioned(
+              right: -50,
+              top: 50,
+              child: Image.asset(
+                'assets/CloudVector.png',
+                width: 200,
+                height: 100,
               ),
-              Expanded(
-                child: ListView.builder(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
+            ),
+            Column(
+              children: [
+                SizedBox(height: 20),
+                Text(
+                  "Pilih kategori misi Anda",
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
                   ),
-                  itemCount: currentMissions.length,
-                  itemBuilder: (context, idx) {
-                    final mission = currentMissions[idx];
-                    return _buildMissionCard(mission);
-                  },
                 ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
+                Container(
+                  margin: EdgeInsets.all(20),
+                  height: 110,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.6),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 20,
+                    horizontal: 16,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: List.generate(_categories.length, (index) {
+                      bool isSelected = _categoryIndex == index;
+                      return GestureDetector(
+                        onTap: () {
+                          setState(() => _categoryIndex = index);
+                        },
+                        child: Container(
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            boxShadow: isSelected
+                                ? [
+                                    BoxShadow(
+                                      color: Colors.black.withValues(
+                                        alpha: 0.1,
+                                      ),
+                                      blurRadius: 12,
+                                      spreadRadius: 2,
+                                      offset: Offset(0, 4),
+                                    ),
+                                  ]
+                                : null,
+                          ),
+                          child: Image.asset(
+                            _categoryIcons[index],
+                            width: isSelected ? 75 : 60,
+                            height: isSelected ? 75 : 60,
+                          ),
+                        ),
+                      );
+                    }),
+                  ),
+                ),
+                Text(
+                  currentCategory,
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                ),
+                Expanded(
+                  child: currentMissions.isEmpty
+                      ? Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.assignment_outlined,
+                                size: 64,
+                                color: Colors.grey[400],
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                'Belum ada misi',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                'Misi akan segera tersedia',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.grey[500],
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      : ListView.builder(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
+                          itemCount: currentMissions.length,
+                          itemBuilder: (context, idx) {
+                            final mission = currentMissions[idx];
+                            return _buildMissionCard(mission);
+                          },
+                        ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
+    });
   }
 
   Widget _buildMissionCard(Mission mission) {

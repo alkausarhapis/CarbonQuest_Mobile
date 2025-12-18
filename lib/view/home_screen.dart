@@ -1,13 +1,12 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../controller/auth_controller.dart';
+import '../controller/mission_controller.dart';
+import '../controller/quiz_controller.dart';
 import '../core/navigation_route.dart';
 import '../core/styles/app_color.dart';
 import '../model/articles.dart';
-import '../model/missions.dart';
 import 'article_screen.dart';
 import 'widgets/active_mission_widget.dart';
 import 'widgets/article_widget.dart';
@@ -25,6 +24,10 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   String selectedPeriod = 'Week';
   final AuthController _authController = Get.find<AuthController>();
+  late final MissionController _missionController;
+  late final QuizController _quizController;
+  List<Article> _articles = [];
+  bool _isLoadingArticles = false;
 
   final List<ChartData> weeklyData = [
     ChartData(value: 60, label: '24'),
@@ -37,95 +40,279 @@ class _HomeScreenState extends State<HomeScreen> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    // Initialize or get MissionController
+    if (Get.isRegistered<MissionController>()) {
+      _missionController = Get.find<MissionController>();
+    } else {
+      _missionController = Get.put(MissionController());
+    }
+    // Initialize or get QuizController
+    if (Get.isRegistered<QuizController>()) {
+      _quizController = Get.find<QuizController>();
+    } else {
+      _quizController = Get.put(QuizController());
+    }
+    _loadArticles();
+  }
+
+  Future<void> _refreshData() async {
+    await Future.wait([_missionController.refreshMissions(), _loadArticles()]);
+  }
+
+  Future<void> _loadArticles() async {
+    setState(() {
+      _isLoadingArticles = true;
+    });
+
+    try {
+      final token = await _authController.getToken();
+      final articles = await ArticlesData.getArticles(token: token);
+      setState(() {
+        _articles = articles;
+        _isLoadingArticles = false;
+      });
+    } catch (e) {
+      debugPrint('Error loading articles: $e');
+      setState(() {
+        _articles = [];
+        _isLoadingArticles = false;
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColor.primary.color,
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
-            return SingleChildScrollView(
-              child: ConstrainedBox(
-                constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                child: Stack(
-                  children: [
-                    Column(
-                      children: [
-                        SizedBox(
-                          height: 100,
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 20,
-                              vertical: 16,
-                            ),
-                            child: Stack(
-                              clipBehavior: Clip.none,
-                              children: [
-                                Positioned(
-                                  top: 0,
-                                  right: 0,
-                                  child: Image.asset(
-                                    'assets/CloudVector.png',
-                                    height: 80,
-                                    opacity: const AlwaysStoppedAnimation(0.5),
-                                  ),
-                                ),
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Flexible(
-                                      child: Image.asset(
-                                        'assets/logotype.png',
-                                        height: 32,
+            return RefreshIndicator(
+              onRefresh: _refreshData,
+              child: SingleChildScrollView(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                  child: Stack(
+                    children: [
+                      Column(
+                        children: [
+                          SizedBox(
+                            height: 100,
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 20,
+                                vertical: 16,
+                              ),
+                              child: Stack(
+                                clipBehavior: Clip.none,
+                                children: [
+                                  Positioned(
+                                    top: 0,
+                                    right: 0,
+                                    child: Image.asset(
+                                      'assets/CloudVector.png',
+                                      height: 80,
+                                      opacity: const AlwaysStoppedAnimation(
+                                        0.5,
                                       ),
                                     ),
-                                    GestureDetector(
-                                      onTap: () {
-                                        Navigator.pushNamed(
-                                          context,
-                                          '/profile',
-                                        );
-                                      },
-                                      child: Obx(() {
-                                        final profileImagePath = _authController
-                                            .currentUser
-                                            .value
-                                            ?.profileImagePath;
-                                        return CircleAvatar(
-                                          radius: 20,
-                                          backgroundColor: Color(0xFFD9E3E8),
-                                          backgroundImage:
-                                              profileImagePath != null &&
-                                                  File(
-                                                    profileImagePath,
-                                                  ).existsSync()
-                                              ? FileImage(
-                                                  File(profileImagePath),
-                                                )
-                                              : const AssetImage(
-                                                      'assets/profile.png',
-                                                    )
-                                                    as ImageProvider,
-                                        );
-                                      }),
-                                    ),
-                                  ],
-                                ),
-                              ],
+                                  ),
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Flexible(
+                                        child: Image.asset(
+                                          'assets/logotype.png',
+                                          height: 32,
+                                        ),
+                                      ),
+                                      GestureDetector(
+                                        onTap: () {
+                                          Get.toNamed(
+                                            NavigationRoute.profileRoute.path,
+                                          );
+                                        },
+                                        child: Obx(() {
+                                          final profileImageUrl =
+                                              _authController
+                                                  .currentUser
+                                                  .value
+                                                  ?.profileImageUrl;
+                                          return CircleAvatar(
+                                            radius: 20,
+                                            backgroundColor: Color(0xFFD9E3E8),
+                                            backgroundImage:
+                                                profileImageUrl != null
+                                                ? NetworkImage(profileImageUrl)
+                                                : const AssetImage(
+                                                        'assets/profile.png',
+                                                      )
+                                                      as ImageProvider,
+                                          );
+                                        }),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 160),
-                        Container(
-                          decoration: const BoxDecoration(color: Colors.white),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const SizedBox(height: 144),
-                              WeeklyChartWidget(data: weeklyData),
-                              const SizedBox(height: 40),
-                              // Active Missions Section
-                              if (MissionsData.getActiveMissions().isNotEmpty)
+                          const SizedBox(height: 160),
+                          Container(
+                            decoration: const BoxDecoration(
+                              color: Colors.white,
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const SizedBox(height: 144),
+                                WeeklyChartWidget(data: weeklyData),
+                                const SizedBox(height: 40),
+                                // Active Missions Section
+                                Obx(() {
+                                  if (_missionController
+                                      .activeMissions
+                                      .isEmpty) {
+                                    return const SizedBox.shrink();
+                                  }
+                                  return Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const Padding(
+                                        padding: EdgeInsets.symmetric(
+                                          horizontal: 20,
+                                        ),
+                                        child: Text(
+                                          'Misi Aktif',
+                                          style: TextStyle(
+                                            fontSize: 24,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 16),
+                                      SizedBox(
+                                        height: 140,
+                                        child: ListView.builder(
+                                          scrollDirection: Axis.horizontal,
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 20,
+                                          ),
+                                          itemCount: _missionController
+                                              .activeMissions
+                                              .length,
+                                          itemBuilder: (context, index) {
+                                            final mission = _missionController
+                                                .activeMissions[index];
+                                            return ActiveMissionWidget(
+                                              mission: mission,
+                                              onTap: () {
+                                                MissionDetailBottomSheet.show(
+                                                  context,
+                                                  mission,
+                                                  _refreshData,
+                                                );
+                                              },
+                                            );
+                                          },
+                                        ),
+                                      ),
+                                      const SizedBox(height: 40),
+                                    ],
+                                  );
+                                }),
+                                // Quiz Section
+                                Obx(() {
+                                  final quizzes = _quizController.quizzes
+                                      .take(3)
+                                      .toList();
+
+                                  return Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const Padding(
+                                        padding: EdgeInsets.symmetric(
+                                          horizontal: 20,
+                                        ),
+                                        child: Text(
+                                          'Kuis',
+                                          style: TextStyle(
+                                            fontSize: 24,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 16),
+                                      SizedBox(
+                                        height: 140,
+                                        child: quizzes.isEmpty
+                                            ? const Center(
+                                                child: Padding(
+                                                  padding: EdgeInsets.all(20),
+                                                  child: Text(
+                                                    'Tidak ada kuis tersedia',
+                                                    style: TextStyle(
+                                                      fontSize: 14,
+                                                      color: Colors.grey,
+                                                    ),
+                                                  ),
+                                                ),
+                                              )
+                                            : ListView(
+                                                scrollDirection:
+                                                    Axis.horizontal,
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      horizontal: 20,
+                                                    ),
+                                                children: quizzes.map((quiz) {
+                                                  String quizType;
+                                                  switch (quiz.category) {
+                                                    case 'Harian':
+                                                      quizType = 'daily';
+                                                      break;
+                                                    case 'Mingguan':
+                                                      quizType = 'weekly';
+                                                      break;
+                                                    case 'Bulanan':
+                                                      quizType = 'monthly';
+                                                      break;
+                                                    default:
+                                                      quizType = 'daily';
+                                                  }
+
+                                                  return Padding(
+                                                    padding:
+                                                        const EdgeInsets.only(
+                                                          right: 12,
+                                                        ),
+                                                    child: QuizCardHomeWidget(
+                                                      title: quiz.title,
+                                                      points:
+                                                          '${quiz.totalPoints} Pts',
+                                                      onTap: () {
+                                                        Get.toNamed(
+                                                          NavigationRoute
+                                                              .quizQuestion
+                                                              .path,
+                                                          arguments: quizType,
+                                                        );
+                                                      },
+                                                    ),
+                                                  );
+                                                }).toList(),
+                                              ),
+                                      ),
+                                    ],
+                                  );
+                                }),
+                                const SizedBox(height: 40),
+                                // Article Section
                                 Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
@@ -134,7 +321,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                         horizontal: 20,
                                       ),
                                       child: Text(
-                                        'Misi Aktif',
+                                        'Artikel',
                                         style: TextStyle(
                                           fontSize: 24,
                                           fontWeight: FontWeight.bold,
@@ -142,285 +329,196 @@ class _HomeScreenState extends State<HomeScreen> {
                                       ),
                                     ),
                                     const SizedBox(height: 16),
-                                    SizedBox(
-                                      height: 140,
-                                      child: ListView.builder(
-                                        scrollDirection: Axis.horizontal,
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 20,
-                                        ),
-                                        itemCount:
-                                            MissionsData.getActiveMissions()
-                                                .length,
-                                        itemBuilder: (context, index) {
-                                          final mission =
-                                              MissionsData.getActiveMissions()[index];
-                                          return ActiveMissionWidget(
-                                            mission: mission,
-                                            onTap: () {
-                                              MissionDetailBottomSheet.show(
-                                                context,
-                                                mission,
-                                                () => setState(() {}),
-                                              );
-                                            },
-                                          );
-                                        },
-                                      ),
-                                    ),
-                                    const SizedBox(height: 40),
-                                  ],
-                                ),
-                              // Quiz Section
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Padding(
-                                    padding: EdgeInsets.symmetric(
-                                      horizontal: 20,
-                                    ),
-                                    child: Text(
-                                      'Kuis',
-                                      style: TextStyle(
-                                        fontSize: 24,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 16),
-                                  SizedBox(
-                                    height: 140,
-                                    child: ListView(
-                                      scrollDirection: Axis.horizontal,
+                                    Padding(
                                       padding: const EdgeInsets.symmetric(
                                         horizontal: 20,
                                       ),
-                                      children: [
-                                        QuizCardHomeWidget(
-                                          title: 'Kuis Harian',
-                                          points: '10 Pts',
-                                          onTap: () {
-                                            Navigator.pushNamed(
-                                              context,
-                                              NavigationRoute.quizQuestion.path,
-                                              arguments: 'daily',
-                                            );
-                                          },
-                                        ),
-                                        const SizedBox(width: 12),
-                                        QuizCardHomeWidget(
-                                          title: 'Kuis Mingguan',
-                                          points: '50 Pts',
-                                          onTap: () {
-                                            Navigator.pushNamed(
-                                              context,
-                                              NavigationRoute.quizQuestion.path,
-                                              arguments: 'weekly',
-                                            );
-                                          },
-                                        ),
-                                        const SizedBox(width: 12),
-                                        QuizCardHomeWidget(
-                                          title: 'Kuis Bulanan',
-                                          points: '100 Pts',
-                                          onTap: () {
-                                            Navigator.pushNamed(
-                                              context,
-                                              NavigationRoute.quizQuestion.path,
-                                              arguments: 'monthly',
-                                            );
-                                          },
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 40),
-                              // Article Section
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Padding(
-                                    padding: EdgeInsets.symmetric(
-                                      horizontal: 20,
-                                    ),
-                                    child: Text(
-                                      'Artikel',
-                                      style: TextStyle(
-                                        fontSize: 24,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 16),
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 20,
-                                    ),
-                                    child: Column(
-                                      children: ArticlesData.articles
-                                          .take(3)
-                                          .map((article) {
-                                            return ArticleWidget(
-                                              imageUrl: article.imageUrl,
-                                              title: article.title,
-                                              author: article.author,
-                                              onTap: () {
-                                                Navigator.push(
-                                                  context,
-                                                  MaterialPageRoute(
-                                                    builder: (context) =>
-                                                        ArticleScreen(
-                                                          articleId: article.id,
-                                                        ),
+                                      child: _isLoadingArticles
+                                          ? const Center(
+                                              child: Padding(
+                                                padding: EdgeInsets.all(20),
+                                                child:
+                                                    CircularProgressIndicator(),
+                                              ),
+                                            )
+                                          : _articles.isEmpty
+                                          ? const Center(
+                                              child: Padding(
+                                                padding: EdgeInsets.all(20),
+                                                child: Text(
+                                                  'Tidak ada artikel tersedia',
+                                                  style: TextStyle(
+                                                    fontSize: 14,
+                                                    color: Colors.grey,
                                                   ),
-                                                );
-                                              },
-                                            );
-                                          })
-                                          .toList(),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 24),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                    Positioned(
-                      top: 100,
-                      left: 20,
-                      right: 20,
-                      child: Container(
-                        padding: const EdgeInsets.all(24),
-                        decoration: BoxDecoration(
-                          color: Colors.grey[100],
-                          borderRadius: BorderRadius.circular(20),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.1),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          children: [
-                            const Text(
-                              'Jejak karbon Anda hari ini!',
-                              style: TextStyle(
-                                fontSize: 20,
-                                color: Colors.black,
-                              ),
-                            ),
-                            const SizedBox(height: 20),
-                            Center(
-                              child: SizedBox(
-                                width: 140,
-                                height: 140,
-                                child: Stack(
-                                  alignment: Alignment.center,
-                                  children: [
-                                    SizedBox(
-                                      width: 140,
-                                      height: 140,
-                                      child: CircularProgressIndicator(
-                                        value: 0.75,
-                                        strokeWidth: 8,
-                                        backgroundColor: Colors.grey[300],
-                                        valueColor: AlwaysStoppedAnimation(
-                                          AppColor.primary.color.withValues(
-                                            alpha: 0.7,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              'CO',
-                                              style: TextStyle(
-                                                fontSize: 16,
-                                                color: Colors.grey[600],
-                                                fontWeight: FontWeight.w500,
-                                              ),
-                                            ),
-                                            Text(
-                                              '2',
-                                              style: TextStyle(
-                                                fontSize: 12,
-                                                color: Colors.grey[600],
-                                                fontWeight: FontWeight.w500,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.end,
-                                          children: [
-                                            Text(
-                                              '148',
-                                              style: TextStyle(
-                                                fontSize: 36,
-                                                color: AppColor.primary.color,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
-                                            Padding(
-                                              padding: const EdgeInsets.only(
-                                                bottom: 4,
-                                              ),
-                                              child: Text(
-                                                'kg',
-                                                style: TextStyle(
-                                                  fontSize: 16,
-                                                  color: AppColor.primary.color,
-                                                  fontWeight: FontWeight.w600,
                                                 ),
                                               ),
+                                            )
+                                          : Column(
+                                              children: _articles.take(3).map((
+                                                article,
+                                              ) {
+                                                return ArticleWidget(
+                                                  imageUrl: article.imageUrl,
+                                                  title: article.title,
+                                                  author: article.author,
+                                                  onTap: () {
+                                                    Navigator.push(
+                                                      context,
+                                                      MaterialPageRoute(
+                                                        builder: (context) =>
+                                                            ArticleScreen(
+                                                              articleId:
+                                                                  article.id,
+                                                            ),
+                                                      ),
+                                                    );
+                                                  },
+                                                );
+                                              }).toList(),
                                             ),
-                                          ],
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          'Hari ini',
-                                          style: TextStyle(
-                                            fontSize: 14,
-                                            color: Colors.grey[600],
-                                          ),
-                                        ),
-                                      ],
                                     ),
                                   ],
                                 ),
-                              ),
+                                const SizedBox(height: 24),
+                              ],
                             ),
-                            const SizedBox(height: 20),
-                            const Text(
-                              'Kerja Bagus!',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: Colors.black87,
+                          ),
+                        ],
+                      ),
+                      Positioned(
+                        top: 100,
+                        left: 20,
+                        right: 20,
+                        child: Container(
+                          padding: const EdgeInsets.all(24),
+                          decoration: BoxDecoration(
+                            color: Colors.grey[100],
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.1),
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
+                          child: Column(
+                            children: [
+                              const Text(
+                                'Jejak karbon Anda hari ini!',
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  color: Colors.black,
+                                ),
+                              ),
+                              const SizedBox(height: 20),
+                              Center(
+                                child: SizedBox(
+                                  width: 140,
+                                  height: 140,
+                                  child: Stack(
+                                    alignment: Alignment.center,
+                                    children: [
+                                      SizedBox(
+                                        width: 140,
+                                        height: 140,
+                                        child: CircularProgressIndicator(
+                                          value: 0.75,
+                                          strokeWidth: 8,
+                                          backgroundColor: Colors.grey[300],
+                                          valueColor: AlwaysStoppedAnimation(
+                                            AppColor.primary.color.withValues(
+                                              alpha: 0.7,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                'CO',
+                                                style: TextStyle(
+                                                  fontSize: 16,
+                                                  color: Colors.grey[600],
+                                                  fontWeight: FontWeight.w500,
+                                                ),
+                                              ),
+                                              Text(
+                                                '2',
+                                                style: TextStyle(
+                                                  fontSize: 12,
+                                                  color: Colors.grey[600],
+                                                  fontWeight: FontWeight.w500,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.end,
+                                            children: [
+                                              Text(
+                                                '148',
+                                                style: TextStyle(
+                                                  fontSize: 36,
+                                                  color: AppColor.primary.color,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                              Padding(
+                                                padding: const EdgeInsets.only(
+                                                  bottom: 4,
+                                                ),
+                                                child: Text(
+                                                  'kg',
+                                                  style: TextStyle(
+                                                    fontSize: 16,
+                                                    color:
+                                                        AppColor.primary.color,
+                                                    fontWeight: FontWeight.w600,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            'Hari ini',
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              color: Colors.grey[600],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 20),
+                              const Text(
+                                'Kerja Bagus!',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             );

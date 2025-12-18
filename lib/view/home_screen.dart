@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -86,21 +84,16 @@ class _HomeScreenState extends State<HomeScreen> {
                                         );
                                       },
                                       child: Obx(() {
-                                        final profileImagePath = _authController
+                                        final profileImageUrl = _authController
                                             .currentUser
                                             .value
-                                            ?.profileImagePath;
+                                            ?.profileImageUrl;
                                         return CircleAvatar(
                                           radius: 20,
                                           backgroundColor: Color(0xFFD9E3E8),
                                           backgroundImage:
-                                              profileImagePath != null &&
-                                                  File(
-                                                    profileImagePath,
-                                                  ).existsSync()
-                                              ? FileImage(
-                                                  File(profileImagePath),
-                                                )
+                                              profileImageUrl != null
+                                              ? NetworkImage(profileImageUrl)
                                               : const AssetImage(
                                                       'assets/profile.png',
                                                     )

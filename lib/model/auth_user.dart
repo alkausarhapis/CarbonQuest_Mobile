@@ -1,4 +1,6 @@
 class AuthUser {
+  static const String baseUrl = 'https://carbonquest-api.bintangap.my.id';
+
   final String id;
   String nama;
   String namaBelakang;
@@ -20,6 +22,18 @@ class AuthUser {
   });
 
   String get fullName => '$nama $namaBelakang';
+
+  String? get profileImageUrl {
+    if (profileImagePath == null || profileImagePath!.isEmpty) {
+      return null;
+    }
+    // If it's already a full URL, return it as is
+    if (profileImagePath!.startsWith('http')) {
+      return profileImagePath;
+    }
+    // Otherwise, construct the full URL
+    return '$baseUrl$profileImagePath';
+  }
 
   Map<String, dynamic> toJson() {
     return {

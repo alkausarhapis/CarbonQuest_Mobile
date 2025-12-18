@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:http/http.dart' as http;
 
@@ -78,6 +79,39 @@ class ApiService {
       return response;
     } catch (e) {
       throw Exception('Network error: $e');
+    }
+  }
+
+  static Future<http.StreamedResponse> uploadFile(
+    String endpoint, {
+    required String filePath,
+    required String fieldName,
+    String? token,
+  }) async {
+    final url = Uri.parse('$baseUrl$endpoint');
+    final request = http.MultipartRequest('PUT', url);
+
+    if (token != null) {
+      request.headers['Authorization'] = 'Bearer $token';
+    }
+
+    final file = File(filePath);
+    final stream = http.ByteStream(file.openRead());
+    final length = await file.length();
+
+    final multipartFile = http.MultipartFile(
+      fieldName,
+      stream,
+      length,
+      filename: file.path.split('/').last,
+    );
+
+    request.files.add(multipartFile);
+
+    try {
+      return await request.send();
+    } catch (e) {
+      throw Exception('Upload error: $e');
     }
   }
 }

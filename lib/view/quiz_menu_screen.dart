@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:carbonquest/core/navigation_route.dart';
 import 'package:carbonquest/core/styles/app_color.dart';
 import 'package:flutter/material.dart';
@@ -167,17 +165,15 @@ class QuizMenuScreen extends StatelessWidget {
                             Get.toNamed(NavigationRoute.profileRoute.path);
                           },
                           child: Obx(() {
-                            final profileImagePath = authController
+                            final profileImageUrl = authController
                                 .currentUser
                                 .value
-                                ?.profileImagePath;
+                                ?.profileImageUrl;
                             return CircleAvatar(
                               radius: 20,
                               backgroundColor: Color(0xFFD9E3E8),
-                              backgroundImage:
-                                  profileImagePath != null &&
-                                      File(profileImagePath).existsSync()
-                                  ? FileImage(File(profileImagePath))
+                              backgroundImage: profileImageUrl != null
+                                  ? NetworkImage(profileImageUrl)
                                   : const AssetImage('assets/profile.png')
                                         as ImageProvider,
                             );

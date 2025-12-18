@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:carbonquest/controller/image_controller.dart';
 import 'package:carbonquest/core/navigation_route.dart';
 import 'package:carbonquest/core/styles/app_color.dart';
@@ -219,10 +217,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         alignment: Alignment.bottomRight,
                         children: [
                           Obx(() {
-                            final profileImagePath = _authController
+                            final profileImageUrl = _authController
                                 .currentUser
                                 .value
-                                ?.profileImagePath;
+                                ?.profileImageUrl;
                             return Container(
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
@@ -239,10 +237,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               child: CircleAvatar(
                                 radius: 60,
                                 backgroundColor: const Color(0xFFE8F4F8),
-                                backgroundImage:
-                                    profileImagePath != null &&
-                                        File(profileImagePath).existsSync()
-                                    ? FileImage(File(profileImagePath))
+                                backgroundImage: profileImageUrl != null
+                                    ? NetworkImage(profileImageUrl)
                                     : const AssetImage('assets/profile.png')
                                           as ImageProvider,
                               ),

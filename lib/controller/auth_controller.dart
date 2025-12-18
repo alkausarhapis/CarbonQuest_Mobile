@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get/get.dart';
+import 'package:http/http.dart' as http;
 
 import '../core/api_service.dart';
 import '../model/auth_user.dart';
@@ -213,7 +214,56 @@ class AuthController extends GetxController {
     );
   }
 
-  Future<void> updateProfile({
+  Future<bool> fetchUserFromServer() async {
+    if (currentUser.value == null) return false;
+
+    try {
+      final token = await getToken();
+      if (token == null) return false;
+
+      final userId = currentUser.value!.id;
+      final response = await ApiService.get('/users/$userId', token: token);
+
+      debugPrint('Fetch user response status: ${response.statusCode}');
+      debugPrint('Fetch user response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final responseData = json.decode(response.body);
+        final user = AuthUser.fromApiResponse(responseData);
+
+        currentUser.value = user;
+        await _secureStorage.write(
+          key: userKey,
+          value: json.encode(user.toJson()),
+        );
+        currentUser.refresh();
+
+        return true;
+      } else {
+        final errorData = json.decode(response.body);
+        Get.snackbar(
+          'Error',
+          errorData['message'] ?? 'Gagal mengambil data user',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+        return false;
+      }
+    } catch (e) {
+      debugPrint('Fetch user error: $e');
+      Get.snackbar(
+        'Error',
+        'Terjadi kesalahan: $e',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+      return false;
+    }
+  }
+
+  Future<bool> updateProfile({
     required String nama,
     required String namaBelakang,
     required String tanggalLahir,
@@ -221,30 +271,63 @@ class AuthController extends GetxController {
     required String telepon,
     required String bio,
   }) async {
-    if (currentUser.value == null) return;
+    if (currentUser.value == null) return false;
 
     try {
-      currentUser.value!.nama = nama;
-      currentUser.value!.namaBelakang = namaBelakang;
-      currentUser.value!.tanggalLahir = tanggalLahir;
-      currentUser.value!.email = email;
-      currentUser.value!.telepon = telepon;
-      currentUser.value!.bio = bio;
+      final token = await getToken();
+      if (token == null) return false;
 
-      await _secureStorage.write(
-        key: userKey,
-        value: json.encode(currentUser.value!.toJson()),
-      );
-      currentUser.refresh();
+      final userId = currentUser.value!.id;
+      final updateData = {
+        'name': nama,
+        'last_name': namaBelakang,
+        'birth_date': tanggalLahir,
+        'email': email,
+        'phone': telepon,
+      };
 
-      Get.snackbar(
-        'Sukses',
-        'Data berhasil disimpan!',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.green,
-        colorText: Colors.white,
+      final response = await ApiService.put(
+        '/users/$userId',
+        updateData,
+        token: token,
       );
+
+      debugPrint('Update profile response status: ${response.statusCode}');
+      debugPrint('Update profile response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final responseData = json.decode(response.body);
+        final user = AuthUser.fromApiResponse(responseData);
+        user.bio = bio;
+
+        currentUser.value = user;
+        await _secureStorage.write(
+          key: userKey,
+          value: json.encode(user.toJson()),
+        );
+        currentUser.refresh();
+
+        Get.snackbar(
+          'Sukses',
+          'Data berhasil disimpan!',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+        );
+        return true;
+      } else {
+        final errorData = json.decode(response.body);
+        Get.snackbar(
+          'Error',
+          errorData['message'] ?? 'Gagal menyimpan data',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+        return false;
+      }
     } catch (e) {
+      debugPrint('Update profile error: $e');
       Get.snackbar(
         'Error',
         'Gagal menyimpan data: $e',
@@ -252,21 +335,63 @@ class AuthController extends GetxController {
         backgroundColor: Colors.red,
         colorText: Colors.white,
       );
+      return false;
     }
   }
 
-  Future<void> updateProfileImage(String imagePath) async {
-    if (currentUser.value == null) return;
+  Future<bool> updateProfileImage(String imagePath) async {
+    if (currentUser.value == null) return false;
 
     try {
-      currentUser.value!.profileImagePath = imagePath;
+      final token = await getToken();
+      if (token == null) return false;
 
-      await _secureStorage.write(
-        key: userKey,
-        value: json.encode(currentUser.value!.toJson()),
+      final userId = currentUser.value!.id;
+
+      final streamedResponse = await ApiService.uploadFile(
+        '/users/$userId/profile-image',
+        filePath: imagePath,
+        fieldName: 'profile_image',
+        token: token,
       );
-      currentUser.refresh();
+
+      final response = await http.Response.fromStream(streamedResponse);
+
+      debugPrint('Upload image response status: ${response.statusCode}');
+      debugPrint('Upload image response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final responseData = json.decode(response.body);
+        final user = AuthUser.fromApiResponse(responseData);
+
+        currentUser.value = user;
+        await _secureStorage.write(
+          key: userKey,
+          value: json.encode(user.toJson()),
+        );
+        currentUser.refresh();
+
+        Get.snackbar(
+          'Sukses',
+          'Foto profil berhasil diupload!',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+        );
+        return true;
+      } else {
+        final errorData = json.decode(response.body);
+        Get.snackbar(
+          'Error',
+          errorData['message'] ?? 'Gagal upload foto',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+        return false;
+      }
     } catch (e) {
+      debugPrint('Upload image error: $e');
       Get.snackbar(
         'Error',
         'Gagal menyimpan foto: $e',
@@ -274,6 +399,7 @@ class AuthController extends GetxController {
         backgroundColor: Colors.red,
         colorText: Colors.white,
       );
+      return false;
     }
   }
 }

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:get/get.dart';
 
+import '../controller/auth_controller.dart';
 import '../core/styles/app_color.dart';
 import '../model/articles.dart';
 
@@ -15,11 +17,13 @@ class ArticleScreen extends StatefulWidget {
 
 class _ArticleScreenState extends State<ArticleScreen> {
   Article? article;
+  bool _isLoading = true;
+  final AuthController _authController = Get.find<AuthController>();
 
   @override
   void initState() {
     super.initState();
-    article = ArticlesData.getArticleById(widget.articleId);
+    _loadArticle();
     SystemChrome.setSystemUIOverlayStyle(
       SystemUiOverlayStyle(
         statusBarColor: Colors.transparent,
@@ -27,6 +31,27 @@ class _ArticleScreenState extends State<ArticleScreen> {
         statusBarBrightness: Brightness.light,
       ),
     );
+  }
+
+  Future<void> _loadArticle() async {
+    try {
+      final token = await _authController.getToken();
+      final loadedArticle = await ArticlesData.getArticleByIdAsync(
+        widget.articleId,
+        token: token,
+      );
+      setState(() {
+        article = loadedArticle;
+        _isLoading = false;
+      });
+    } catch (e) {
+      debugPrint('Error loading article: $e');
+      // Fallback to static data
+      setState(() {
+        article = ArticlesData.getArticleById(widget.articleId);
+        _isLoading = false;
+      });
+    }
   }
 
   String _formatDate(DateTime date) {
@@ -49,9 +74,26 @@ class _ArticleScreenState extends State<ArticleScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return Scaffold(
+        backgroundColor: Colors.white,
+        appBar: AppBar(
+          title: const Text('Memuat Artikel...'),
+          backgroundColor: AppColor.primary.color,
+          foregroundColor: Colors.white,
+        ),
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
     if (article == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Artikel Tidak Ditemukan')),
+        backgroundColor: Colors.white,
+        appBar: AppBar(
+          title: const Text('Artikel Tidak Ditemukan'),
+          backgroundColor: AppColor.primary.color,
+          foregroundColor: Colors.white,
+        ),
         body: const Center(child: Text('Artikel tidak tersedia')),
       );
     }

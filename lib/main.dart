@@ -18,7 +18,13 @@ void main() async {
 
   final authController = Get.put(AuthController());
 
-  await Future.delayed(const Duration(milliseconds: 100));
+  while (!authController.isInitialized.value) {
+    await Future.delayed(const Duration(milliseconds: 50));
+  }
+
+  debugPrint(
+    'Starting app with isAuthenticated: ${authController.isAuthenticated.value}',
+  );
 
   runApp(
     MainApp(

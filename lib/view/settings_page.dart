@@ -20,7 +20,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
   late TextEditingController _tanggalLahirController;
   late TextEditingController _emailController;
   late TextEditingController _teleponController;
-  late TextEditingController _bioController;
 
   final AuthController _authController = Get.find<AuthController>();
   late final ImageController _imageController;
@@ -36,12 +35,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _namaBelakangController = TextEditingController(
       text: user?.namaBelakang ?? '',
     );
-    _tanggalLahirController = TextEditingController(
-      text: user?.tanggalLahir ?? '',
-    );
+
+    // Format date from ISO to YYYY-MM-DD
+    String formattedDate = '';
+    if (user?.tanggalLahir != null && user!.tanggalLahir.isNotEmpty) {
+      try {
+        final date = DateTime.parse(user.tanggalLahir);
+        formattedDate =
+            '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+      } catch (e) {
+        formattedDate = user.tanggalLahir;
+      }
+    }
+    _tanggalLahirController = TextEditingController(text: formattedDate);
+
     _emailController = TextEditingController(text: user?.email ?? '');
     _teleponController = TextEditingController(text: user?.telepon ?? '');
-    _bioController = TextEditingController(text: user?.bio ?? '');
   }
 
   @override
@@ -51,7 +60,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _tanggalLahirController.dispose();
     _emailController.dispose();
     _teleponController.dispose();
-    _bioController.dispose();
     super.dispose();
   }
 
@@ -63,8 +71,45 @@ class _SettingsScreenState extends State<SettingsScreen> {
         tanggalLahir: _tanggalLahirController.text,
         email: _emailController.text,
         telepon: _teleponController.text,
-        bio: _bioController.text,
       );
+    }
+  }
+
+  Future<void> _selectDate(BuildContext context) async {
+    DateTime? currentDate;
+    try {
+      if (_tanggalLahirController.text.isNotEmpty) {
+        currentDate = DateTime.parse(_tanggalLahirController.text);
+      }
+    } catch (e) {
+      currentDate = null;
+    }
+
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: currentDate ?? DateTime(2000),
+      firstDate: DateTime(1900),
+      lastDate: DateTime.now(),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: ColorScheme.light(
+              primary: AppColor.primary.color,
+              onPrimary: Colors.white,
+              onSurface: Colors.black,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (picked != null) {
+      final formattedDate =
+          '${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}';
+      setState(() {
+        _tanggalLahirController.text = formattedDate;
+      });
     }
   }
 
@@ -335,7 +380,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         _namaBelakangController,
                         Icons.person_outline_rounded,
                       ),
-                      _buildEditableField(
+                      _buildDateField(
                         'Tanggal Lahir',
                         _tanggalLahirController,
                         Icons.cake_outlined,
@@ -349,13 +394,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         'Nomor Telepon',
                         _teleponController,
                         Icons.phone_outlined,
-                      ),
-                      _buildEditableField(
-                        'Bio Singkat',
-                        _bioController,
-                        Icons.description_outlined,
-                        isOptional: true,
-                        maxLines: 3,
                       ),
                     ],
                   ),
@@ -514,6 +552,75 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 }
                 return null;
               },
+      ),
+    );
+  }
+
+  Widget _buildDateField(
+    String label,
+    TextEditingController controller,
+    IconData icon,
+  ) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: TextFormField(
+        controller: controller,
+        readOnly: true,
+        onTap: () => _selectDate(context),
+        decoration: InputDecoration(
+          labelText: label,
+          labelStyle: TextStyle(
+            fontSize: 14,
+            color: Colors.grey[600],
+            fontWeight: FontWeight.w500,
+          ),
+          prefixIcon: Icon(icon, color: AppColor.primary.color, size: 22),
+          suffixIcon: Icon(
+            Icons.calendar_today,
+            color: AppColor.primary.color,
+            size: 20,
+          ),
+          filled: true,
+          fillColor: const Color(0xFFF8FAFB),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide.none,
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(
+              color: Colors.grey.withValues(alpha: 0.1),
+              width: 1,
+            ),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: AppColor.primary.color, width: 2),
+          ),
+          errorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: Colors.red, width: 1),
+          ),
+          focusedErrorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: Colors.red, width: 2),
+          ),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 16,
+          ),
+        ),
+        style: const TextStyle(
+          fontSize: 14,
+          color: Color(0xFF2D3748),
+          fontWeight: FontWeight.w500,
+        ),
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+            return '$label tidak boleh kosong';
+          }
+          return null;
+        },
       ),
     );
   }

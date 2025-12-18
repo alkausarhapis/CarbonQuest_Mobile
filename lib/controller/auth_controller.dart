@@ -12,6 +12,7 @@ class AuthController extends GetxController {
   final Rx<AuthUser?> currentUser = Rx<AuthUser?>(null);
   final RxBool isLoading = false.obs;
   final RxBool isAuthenticated = false.obs;
+  final RxBool isInitialized = false.obs;
   final _secureStorage = const FlutterSecureStorage();
 
   static const String tokenKey = 'JWT_TOKEN';
@@ -28,14 +29,24 @@ class AuthController extends GetxController {
       final token = await _secureStorage.read(key: tokenKey);
       final userData = await _secureStorage.read(key: userKey);
 
+      debugPrint('Token exists: ${token != null}');
+      debugPrint('User data exists: ${userData != null}');
+
       if (token != null && userData != null) {
         final userJson = json.decode(userData);
         currentUser.value = AuthUser.fromJson(userJson);
         isAuthenticated.value = true;
+        debugPrint('User authenticated: ${currentUser.value?.email}');
+      } else {
+        isAuthenticated.value = false;
+        debugPrint('No stored credentials found');
       }
     } catch (e) {
       debugPrint('Error checking login status: $e');
       await _clearAuthData();
+    } finally {
+      isInitialized.value = true;
+      debugPrint('Auth initialization complete');
     }
   }
 
@@ -269,7 +280,6 @@ class AuthController extends GetxController {
     required String tanggalLahir,
     required String email,
     required String telepon,
-    required String bio,
   }) async {
     if (currentUser.value == null) return false;
 
@@ -298,7 +308,6 @@ class AuthController extends GetxController {
       if (response.statusCode == 200) {
         final responseData = json.decode(response.body);
         final user = AuthUser.fromApiResponse(responseData);
-        user.bio = bio;
 
         currentUser.value = user;
         await _secureStorage.write(

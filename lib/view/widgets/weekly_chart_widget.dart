@@ -109,7 +109,7 @@ class _ChartBar extends StatelessWidget {
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
-                  '${value.toInt()}kg',
+                  '${value.toInt()}pts',
                   style: TextStyle(
                     fontSize: 9,
                     color: AppColor.primary.color,

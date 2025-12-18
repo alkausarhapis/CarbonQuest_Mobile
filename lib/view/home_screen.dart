@@ -7,6 +7,7 @@ import '../controller/quiz_controller.dart';
 import '../core/navigation_route.dart';
 import '../core/styles/app_color.dart';
 import '../model/articles.dart';
+import '../model/daily_points.dart';
 import 'article_screen.dart';
 import 'widgets/active_mission_widget.dart';
 import 'widgets/article_widget.dart';
@@ -28,6 +29,9 @@ class _HomeScreenState extends State<HomeScreen> {
   late final QuizController _quizController;
   List<Article> _articles = [];
   bool _isLoadingArticles = false;
+  int _todayPoints = 0;
+  bool _isLoadingPoints = false;
+  List<ChartData> _weeklyData = [];
 
   final List<ChartData> weeklyData = [
     ChartData(value: 60, label: '24'),
@@ -55,10 +59,70 @@ class _HomeScreenState extends State<HomeScreen> {
       _quizController = Get.put(QuizController());
     }
     _loadArticles();
+    _loadTodayPoints();
+    _loadWeeklyPoints();
+  }
+
+  Future<void> _loadTodayPoints() async {
+    setState(() {
+      _isLoadingPoints = true;
+    });
+
+    try {
+      final token = await _authController.getToken();
+      final points = await DailyPoint.fetchDailyPoints(token: token, days: 1);
+
+      if (points.isNotEmpty) {
+        setState(() {
+          _todayPoints = points.first.totalPoints;
+          _isLoadingPoints = false;
+        });
+      } else {
+        setState(() {
+          _todayPoints = 0;
+          _isLoadingPoints = false;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading today points: $e');
+      setState(() {
+        _todayPoints = 0;
+        _isLoadingPoints = false;
+      });
+    }
+  }
+
+  Future<void> _loadWeeklyPoints() async {
+    try {
+      final token = await _authController.getToken();
+      final points = await DailyPoint.fetchDailyPoints(token: token, days: 7);
+
+      setState(() {
+        _weeklyData = points.map((point) {
+          // Extract day number from date (e.g., "2025-12-18" -> "18")
+          final day = point.week.split('-').last;
+          return ChartData(
+            value: point.totalPoints.toDouble(),
+            label: day,
+            isHighlighted: point.totalPoints > 0,
+          );
+        }).toList();
+      });
+    } catch (e) {
+      debugPrint('Error loading weekly points: $e');
+      setState(() {
+        _weeklyData = [];
+      });
+    }
   }
 
   Future<void> _refreshData() async {
-    await Future.wait([_missionController.refreshMissions(), _loadArticles()]);
+    await Future.wait([
+      _missionController.refreshMissions(),
+      _loadArticles(),
+      _loadTodayPoints(),
+      _loadWeeklyPoints(),
+    ]);
   }
 
   Future<void> _loadArticles() async {
@@ -169,7 +233,11 @@ class _HomeScreenState extends State<HomeScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 const SizedBox(height: 144),
-                                WeeklyChartWidget(data: weeklyData),
+                                WeeklyChartWidget(
+                                  data: _weeklyData.isNotEmpty
+                                      ? _weeklyData
+                                      : weeklyData,
+                                ),
                                 const SizedBox(height: 40),
                                 // Active Missions Section
                                 Obx(() {
@@ -393,124 +461,162 @@ class _HomeScreenState extends State<HomeScreen> {
                         child: Container(
                           padding: const EdgeInsets.all(24),
                           decoration: BoxDecoration(
-                            color: Colors.grey[100],
-                            borderRadius: BorderRadius.circular(20),
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [Colors.white, Colors.grey[50]!],
+                            ),
+                            borderRadius: BorderRadius.circular(24),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.1),
-                                blurRadius: 10,
+                                color: Colors.black.withValues(alpha: 0.08),
+                                blurRadius: 20,
+                                offset: const Offset(0, 8),
+                                spreadRadius: 0,
+                              ),
+                              BoxShadow(
+                                color: AppColor.primary.color.withValues(
+                                  alpha: 0.1,
+                                ),
+                                blurRadius: 30,
                                 offset: const Offset(0, 4),
+                                spreadRadius: -5,
                               ),
                             ],
+                            border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.8),
+                              width: 1.5,
+                            ),
                           ),
                           child: Column(
                             children: [
                               const Text(
-                                'Jejak karbon Anda hari ini!',
+                                'Poin Anda Hari Ini!',
                                 style: TextStyle(
                                   fontSize: 20,
                                   color: Colors.black,
+                                  fontWeight: FontWeight.bold,
                                 ),
                               ),
                               const SizedBox(height: 20),
                               Center(
-                                child: SizedBox(
-                                  width: 140,
-                                  height: 140,
-                                  child: Stack(
-                                    alignment: Alignment.center,
-                                    children: [
-                                      SizedBox(
-                                        width: 140,
-                                        height: 140,
-                                        child: CircularProgressIndicator(
-                                          value: 0.75,
-                                          strokeWidth: 8,
-                                          backgroundColor: Colors.grey[300],
-                                          valueColor: AlwaysStoppedAnimation(
-                                            AppColor.primary.color.withValues(
-                                              alpha: 0.7,
-                                            ),
+                                child: _isLoadingPoints
+                                    ? SizedBox(
+                                        width: 160,
+                                        height: 160,
+                                        child: Center(
+                                          child: CircularProgressIndicator(
+                                            color: AppColor.primary.color,
                                           ),
                                         ),
-                                      ),
-                                      Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                'CO',
-                                                style: TextStyle(
-                                                  fontSize: 16,
-                                                  color: Colors.grey[600],
-                                                  fontWeight: FontWeight.w500,
-                                                ),
-                                              ),
-                                              Text(
-                                                '2',
-                                                style: TextStyle(
-                                                  fontSize: 12,
-                                                  color: Colors.grey[600],
-                                                  fontWeight: FontWeight.w500,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                          const SizedBox(height: 4),
-                                          Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.end,
-                                            children: [
-                                              Text(
-                                                '148',
-                                                style: TextStyle(
-                                                  fontSize: 36,
-                                                  color: AppColor.primary.color,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
-                                              Padding(
-                                                padding: const EdgeInsets.only(
-                                                  bottom: 4,
-                                                ),
-                                                child: Text(
-                                                  'kg',
-                                                  style: TextStyle(
-                                                    fontSize: 16,
-                                                    color:
-                                                        AppColor.primary.color,
-                                                    fontWeight: FontWeight.w600,
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                          const SizedBox(height: 4),
-                                          Text(
-                                            'Hari ini',
-                                            style: TextStyle(
-                                              fontSize: 14,
-                                              color: Colors.grey[600],
+                                      )
+                                    : Container(
+                                        width: 160,
+                                        height: 160,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: AppColor.primary.color
+                                                  .withValues(alpha: 0.2),
+                                              blurRadius: 20,
+                                              spreadRadius: 5,
                                             ),
-                                          ),
-                                        ],
+                                          ],
+                                        ),
+                                        child: Stack(
+                                          alignment: Alignment.center,
+                                          children: [
+                                            // Outer decorative ring
+                                            Container(
+                                              width: 160,
+                                              height: 160,
+                                              decoration: BoxDecoration(
+                                                shape: BoxShape.circle,
+                                                border: Border.all(
+                                                  color: AppColor.primary.color
+                                                      .withValues(alpha: 0.1),
+                                                  width: 2,
+                                                ),
+                                              ),
+                                            ),
+                                            // Progress indicator
+                                            SizedBox(
+                                              width: 140,
+                                              height: 140,
+                                              child: CircularProgressIndicator(
+                                                value: _todayPoints / 100,
+                                                strokeWidth: 12,
+                                                backgroundColor:
+                                                    Colors.grey[200],
+                                                strokeCap: StrokeCap.round,
+                                                valueColor:
+                                                    AlwaysStoppedAnimation(
+                                                      AppColor.primary.color,
+                                                    ),
+                                              ),
+                                            ),
+                                            // Inner circle with gradient
+                                            Container(
+                                              width: 110,
+                                              height: 110,
+                                              decoration: BoxDecoration(
+                                                shape: BoxShape.circle,
+                                                gradient: LinearGradient(
+                                                  begin: Alignment.topLeft,
+                                                  end: Alignment.bottomRight,
+                                                  colors: [
+                                                    Colors.white,
+                                                    Colors.grey[50]!,
+                                                  ],
+                                                ),
+                                              ),
+                                              child: Column(
+                                                mainAxisSize: MainAxisSize.min,
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                children: [
+                                                  Text(
+                                                    '$_todayPoints',
+                                                    style: TextStyle(
+                                                      fontSize: 44,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      color: AppColor
+                                                          .primary
+                                                          .color,
+                                                      height: 1,
+                                                    ),
+                                                  ),
+                                                  const SizedBox(height: 4),
+                                                  Text(
+                                                    '/100 Pts',
+                                                    style: TextStyle(
+                                                      fontSize: 12,
+                                                      color: Colors.grey[600],
+                                                      fontWeight:
+                                                          FontWeight.w500,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ],
+                                        ),
                                       ),
-                                    ],
-                                  ),
-                                ),
                               ),
                               const SizedBox(height: 20),
-                              const Text(
-                                'Kerja Bagus!',
+                              Text(
+                                _todayPoints >= 100
+                                    ? 'Target Tercapai! 🎉'
+                                    : _todayPoints > 0
+                                    ? 'Kerja Bagus! Terus Lanjutkan!'
+                                    : 'Mulai Kumpulkan Poin Hari Ini!',
                                 textAlign: TextAlign.center,
-                                style: TextStyle(
+                                style: const TextStyle(
                                   fontSize: 14,
                                   color: Colors.black87,
+                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
                             ],

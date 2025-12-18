@@ -46,9 +46,8 @@ class _ArticleScreenState extends State<ArticleScreen> {
       });
     } catch (e) {
       debugPrint('Error loading article: $e');
-      // Fallback to static data
       setState(() {
-        article = ArticlesData.getArticleById(widget.articleId);
+        article = null;
         _isLoading = false;
       });
     }

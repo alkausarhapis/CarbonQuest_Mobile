@@ -67,9 +67,8 @@ class _HomeScreenState extends State<HomeScreen> {
       });
     } catch (e) {
       debugPrint('Error loading articles: $e');
-      // Use static data as fallback
       setState(() {
-        _articles = ArticlesData.articles;
+        _articles = [];
         _isLoadingArticles = false;
       });
     }

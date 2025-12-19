@@ -21,6 +21,17 @@ class _WeeklyChartWidgetState extends State<WeeklyChartWidget> {
     defaultHighlights = widget.data.map((item) => item.isHighlighted).toList();
   }
 
+  @override
+  void didUpdateWidget(WeeklyChartWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Update highlights when data changes
+    if (oldWidget.data != widget.data) {
+      defaultHighlights = widget.data
+          .map((item) => item.isHighlighted)
+          .toList();
+    }
+  }
+
   void _handleBarTap(int index) {
     setState(() {
       if (selectedIndex == index) {

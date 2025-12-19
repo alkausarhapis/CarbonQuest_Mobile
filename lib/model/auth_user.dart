@@ -67,13 +67,13 @@ class AuthUser {
   factory AuthUser.fromJson(Map<String, dynamic> json) {
     return AuthUser(
       id: json['id']?.toString() ?? json['user_id']?.toString() ?? '',
-      nama: json['nama'] ?? json['name'] ?? '',
-      namaBelakang: json['namaBelakang'] ?? json['last_name'] ?? '',
-      tanggalLahir: json['tanggalLahir'] ?? json['birth_date'] ?? '',
+      nama: json['name'] ?? json['nama'] ?? '',
+      namaBelakang: json['last_name'] ?? json['namaBelakang'] ?? '',
+      tanggalLahir: json['birth_date'] ?? json['tanggalLahir'] ?? '',
       email: json['email'] ?? '',
-      telepon: json['telepon'] ?? json['phone'] ?? '',
+      telepon: json['phone'] ?? json['telepon'] ?? '',
       bio: json['bio'] ?? '',
-      profileImagePath: json['profileImagePath'] ?? json['profile_image'],
+      profileImagePath: json['profile_image'] ?? json['profileImagePath'],
     );
   }
 

@@ -97,14 +97,36 @@ class _HomeScreenState extends State<HomeScreen> {
       final token = await _authController.getToken();
       final points = await DailyPoint.fetchDailyPoints(token: token, days: 7);
 
+      // Find the top 2 highest scores
+      final sortedPoints = [...points];
+      sortedPoints.sort((a, b) => b.totalPoints.compareTo(a.totalPoints));
+
+      // Get the top 2 unique score values
+      final uniqueScores =
+          sortedPoints
+              .map((p) => p.totalPoints)
+              .where((score) => score > 0)
+              .toSet()
+              .toList()
+            ..sort((a, b) => b.compareTo(a));
+      final topTwoScores = uniqueScores.take(2).toSet();
+
       setState(() {
         _weeklyData = points.map((point) {
           // Extract day number from date (e.g., "2025-12-18" -> "18")
-          final day = point.week.split('-').last;
+          String day;
+          try {
+            // Handle both string date formats and parse properly
+            final date = DateTime.parse(point.week);
+            day = date.day.toString();
+          } catch (e) {
+            // Fallback to splitting if it's already in YYYY-MM-DD format
+            day = point.week.split('-').last;
+          }
           return ChartData(
             value: point.totalPoints.toDouble(),
             label: day,
-            isHighlighted: point.totalPoints > 0,
+            isHighlighted: topTwoScores.contains(point.totalPoints),
           );
         }).toList();
       });

@@ -36,7 +36,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       text: user?.namaBelakang ?? '',
     );
 
-    // Format date from ISO to YYYY-MM-DD
+    // Format date from ISO to YYYY-MM-DD for display
     String formattedDate = '';
     if (user?.tanggalLahir != null && user!.tanggalLahir.isNotEmpty) {
       try {
@@ -65,10 +65,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   void _saveProfile() {
     if (_formKey.currentState!.validate()) {
+      // Convert YYYY-MM-DD to ISO 8601 with timezone
+      String isoDate = _tanggalLahirController.text;
+      try {
+        final date = DateTime.parse(_tanggalLahirController.text);
+        // Format to ISO 8601 with +07:00 timezone
+        isoDate = DateTime(
+          date.year,
+          date.month,
+          date.day,
+          7,
+          0,
+          0,
+        ).toIso8601String().replaceAll('.000', '+07:00');
+      } catch (e) {
+        debugPrint('Error parsing date: $e');
+      }
+
       _authController.updateProfile(
         nama: _namaController.text,
         namaBelakang: _namaBelakangController.text,
-        tanggalLahir: _tanggalLahirController.text,
+        tanggalLahir: isoDate,
         email: _emailController.text,
         telepon: _teleponController.text,
       );

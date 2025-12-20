@@ -19,10 +19,10 @@ class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  State<HomeScreen> createState() => HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class HomeScreenState extends State<HomeScreen> {
   String selectedPeriod = 'Week';
   final AuthController _authController = Get.find<AuthController>();
   late final MissionController _missionController;
@@ -46,13 +46,11 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    // Initialize or get MissionController
     if (Get.isRegistered<MissionController>()) {
       _missionController = Get.find<MissionController>();
     } else {
       _missionController = Get.put(MissionController());
     }
-    // Initialize or get QuizController
     if (Get.isRegistered<QuizController>()) {
       _quizController = Get.find<QuizController>();
     } else {
@@ -97,11 +95,9 @@ class _HomeScreenState extends State<HomeScreen> {
       final token = await _authController.getToken();
       final points = await DailyPoint.fetchDailyPoints(token: token, days: 7);
 
-      // Find the top 2 highest scores
       final sortedPoints = [...points];
       sortedPoints.sort((a, b) => b.totalPoints.compareTo(a.totalPoints));
 
-      // Get the top 2 unique score values
       final uniqueScores =
           sortedPoints
               .map((p) => p.totalPoints)
@@ -113,14 +109,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
       setState(() {
         _weeklyData = points.map((point) {
-          // Extract day number from date (e.g., "2025-12-18" -> "18")
           String day;
           try {
-            // Handle both string date formats and parse properly
             final date = DateTime.parse(point.week);
             day = date.day.toString();
           } catch (e) {
-            // Fallback to splitting if it's already in YYYY-MM-DD format
             day = point.week.split('-').last;
           }
           return ChartData(
@@ -145,6 +138,10 @@ class _HomeScreenState extends State<HomeScreen> {
       _loadTodayPoints(),
       _loadWeeklyPoints(),
     ]);
+  }
+
+  Future<void> refreshMissionsOnly() async {
+    await _missionController.refreshMissions();
   }
 
   Future<void> _loadArticles() async {
@@ -254,7 +251,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const SizedBox(height: 144),
+                                const SizedBox(height: 160),
                                 WeeklyChartWidget(
                                   data: _weeklyData.isNotEmpty
                                       ? _weeklyData
@@ -445,7 +442,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                               ),
                                             )
                                           : Column(
-                                              children: _articles.take(3).map((
+                                              children: _articles.take(5).map((
                                                 article,
                                               ) {
                                                 return ArticleWidget(

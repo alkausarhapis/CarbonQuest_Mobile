@@ -38,6 +38,33 @@ class _RegisterScreenState extends State<RegisterScreen> {
         text.contains(RegExp(r'[0-9]'));
   }
 
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime(2000),
+      firstDate: DateTime(1900),
+      lastDate: DateTime.now(),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: ColorScheme.light(
+              primary: AppColor.primary.color,
+              onPrimary: Colors.white,
+              onSurface: Colors.black,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+    if (picked != null) {
+      setState(() {
+        _tanggalLahirController.text =
+            '${picked.day.toString().padLeft(2, '0')}-${picked.month.toString().padLeft(2, '0')}-${picked.year}';
+      });
+    }
+  }
+
   @override
   void dispose() {
     _namaController.dispose();
@@ -78,8 +105,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
             key: _formKey,
             child: Column(
               children: [
-                const SizedBox(height: 60),
-                Image.asset('assets/logo.png', height: 120),
+                const SizedBox(height: 40),
+                Image.asset('assets/logo.png', height: 100),
+                const SizedBox(height: 8),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -87,94 +115,133 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       "Carbon",
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        fontSize: 32,
+                        fontSize: 28,
                       ),
                     ),
                     Text(
                       "Quest",
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        fontSize: 32,
+                        fontSize: 28,
                         color: AppColor.primary.color,
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 40),
+                const SizedBox(height: 32),
                 const Text(
                   'Daftar Untuk Memulai 🚀',
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                 ),
-                const SizedBox(height: 40),
-                TextFormField(
-                  controller: _namaController,
-                  keyboardType: TextInputType.name,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Nama tidak boleh kosong';
-                    }
-                    return null;
-                  },
-                  decoration: InputDecoration(
-                    hintText: 'Nama',
-                    hintStyle: TextStyle(color: Colors.grey[400]),
-                    filled: true,
-                    fillColor: Colors.grey[200],
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide.none,
-                    ),
-                    errorBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: Colors.red, width: 1),
-                    ),
-                    focusedErrorBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: Colors.red, width: 1),
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 16,
+                const SizedBox(height: 8),
+                Text(
+                  'Lengkapi data diri Anda',
+                  style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                ),
+                const SizedBox(height: 32),
+                // Personal Information Section
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Informasi Pribadi',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.grey[800],
                     ),
                   ),
                 ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _namaBelakangController,
-                  keyboardType: TextInputType.name,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Nama belakang tidak boleh kosong';
-                    }
-                    return null;
-                  },
-                  decoration: InputDecoration(
-                    hintText: 'Nama Belakang',
-                    hintStyle: TextStyle(color: Colors.grey[400]),
-                    filled: true,
-                    fillColor: Colors.grey[200],
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide.none,
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextFormField(
+                        controller: _namaController,
+                        keyboardType: TextInputType.name,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Wajib diisi';
+                          }
+                          return null;
+                        },
+                        decoration: InputDecoration(
+                          hintText: 'Nama Depan',
+                          hintStyle: TextStyle(color: Colors.grey[400]),
+                          filled: true,
+                          fillColor: Colors.grey[200],
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
+                          errorBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: Colors.red,
+                              width: 1,
+                            ),
+                          ),
+                          focusedErrorBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: Colors.red,
+                              width: 1,
+                            ),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 16,
+                          ),
+                        ),
+                      ),
                     ),
-                    errorBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: Colors.red, width: 1),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: TextFormField(
+                        controller: _namaBelakangController,
+                        keyboardType: TextInputType.name,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Wajib diisi';
+                          }
+                          return null;
+                        },
+                        decoration: InputDecoration(
+                          hintText: 'Nama Belakang',
+                          hintStyle: TextStyle(color: Colors.grey[400]),
+                          filled: true,
+                          fillColor: Colors.grey[200],
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
+                          errorBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: Colors.red,
+                              width: 1,
+                            ),
+                          ),
+                          focusedErrorBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: Colors.red,
+                              width: 1,
+                            ),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 16,
+                          ),
+                        ),
+                      ),
                     ),
-                    focusedErrorBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: Colors.red, width: 1),
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 16,
-                    ),
-                  ),
+                  ],
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
                 TextFormField(
                   controller: _tanggalLahirController,
-                  keyboardType: TextInputType.datetime,
+                  readOnly: true,
+                  onTap: () => _selectDate(context),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Tanggal lahir tidak boleh kosong';
@@ -182,10 +249,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     return null;
                   },
                   decoration: InputDecoration(
-                    hintText: 'Tanggal Lahir (DD-MM-YYYY)',
+                    hintText: 'Tanggal Lahir',
                     hintStyle: TextStyle(color: Colors.grey[400]),
                     filled: true,
                     fillColor: Colors.grey[200],
+                    suffixIcon: Icon(
+                      IconsaxPlusLinear.calendar,
+                      color: Colors.grey[600],
+                    ),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide.none,
@@ -199,12 +270,25 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       borderSide: const BorderSide(color: Colors.red, width: 1),
                     ),
                     contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 20,
+                      horizontal: 16,
                       vertical: 16,
                     ),
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 24),
+                // Contact Information Section
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Informasi Kontak',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.grey[800],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
                 TextFormField(
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
@@ -235,12 +319,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       borderSide: const BorderSide(color: Colors.red, width: 1),
                     ),
                     contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 20,
+                      horizontal: 16,
                       vertical: 16,
                     ),
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
                 TextFormField(
                   controller: _teleponController,
                   keyboardType: TextInputType.phone,
@@ -268,12 +352,25 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       borderSide: const BorderSide(color: Colors.red, width: 1),
                     ),
                     contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 20,
+                      horizontal: 16,
                       vertical: 16,
                     ),
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 24),
+                // Account Security Section
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Keamanan Akun',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.grey[800],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
                 TextFormField(
                   controller: _passwordController,
                   obscureText: !_isPasswordVisible,
@@ -315,7 +412,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       borderSide: const BorderSide(color: Colors.red, width: 1),
                     ),
                     contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 20,
+                      horizontal: 16,
                       vertical: 16,
                     ),
                     suffixIcon: IconButton(
@@ -333,7 +430,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
                 TextFormField(
                   controller: _confirmPasswordController,
                   obscureText: !_isConfirmPasswordVisible,
@@ -364,7 +461,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       borderSide: const BorderSide(color: Colors.red, width: 1),
                     ),
                     contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 20,
+                      horizontal: 16,
                       vertical: 16,
                     ),
                     suffixIcon: IconButton(
@@ -383,20 +480,32 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 24),
-                _buildPasswordRequirement(
-                  'Password minimal 8 karakter',
-                  _hasMinLength,
-                ),
-                const SizedBox(height: 8),
-                _buildPasswordRequirement(
-                  'Password mengandung kombinasi huruf kapital dan kecil',
-                  _hasUpperAndLower,
-                ),
-                const SizedBox(height: 8),
-                _buildPasswordRequirement(
-                  'Password harus kombinasi huruf dan angka',
-                  _hasLetterAndNumber,
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[100],
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.grey[300]!, width: 1),
+                  ),
+                  child: Column(
+                    children: [
+                      _buildPasswordRequirement(
+                        'Password minimal 8 karakter',
+                        _hasMinLength,
+                      ),
+                      const SizedBox(height: 6),
+                      _buildPasswordRequirement(
+                        'Password mengandung kombinasi huruf kapital dan kecil',
+                        _hasUpperAndLower,
+                      ),
+                      const SizedBox(height: 6),
+                      _buildPasswordRequirement(
+                        'Password harus kombinasi huruf dan angka',
+                        _hasLetterAndNumber,
+                      ),
+                    ],
+                  ),
                 ),
                 const SizedBox(height: 32),
                 SizedBox(
@@ -421,7 +530,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [

@@ -21,6 +21,17 @@ class _WeeklyChartWidgetState extends State<WeeklyChartWidget> {
     defaultHighlights = widget.data.map((item) => item.isHighlighted).toList();
   }
 
+  @override
+  void didUpdateWidget(WeeklyChartWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Update highlights when data changes
+    if (oldWidget.data != widget.data) {
+      defaultHighlights = widget.data
+          .map((item) => item.isHighlighted)
+          .toList();
+    }
+  }
+
   void _handleBarTap(int index) {
     setState(() {
       if (selectedIndex == index) {
@@ -109,7 +120,7 @@ class _ChartBar extends StatelessWidget {
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
-                  '${value.toInt()}kg',
+                  '${value.toInt()}pts',
                   style: TextStyle(
                     fontSize: 9,
                     color: AppColor.primary.color,

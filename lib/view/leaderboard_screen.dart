@@ -5,6 +5,7 @@ import 'package:iconsax_plus/iconsax_plus.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../controller/auth_controller.dart';
+import '../controller/leaderboard_controller.dart';
 import '../core/styles/app_color.dart';
 import '../model/users.dart';
 
@@ -17,6 +18,7 @@ class LeaderboardScreen extends StatefulWidget {
 
 class _LeaderboardScreenState extends State<LeaderboardScreen> {
   final AuthController _authController = Get.find<AuthController>();
+  late final LeaderboardController _leaderboardController;
 
   @override
   void initState() {
@@ -28,6 +30,13 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
         statusBarBrightness: Brightness.dark,
       ),
     );
+
+    // Initialize or get LeaderboardController
+    if (Get.isRegistered<LeaderboardController>()) {
+      _leaderboardController = Get.find<LeaderboardController>();
+    } else {
+      _leaderboardController = Get.put(LeaderboardController());
+    }
   }
 
   Future<void> _shareLeaderboard() async {
@@ -40,14 +49,11 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
         return;
       }
 
-      final userRank = UsersData.leaderboard.indexWhere(
-        (user) => user.name == currentUser.fullName,
-      );
-
-      final rankText = userRank != -1
-          ? '#${userRank + 1}'
+      final userRank = _leaderboardController.currentUserRank.value;
+      final rankText = userRank != null
+          ? '#$userRank'
           : 'Belum masuk peringkat';
-      final topUsers = UsersData.getTopUsers(3);
+      final topUsers = _leaderboardController.getTopUsers(3);
 
       final shareText =
           '''🌱 CarbonQuest Leaderboard 🌱
@@ -56,9 +62,9 @@ Saya ${currentUser.fullName}!
 Peringkat: $rankText
 
 🏆 Top 3:
-1️⃣ ${topUsers.isNotEmpty ? '${topUsers[0].name} - ${topUsers[0].points} pts' : '-'}
-2️⃣ ${topUsers.length > 1 ? '${topUsers[1].name} - ${topUsers[1].points} pts' : '-'}
-3️⃣ ${topUsers.length > 2 ? '${topUsers[2].name} - ${topUsers[2].points} pts' : '-'}
+1️⃣ ${topUsers.isNotEmpty ? '${topUsers[0].name} - ${topUsers[0].totalPoints} pts' : '-'}
+2️⃣ ${topUsers.length > 1 ? '${topUsers[1].name} - ${topUsers[1].totalPoints} pts' : '-'}
+3️⃣ ${topUsers.length > 2 ? '${topUsers[2].name} - ${topUsers[2].totalPoints} pts' : '-'}
 
 Bergabunglah dengan CarbonQuest dan kurangi jejak karbon Anda! 🌍''';
 
@@ -85,9 +91,6 @@ Bergabunglah dengan CarbonQuest dan kurangi jejak karbon Anda! 🌍''';
 
   @override
   Widget build(BuildContext context) {
-    final topThree = UsersData.getTopUsers(3);
-    final restUsers = UsersData.leaderboard.skip(3).take(7).toList();
-
     return Scaffold(
       backgroundColor: Colors.grey[50],
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
@@ -96,110 +99,151 @@ Bergabunglah dengan CarbonQuest dan kurangi jejak karbon Anda! 🌍''';
         backgroundColor: AppColor.primary.color,
         child: const Icon(Icons.share, color: Colors.white),
       ),
-      body: Column(
-        children: [
-          // Header
-          Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  AppColor.primary.color,
-                  AppColor.primary.color.withValues(alpha: 0.8),
-                ],
-              ),
+      body: Obx(() {
+        if (_leaderboardController.isLoading.value) {
+          return Center(
+            child: CircularProgressIndicator(color: AppColor.primary.color),
+          );
+        }
+
+        if (_leaderboardController.leaderboard.isEmpty) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.leaderboard_outlined,
+                  size: 80,
+                  color: Colors.grey[400],
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Belum ada data leaderboard',
+                  style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+                ),
+              ],
             ),
-            child: SafeArea(
-              bottom: false,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(IconsaxPlusBold.cup, color: Colors.amber, size: 28),
-                    const SizedBox(width: 12),
-                    const Text(
-                      'Papan Peringkat',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Icon(IconsaxPlusBold.cup, color: Colors.amber, size: 28),
+          );
+        }
+
+        final topThree = _leaderboardController.getTopUsers(3);
+        final restUsers = _leaderboardController.leaderboard
+            .skip(3)
+            .take(7)
+            .toList();
+
+        return Column(
+          children: [
+            // Header
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    AppColor.primary.color,
+                    AppColor.primary.color.withValues(alpha: 0.8),
                   ],
                 ),
               ),
-            ),
-          ),
-          // Podium
-          Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  AppColor.primary.color.withValues(alpha: 0.8),
-                  Colors.grey[50]!,
-                ],
+              child: SafeArea(
+                bottom: false,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(IconsaxPlusBold.cup, color: Colors.amber, size: 28),
+                      const SizedBox(width: 12),
+                      const Text(
+                        'Papan Peringkat',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Icon(IconsaxPlusBold.cup, color: Colors.amber, size: 28),
+                    ],
+                  ),
+                ),
               ),
             ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 10),
-              child: _buildPodium(topThree),
+            // Podium
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    AppColor.primary.color.withValues(alpha: 0.8),
+                    Colors.grey[50]!,
+                  ],
+                ),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                child: _buildPodium(topThree),
+              ),
             ),
-          ),
-          // Rest of users
-          Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-              itemCount: restUsers.length,
-              itemBuilder: (context, index) {
-                return _buildUserCard(restUsers[index]);
-              },
+            // Rest of users
+            Expanded(
+              child: RefreshIndicator(
+                onRefresh: () => _leaderboardController.loadLeaderboard(),
+                color: AppColor.primary.color,
+                backgroundColor: Colors.white,
+                child: ListView.builder(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 16,
+                  ),
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  itemCount: restUsers.length,
+                  itemBuilder: (context, index) {
+                    return _buildUserCard(restUsers[index], index + 4);
+                  },
+                ),
+              ),
             ),
-          ),
-        ],
-      ),
+          ],
+        );
+      }),
     );
   }
 
   Widget _buildPodium(List<User> topThree) {
-    if (topThree.length < 3) return const SizedBox();
-
-    final first = topThree[0];
-    final second = topThree[1];
-    final third = topThree[2];
+    if (topThree.isEmpty) return const SizedBox();
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
-        // Second Place
-        _buildPodiumItem(
-          user: second,
-          height: 140,
-          color: Colors.grey[400]!,
-          rank: 2,
-        ),
-        const SizedBox(width: 12),
+        // Second Place (if exists)
+        if (topThree.length >= 2)
+          _buildPodiumItem(
+            user: topThree[1],
+            height: 140,
+            color: Colors.grey[400]!,
+            rank: 2,
+          ),
+        if (topThree.length >= 2) const SizedBox(width: 12),
         // First Place
         _buildPodiumItem(
-          user: first,
+          user: topThree[0],
           height: 180,
           color: Colors.amber,
           rank: 1,
         ),
-        const SizedBox(width: 12),
-        // Third Place
-        _buildPodiumItem(
-          user: third,
-          height: 120,
-          color: Colors.brown[400]!,
-          rank: 3,
-        ),
+        if (topThree.length >= 3) const SizedBox(width: 12),
+        // Third Place (if exists)
+        if (topThree.length >= 3)
+          _buildPodiumItem(
+            user: topThree[2],
+            height: 120,
+            color: Colors.brown[400]!,
+            rank: 3,
+          ),
       ],
     );
   }
@@ -232,6 +276,9 @@ Bergabunglah dengan CarbonQuest dan kurangi jejak karbon Anda! 🌍''';
             radius: rank == 1 ? 40 : 35,
             backgroundImage: NetworkImage(user.avatarUrl),
             backgroundColor: Colors.grey[300],
+            onBackgroundImageError: (exception, stackTrace) {
+              debugPrint('❌ Error loading image for ${user.name}: $exception');
+            },
           ),
         ),
         const SizedBox(height: 8),
@@ -266,7 +313,7 @@ Bergabunglah dengan CarbonQuest dan kurangi jejak karbon Anda! 🌍''';
             ],
           ),
           child: Text(
-            '${user.points} pts',
+            '${user.totalPoints} pts',
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.bold,
@@ -315,8 +362,7 @@ Bergabunglah dengan CarbonQuest dan kurangi jejak karbon Anda! 🌍''';
     );
   }
 
-  Widget _buildUserCard(User user) {
-    final rank = UsersData.leaderboard.indexOf(user) + 1;
+  Widget _buildUserCard(User user, int rank) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
@@ -358,6 +404,9 @@ Bergabunglah dengan CarbonQuest dan kurangi jejak karbon Anda! 🌍''';
             radius: 28,
             backgroundImage: NetworkImage(user.avatarUrl),
             backgroundColor: Colors.grey[300],
+            onBackgroundImageError: (exception, stackTrace) {
+              debugPrint('❌ Error loading image for ${user.name}: $exception');
+            },
           ),
           const SizedBox(width: 16),
           // Name and Level
@@ -392,7 +441,7 @@ Bergabunglah dengan CarbonQuest dan kurangi jejak karbon Anda! 🌍''';
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                '${user.points}',
+                '${user.totalPoints}',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,

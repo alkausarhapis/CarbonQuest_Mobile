@@ -109,11 +109,9 @@ class AuthController extends GetxController {
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        final responseData = json.decode(response.body);
-
         Get.snackbar(
           'Sukses',
-          responseData['message'] ?? 'Registrasi berhasil',
+          'Registrasi user berhasil! Silakan login.',
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: Colors.green,
           colorText: Colors.white,

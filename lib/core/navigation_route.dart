@@ -5,7 +5,8 @@ enum NavigationRoute {
   profileRoute("/profile"),
   quizRoot("/quiz"),
   quizQuestion("/quiz_question"),
-  missionRoute("/mission");
+  missionRoute("/mission"),
+  articleListRoute("/article_list");
 
   final String path;
   const NavigationRoute(this.path);

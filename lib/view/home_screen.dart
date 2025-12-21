@@ -8,6 +8,7 @@ import '../core/navigation_route.dart';
 import '../core/styles/app_color.dart';
 import '../model/articles.dart';
 import '../model/daily_points.dart';
+import 'article_list_screen.dart';
 import 'article_screen.dart';
 import 'widgets/active_mission_widget.dart';
 import 'widgets/article_widget.dart';
@@ -152,6 +153,10 @@ class HomeScreenState extends State<HomeScreen> {
     try {
       final token = await _authController.getToken();
       final articles = await ArticlesData.getArticles(token: token);
+
+      // Sort articles by published date (newest first)
+      articles.sort((a, b) => b.publishedDate.compareTo(a.publishedDate));
+
       setState(() {
         _articles = articles;
         _isLoadingArticles = false;
@@ -442,27 +447,56 @@ class HomeScreenState extends State<HomeScreen> {
                                               ),
                                             )
                                           : Column(
-                                              children: _articles.take(5).map((
-                                                article,
-                                              ) {
-                                                return ArticleWidget(
-                                                  imageUrl: article.imageUrl,
-                                                  title: article.title,
-                                                  author: article.author,
-                                                  onTap: () {
-                                                    Navigator.push(
-                                                      context,
-                                                      MaterialPageRoute(
-                                                        builder: (context) =>
-                                                            ArticleScreen(
-                                                              articleId:
-                                                                  article.id,
-                                                            ),
+                                              children: [
+                                                ..._articles.take(3).map((
+                                                  article,
+                                                ) {
+                                                  return ArticleWidget(
+                                                    imageUrl: article.imageUrl,
+                                                    title: article.title,
+                                                    author: article.author,
+                                                    onTap: () {
+                                                      Navigator.push(
+                                                        context,
+                                                        MaterialPageRoute(
+                                                          builder: (context) =>
+                                                              ArticleScreen(
+                                                                articleId:
+                                                                    article.id,
+                                                              ),
+                                                        ),
+                                                      );
+                                                    },
+                                                  );
+                                                }),
+                                                const SizedBox(height: 16),
+                                                Align(
+                                                  alignment:
+                                                      Alignment.centerRight,
+                                                  child: TextButton(
+                                                    onPressed: () {
+                                                      Navigator.push(
+                                                        context,
+                                                        MaterialPageRoute(
+                                                          builder: (context) =>
+                                                              const ArticleListScreen(),
+                                                        ),
+                                                      );
+                                                    },
+                                                    child: Text(
+                                                      'Selengkapnya',
+                                                      style: TextStyle(
+                                                        color: AppColor
+                                                            .primary
+                                                            .color,
+                                                        fontSize: 14,
+                                                        fontWeight:
+                                                            FontWeight.w600,
                                                       ),
-                                                    );
-                                                  },
-                                                );
-                                              }).toList(),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
                                             ),
                                     ),
                                   ],

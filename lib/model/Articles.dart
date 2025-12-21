@@ -37,6 +37,19 @@ class Article {
     // Handle both direct article object and nested data structure
     final articleData = json['data'] ?? json;
 
+    // Helper to safely convert any value to String
+    String? toStringOrNull(dynamic value) {
+      if (value == null) return null;
+      if (value is String) return value;
+      if (value is Map || value is List) return null;
+      return value.toString();
+    }
+
+    String toStringOrDefault(dynamic value, String defaultValue) {
+      final result = toStringOrNull(value);
+      return result ?? defaultValue;
+    }
+
     // Parse the date
     DateTime parseDate(dynamic dateValue) {
       if (dateValue == null) return DateTime.now();
@@ -49,38 +62,41 @@ class Article {
     }
 
     // Get image URL with base URL if needed
-    String getImageUrl(String? imagePath) {
-      if (imagePath == null || imagePath.isEmpty) {
+    String getImageUrl(dynamic imagePath) {
+      final imageStr = toStringOrNull(imagePath);
+      if (imageStr == null || imageStr.isEmpty) {
         return 'https://via.placeholder.com/800x400';
       }
-      if (imagePath.startsWith('http')) {
-        return imagePath;
+      if (imageStr.startsWith('http')) {
+        return imageStr;
       }
-      return '${ApiService.baseUrl}$imagePath';
+      return '${ApiService.baseUrl}$imageStr';
     }
 
     return Article(
-      id: (articleData['id_article'] ?? articleData['id'] ?? '').toString(),
-      title: articleData['title'] ?? 'No Title',
-      author:
-          articleData['author_name'] ??
-          articleData['author'] ??
-          'Unknown Author',
+      id: toStringOrDefault(articleData['id_article'] ?? articleData['id'], ''),
+      title: toStringOrDefault(articleData['title'], 'No Title'),
+      author: toStringOrDefault(
+        articleData['author_name'] ?? articleData['author'],
+        'Unknown Author',
+      ),
       imageUrl: getImageUrl(
         articleData['cover_image'] ?? articleData['imageUrl'],
       ),
-      content: articleData['content'] ?? '',
-      category:
-          articleData['topic'] ?? articleData['category'] ?? 'Uncategorized',
+      content: toStringOrDefault(articleData['content'], ''),
+      category: toStringOrDefault(
+        articleData['topic'] ?? articleData['category'],
+        'Uncategorized',
+      ),
       publishedDate: parseDate(
         articleData['date_created'] ?? articleData['publishedDate'],
       ),
-      description: articleData['description'],
-      photoCaption: articleData['photo_caption'],
-      photoCredit: articleData['photo_credit'],
-      authorRole: articleData['author_role'],
-      place: articleData['place'],
-      highlights: articleData['highlights'],
+      description: toStringOrNull(articleData['description']),
+      photoCaption: toStringOrNull(articleData['photo_caption']),
+      photoCredit: toStringOrNull(articleData['photo_credit']),
+      authorRole: toStringOrNull(articleData['author_role']),
+      place: toStringOrNull(articleData['place']),
+      highlights: toStringOrNull(articleData['highlights']),
     );
   }
 

@@ -131,14 +131,7 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen> {
         ),
         child: Row(
           children: [
-            Radio<int>(
-              value: index,
-              groupValue: selectedAnswer,
-              onChanged: (int? val) {
-                _quizController.selectAnswer(val!);
-              },
-              activeColor: primaryColor,
-            ),
+            Radio<int>(value: index, activeColor: primaryColor),
             Expanded(
               child: Text(
                 answer.content,
@@ -334,12 +327,20 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen> {
 
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    child: Column(
-                      children: List.generate(
-                        currentQuestion.answers.length,
-                        (index) => _buildAnswerOption(
-                          currentQuestion.answers[index],
-                          index,
+                    child: RadioGroup<int>(
+                      groupValue: _quizController.userAnswers[currentIndex],
+                      onChanged: (int? value) {
+                        if (value != null) {
+                          _quizController.selectAnswer(value);
+                        }
+                      },
+                      child: Column(
+                        children: List.generate(
+                          currentQuestion.answers.length,
+                          (index) => _buildAnswerOption(
+                            currentQuestion.answers[index],
+                            index,
+                          ),
                         ),
                       ),
                     ),

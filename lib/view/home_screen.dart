@@ -504,10 +504,9 @@ class HomeScreenState extends State<HomeScreen> {
                                                     },
                                                   );
                                                 }),
-                                                const SizedBox(height: 16),
+                                                const SizedBox(height: 8),
                                                 Align(
-                                                  alignment:
-                                                      Alignment.centerRight,
+                                                  alignment: Alignment.center,
                                                   child: TextButton(
                                                     onPressed: () {
                                                       Navigator.push(

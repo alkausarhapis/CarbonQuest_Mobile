@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:flutter/material.dart';
+
 import '../core/api_service.dart';
 
 class User {
@@ -23,15 +25,12 @@ class User {
 
   String get avatarUrl {
     if (profileImage == null || profileImage!.isEmpty) {
-      print('🖼️ User $name: Using pravatar (profileImage is empty)');
       return 'https://i.pravatar.cc/150?u=$email';
     }
     if (profileImage!.startsWith('http')) {
-      print('🖼️ User $name: Using full URL: $profileImage');
       return profileImage!;
     }
     final fullUrl = 'https://carbonquest-api.bintangap.my.id$profileImage';
-    print('🖼️ User $name: Constructed URL: $fullUrl');
     return fullUrl;
   }
 
@@ -45,11 +44,6 @@ class User {
   }
 
   factory User.fromJson(Map<String, dynamic> json) {
-    print('🔍 Full JSON object: $json');
-    final profileImg = json['profile_image'];
-    print('👤 Parsing user: ${json['name']} - profile_image: $profileImg');
-    print('📋 Available keys: ${json.keys.toList()}');
-
     return User(
       id: json['id_user'] ?? 0,
       name: json['name'] ?? '',
@@ -64,23 +58,15 @@ class User {
   /// Fetch leaderboard from API
   static Future<List<User>> fetchLeaderboard({String? token}) async {
     try {
-      print('📡 Fetching leaderboard from API...');
       final response = await ApiService.get('/users/leaderboard', token: token);
-
-      print('📥 Response status: ${response.statusCode}');
-      print('📥 Response body: ${response.body}');
 
       if (response.statusCode == 200) {
         final jsonData = json.decode(response.body);
         final List<dynamic> usersJson = jsonData['data'] ?? [];
 
-        print('✅ Parsing ${usersJson.length} users...');
-
-        // Fetch full user details for each user to get profile_image
         final List<User> users = [];
         for (var userJson in usersJson) {
           final userId = userJson['id_user'];
-          print('🔍 Fetching profile for user ID: $userId');
 
           try {
             final userDetailResponse = await ApiService.get(
@@ -92,11 +78,6 @@ class User {
               final userDetailJson = json.decode(userDetailResponse.body);
               final userData = userDetailJson['data'];
 
-              print(
-                '📸 User ${userData['name']} profile_image: ${userData['profile_image']}',
-              );
-
-              // Merge leaderboard data with profile data
               final user = User(
                 id: userId ?? 0,
                 name: userData['name'] ?? userJson['name'] ?? '',
@@ -108,25 +89,23 @@ class User {
               );
               users.add(user);
             } else {
-              // If fetching user details fails, create user without profile_image
-              print(
-                '⚠️ Failed to fetch profile for user $userId, using leaderboard data only',
+              debugPrint(
+                'Failed to fetch profile for user $userId, using leaderboard data only',
               );
               users.add(User.fromJson(userJson));
             }
           } catch (e) {
-            print('⚠️ Error fetching profile for user $userId: $e');
+            debugPrint('Error fetching profile for user $userId: $e');
             users.add(User.fromJson(userJson));
           }
         }
 
-        print('✅ Successfully loaded ${users.length} users with profiles');
+        debugPrint('Successfully loaded ${users.length} users with profiles');
         return users;
       } else {
         throw Exception('Failed to load leaderboard: ${response.statusCode}');
       }
     } catch (e) {
-      print('❌ Error fetching leaderboard: $e');
       throw Exception('Error fetching leaderboard: $e');
     }
   }

@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:flutter/cupertino.dart';
+
 import '../core/api_service.dart';
 
 class DailyPoint {
@@ -36,19 +38,17 @@ class DailyPoint {
     required int days,
   }) async {
     try {
-      print('📊 Fetching daily points for $days days...');
+      debugPrint('Fetching daily points for $days days...');
       final response = await ApiService.get(
         '/me/sessions/daily-points?days=$days',
         token: token,
       );
 
-      print('📥 Response status: ${response.statusCode}');
-
       if (response.statusCode == 200) {
         final jsonData = json.decode(response.body);
         final List<dynamic> pointsJson = jsonData['data'] ?? [];
 
-        print('✅ Loaded ${pointsJson.length} daily points');
+        debugPrint('Loaded ${pointsJson.length} daily points');
         final points = pointsJson
             .map((json) => DailyPoint.fromJson(json))
             .toList();
@@ -58,7 +58,6 @@ class DailyPoint {
         throw Exception('Failed to load daily points: ${response.statusCode}');
       }
     } catch (e) {
-      print('❌ Error fetching daily points: $e');
       throw Exception('Error fetching daily points: $e');
     }
   }

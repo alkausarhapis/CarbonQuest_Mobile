@@ -34,10 +34,8 @@ class Article {
   });
 
   factory Article.fromJson(Map<String, dynamic> json) {
-    // Handle both direct article object and nested data structure
     final articleData = json['data'] ?? json;
 
-    // Helper to safely convert any value to String
     String? toStringOrNull(dynamic value) {
       if (value == null) return null;
       if (value is String) return value;
@@ -50,7 +48,6 @@ class Article {
       return result ?? defaultValue;
     }
 
-    // Parse the date
     DateTime parseDate(dynamic dateValue) {
       if (dateValue == null) return DateTime.now();
       if (dateValue is DateTime) return dateValue;
@@ -61,11 +58,10 @@ class Article {
       }
     }
 
-    // Get image URL with base URL if needed
     String getImageUrl(dynamic imagePath) {
       final imageStr = toStringOrNull(imagePath);
       if (imageStr == null || imageStr.isEmpty) {
-        return 'https://via.placeholder.com/800x400';
+        return 'https://placehold.co/800x400';
       }
       if (imageStr.startsWith('http')) {
         return imageStr;
@@ -73,12 +69,10 @@ class Article {
       return '${ApiService.baseUrl}$imageStr';
     }
 
-    // Safely extract content - handle if it's a Map
     String extractContent(dynamic contentValue) {
       if (contentValue == null) return '';
       if (contentValue is String) return contentValue;
       if (contentValue is Map) {
-        // Try to extract text from common content structure fields
         return toStringOrNull(contentValue['text']) ??
             toStringOrNull(contentValue['body']) ??
             toStringOrNull(contentValue['value']) ??
@@ -132,7 +126,6 @@ class Article {
     };
   }
 
-  /// Fetch all articles from API (accessible to users)
   static Future<List<Article>> fetchArticles({String? token}) async {
     try {
       final response = await ApiService.get('/articles', token: token);
@@ -150,7 +143,6 @@ class Article {
     }
   }
 
-  /// Fetch a single article by ID
   static Future<Article?> fetchArticleById(String id, {String? token}) async {
     try {
       final response = await ApiService.get('/articles/$id', token: token);
@@ -170,12 +162,10 @@ class Article {
 }
 
 class ArticlesData {
-  /// Fetch articles from API
   static Future<List<Article>> getArticles({String? token}) async {
     return await Article.fetchArticles(token: token);
   }
 
-  /// Fetch article by ID from API
   static Future<Article?> getArticleByIdAsync(
     String id, {
     String? token,

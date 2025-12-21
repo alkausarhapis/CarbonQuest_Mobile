@@ -112,7 +112,7 @@ class HomeScreenState extends State<HomeScreen> {
         _weeklyData = points.map((point) {
           String day;
           try {
-            final date = DateTime.parse(point.week);
+            final date = DateTime.parse(point.week).add(Duration(days: 1));
             day = date.day.toString();
           } catch (e) {
             day = point.week.split('-').last;

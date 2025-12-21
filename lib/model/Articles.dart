@@ -73,6 +73,20 @@ class Article {
       return '${ApiService.baseUrl}$imageStr';
     }
 
+    // Safely extract content - handle if it's a Map
+    String extractContent(dynamic contentValue) {
+      if (contentValue == null) return '';
+      if (contentValue is String) return contentValue;
+      if (contentValue is Map) {
+        // Try to extract text from common content structure fields
+        return toStringOrNull(contentValue['text']) ??
+            toStringOrNull(contentValue['body']) ??
+            toStringOrNull(contentValue['value']) ??
+            '';
+      }
+      return toStringOrNull(contentValue) ?? '';
+    }
+
     return Article(
       id: toStringOrDefault(articleData['id_article'] ?? articleData['id'], ''),
       title: toStringOrDefault(articleData['title'], 'No Title'),
@@ -83,7 +97,7 @@ class Article {
       imageUrl: getImageUrl(
         articleData['cover_image'] ?? articleData['imageUrl'],
       ),
-      content: toStringOrDefault(articleData['content'], ''),
+      content: extractContent(articleData['content']),
       category: toStringOrDefault(
         articleData['topic'] ?? articleData['category'],
         'Uncategorized',

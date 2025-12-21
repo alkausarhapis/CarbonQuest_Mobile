@@ -19,13 +19,11 @@ class _QuizMenuScreenState extends State<QuizMenuScreen> {
   @override
   void initState() {
     super.initState();
-    // Initialize or get QuizController
     if (Get.isRegistered<QuizController>()) {
       _quizController = Get.find<QuizController>();
     } else {
       _quizController = Get.put(QuizController());
     }
-    // Load completion status for all quizzes
     _loadQuizCompletionStatus();
   }
 
@@ -126,7 +124,6 @@ class _QuizMenuScreenState extends State<QuizMenuScreen> {
                       ),
                     ),
                     const SizedBox(height: 5),
-                    // Badge "15 Qs"
                     Row(
                       children: [
                         Container(
@@ -334,7 +331,6 @@ class _QuizMenuScreenState extends State<QuizMenuScreen> {
                               icon = Icons.quiz;
                           }
 
-                          // Check if quiz is completed
                           final isCompleted =
                               _quizController.quizCompletionStatus[quiz
                                   .idQuiz] ??

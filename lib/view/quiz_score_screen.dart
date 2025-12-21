@@ -1,5 +1,6 @@
 import 'package:carbonquest/core/styles/app_color.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 class QuizScoreScreen extends StatelessWidget {
   final int score;
@@ -30,7 +31,7 @@ class QuizScoreScreen extends StatelessWidget {
     double percentage = (score / maxScore) * 100;
 
     if (percentage >= 90) {
-      return 'Luar biasa! Anda sangat peduli lingkungan! 🌟';
+      return 'Luar biasa! Kamu sangat peduli lingkungan! 🌟';
     } else if (percentage >= 75) {
       return 'Bagus sekali! Terus tingkatkan kepedulian lingkungan! 🌿';
     } else if (percentage >= 50) {
@@ -266,10 +267,7 @@ class QuizScoreScreen extends StatelessWidget {
                       width: double.infinity,
                       child: ElevatedButton(
                         onPressed: () {
-                          // Pop all routes until we reach home
-                          Navigator.of(
-                            context,
-                          ).popUntil((route) => route.isFirst);
+                          Get.until((route) => route.isFirst);
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColor.primary.color,

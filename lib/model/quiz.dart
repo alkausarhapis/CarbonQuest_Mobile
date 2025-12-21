@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:flutter/material.dart';
+
 import '../core/api_service.dart';
 
 class Answer {
@@ -131,7 +133,6 @@ class Quiz {
     };
   }
 
-  /// Fetch all quizzes
   static Future<List<Quiz>> fetchQuizzes({String? token}) async {
     try {
       final response = await ApiService.get('/quizzes', token: token);
@@ -149,15 +150,14 @@ class Quiz {
     }
   }
 
-  /// Fetch a single quiz by ID with questions included
   static Future<Quiz> fetchQuizById(int quizId, {String? token}) async {
     try {
       final endpoint = '/quizzes/$quizId';
-      print('Fetching quiz from: $endpoint');
+      debugPrint('Fetching quiz from: $endpoint');
 
       final response = await ApiService.get(endpoint, token: token);
 
-      print('Response status: ${response.statusCode}');
+      debugPrint('Response status: ${response.statusCode}');
 
       if (response.statusCode == 200) {
         final jsonData = json.decode(response.body);
@@ -175,7 +175,7 @@ class Quiz {
           );
         }
 
-        print('Loaded quiz with ${quiz.questions!.length} questions');
+        debugPrint('Loaded quiz with ${quiz.questions!.length} questions');
         return quiz;
       } else if (response.statusCode == 404) {
         throw Exception('Kuis tidak ditemukan');
@@ -183,32 +183,25 @@ class Quiz {
         throw Exception('Gagal memuat kuis (Error ${response.statusCode})');
       }
     } catch (e) {
-      print('Error in fetchQuizById: $e');
       throw Exception('Error fetching quiz: $e');
     }
   }
 
-  /// Fetch questions for a specific quiz
   static Future<List<Question>> fetchQuizQuestions(
     int quizId, {
     String? token,
   }) async {
     try {
       final endpoint = '/questions/quiz/$quizId';
-      print('Fetching questions from: $endpoint');
 
       final response = await ApiService.get(endpoint, token: token);
 
-      print('Response status: ${response.statusCode}');
-      print('Response body: ${response.body}');
+      debugPrint('Response status: ${response.statusCode}');
+      debugPrint('Response body: ${response.body}');
 
       if (response.statusCode == 200) {
         final jsonData = json.decode(response.body);
         final List<dynamic> questionsJson = jsonData['data'] ?? [];
-
-        if (questionsJson.isEmpty) {
-          print('Warning: No questions returned from API');
-        }
 
         return questionsJson.map((json) => Question.fromJson(json)).toList();
       } else if (response.statusCode == 404) {
@@ -221,12 +214,10 @@ class Quiz {
         );
       }
     } catch (e) {
-      print('Error in fetchQuizQuestions: $e');
       throw Exception('Error fetching questions: $e');
     }
   }
 
-  /// Submit answer for a question - creates session automatically
   static Future<Map<String, dynamic>> submitAnswer(
     int questionId,
     int answerId, {
@@ -245,33 +236,27 @@ class Quiz {
         throw Exception('Failed to submit answer: ${response.statusCode}');
       }
     } catch (e) {
-      print('Error submitting answer: $e');
       throw Exception('Error submitting answer: $e');
     }
   }
 
-  /// Check if user has completed this quiz
   static Future<bool> isQuizCompleted(
     int quizId, {
     required String token,
   }) async {
     try {
-      // Fetch quiz to get question count
       final quiz = await fetchQuizById(quizId, token: token);
       final questionCount = quiz.questions?.length ?? 0;
 
       if (questionCount == 0) return false;
 
-      // Fetch user's sessions
       final response = await ApiService.get('/me/sessions', token: token);
 
       if (response.statusCode == 200) {
         final jsonData = json.decode(response.body);
         final List<dynamic> sessionsJson = jsonData['data'] ?? [];
 
-        // Count sessions for this specific quiz
         final quizSessions = sessionsJson.where((session) {
-          // Check if session has answer with question that belongs to this quiz
           final answer = session['answer'];
           if (answer != null && answer['question'] != null) {
             final question = answer['question'];
@@ -280,13 +265,12 @@ class Quiz {
           return false;
         }).toList();
 
-        // Quiz is completed if user has answered all questions
         return quizSessions.length >= questionCount;
       }
 
       return false;
     } catch (e) {
-      print('Error checking quiz completion: $e');
+      debugPrint('Error checking quiz completion: $e');
       return false;
     }
   }
@@ -322,7 +306,6 @@ class QuizSession {
     );
   }
 
-  /// Start a quiz session
   static Future<QuizSession?> startSession(
     int answerId, {
     required String token,
@@ -344,7 +327,6 @@ class QuizSession {
     }
   }
 
-  /// Complete a quiz session
   static Future<QuizSession?> completeSession(
     int sessionId,
     int totalPoints, {

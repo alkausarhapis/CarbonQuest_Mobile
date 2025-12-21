@@ -19,18 +19,15 @@ class QuizQuestionScreen extends StatefulWidget {
 class _QuizQuestionScreenState extends State<QuizQuestionScreen> {
   late final QuizController _quizController;
   final AuthController _authController = Get.find<AuthController>();
-  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    // Initialize or get QuizController
     if (Get.isRegistered<QuizController>()) {
       _quizController = Get.find<QuizController>();
     } else {
       _quizController = Get.put(QuizController());
     }
-    // Load quiz after the first frame to avoid setState during build
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadQuiz();
     });
@@ -38,13 +35,8 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen> {
 
   Future<void> _loadQuiz() async {
     final success = await _quizController.startQuiz(widget.quizType);
-    if (mounted) {
-      setState(() {
-        _isLoading = false;
-      });
-      if (!success) {
-        Navigator.pop(context);
-      }
+    if (mounted && !success) {
+      Navigator.pop(context);
     }
   }
 
@@ -53,9 +45,7 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen> {
         _quizController.userAnswers[_quizController.currentQuestionIndex.value];
 
     if (selectedAnswer != null) {
-      if (_quizController.goToNextQuestion()) {
-        setState(() {});
-      } else {
+      if (!_quizController.goToNextQuestion()) {
         _finishQuiz();
       }
     } else {
@@ -69,13 +59,10 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen> {
   }
 
   void _goToPreviousQuestion() {
-    if (_quizController.goToPreviousQuestion()) {
-      setState(() {});
-    }
+    _quizController.goToPreviousQuestion();
   }
 
   Future<void> _finishQuiz() async {
-    // Submit quiz to API - this will set totalScore in controller
     await _quizController.submitQuiz();
 
     final score = _quizController.totalScore.value;
@@ -102,7 +89,7 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen> {
     return InkWell(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 12),
         decoration: BoxDecoration(
           color: isPrimary ? primaryColor : Colors.white,
           borderRadius: BorderRadius.circular(10),
@@ -130,9 +117,7 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen> {
 
     return InkWell(
       onTap: () {
-        setState(() {
-          _quizController.selectAnswer(index);
-        });
+        _quizController.selectAnswer(index);
       },
       child: Container(
         margin: const EdgeInsets.only(bottom: 15),
@@ -153,9 +138,7 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen> {
               value: index,
               groupValue: selectedAnswer,
               onChanged: (int? val) {
-                setState(() {
-                  _quizController.selectAnswer(val!);
-                });
+                _quizController.selectAnswer(val!);
               },
               activeColor: primaryColor,
             ),
@@ -173,217 +156,226 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
-      return Scaffold(
-        backgroundColor: AppColor.primary.color,
-        body: const Center(
-          child: CircularProgressIndicator(color: Colors.white),
-        ),
-      );
-    }
-
-    if (_quizController.currentQuestions.isEmpty) {
-      return Scaffold(
-        backgroundColor: AppColor.primary.color,
-        body: const Center(
-          child: Text(
-            'Tidak ada pertanyaan tersedia',
-            style: TextStyle(color: Colors.white),
+    return Obx(() {
+      if (_quizController.isLoading.value) {
+        return Scaffold(
+          backgroundColor: AppColor.primary.color,
+          body: const Center(
+            child: CircularProgressIndicator(color: Colors.white),
           ),
-        ),
-      );
-    }
+        );
+      }
 
-    Color headerBg = AppColor.primary.color;
-    Color quizTitleColor = Colors.white;
+      if (_quizController.currentQuestions.isEmpty) {
+        return Scaffold(
+          backgroundColor: AppColor.primary.color,
+          body: const Center(
+            child: Text(
+              'Tidak ada pertanyaan tersedia',
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+        );
+      }
 
-    final currentIndex = _quizController.currentQuestionIndex.value;
-    final currentQuestion = _quizController.currentQuestions[currentIndex];
-    final progress =
-        (currentIndex + 1) / _quizController.currentQuestions.length;
+      Color headerBg = AppColor.primary.color;
+      Color quizTitleColor = Colors.white;
 
-    return Scaffold(
-      body: Stack(
-        children: [
-          Container(height: 200, decoration: BoxDecoration(color: headerBg)),
+      final currentIndex = _quizController.currentQuestionIndex.value;
+      final currentQuestion = _quizController.currentQuestions[currentIndex];
+      final progress =
+          (currentIndex + 1) / _quizController.currentQuestions.length;
 
-          SingleChildScrollView(
-            child: Column(
-              children: <Widget>[
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 40, 16, 20),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.arrow_back, color: Colors.white),
-                        onPressed: () => Navigator.pop(context),
-                      ),
-                      Text(
-                        'Kuis ${widget.quizType == 'daily'
-                            ? 'Harian'
-                            : widget.quizType == 'weekly'
-                            ? 'Mingguan'
-                            : 'Bulanan'}',
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: quizTitleColor,
+      return Scaffold(
+        body: Stack(
+          children: [
+            Container(height: 200, decoration: BoxDecoration(color: headerBg)),
+
+            SingleChildScrollView(
+              child: Column(
+                children: <Widget>[
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 40, 16, 20),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        IconButton(
+                          icon: const Icon(
+                            Icons.arrow_back,
+                            color: Colors.white,
+                          ),
+                          onPressed: () => Navigator.pop(context),
                         ),
-                      ),
-                      Obx(() {
-                        final profileImageUrl =
-                            _authController.currentUser.value?.profileImageUrl;
-                        return CircleAvatar(
-                          backgroundColor: Colors.white,
-                          radius: 15,
-                          backgroundImage: profileImageUrl != null
-                              ? NetworkImage(profileImageUrl)
-                              : const AssetImage('assets/profile.png')
-                                    as ImageProvider,
-                        );
-                      }),
-                    ],
-                  ),
-                ),
-
-                // Progress bar
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Column(
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'Pertanyaan ${_quizController.currentQuestionIndex.value + 1} dari ${_quizController.currentQuestions.length}',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          Text(
-                            '${(progress * 100).toInt()}%',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(10),
-                        child: LinearProgressIndicator(
-                          value: progress,
-                          minHeight: 8,
-                          backgroundColor: Colors.white.withValues(alpha: 0.3),
-                          valueColor: const AlwaysStoppedAnimation<Color>(
-                            Colors.amber,
+                        Text(
+                          'Kuis ${widget.quizType == 'daily'
+                              ? 'Harian'
+                              : widget.quizType == 'weekly'
+                              ? 'Mingguan'
+                              : 'Bulanan'}',
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: quizTitleColor,
                           ),
                         ),
-                      ),
-                    ],
+                        Obx(() {
+                          final profileImageUrl = _authController
+                              .currentUser
+                              .value
+                              ?.profileImageUrl;
+                          return CircleAvatar(
+                            backgroundColor: Colors.white,
+                            radius: 15,
+                            backgroundImage: profileImageUrl != null
+                                ? NetworkImage(profileImageUrl)
+                                : const AssetImage('assets/profile.png')
+                                      as ImageProvider,
+                          );
+                        }),
+                      ],
+                    ),
                   ),
-                ),
 
-                const SizedBox(height: 20),
-
-                Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 16.0),
-                  padding: const EdgeInsets.all(25),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(25),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.05),
-                        blurRadius: 10,
-                        offset: const Offset(0, 5),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    children: [
-                      Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          color: AppColor.primary.color,
-                          shape: BoxShape.circle,
-                          border: Border.all(color: Colors.white, width: 3),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.1),
-                              blurRadius: 5,
+                  // Progress bar
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Pertanyaan ${_quizController.currentQuestionIndex.value + 1} dari ${_quizController.currentQuestions.length}',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            Text(
+                              '${(progress * 100).toInt()}%',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ],
                         ),
-                        child: Center(
-                          child: Text(
-                            '${currentIndex + 1}',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
+                        const SizedBox(height: 8),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(10),
+                          child: LinearProgressIndicator(
+                            value: progress,
+                            minHeight: 8,
+                            backgroundColor: Colors.white.withValues(
+                              alpha: 0.3,
+                            ),
+                            valueColor: const AlwaysStoppedAnimation<Color>(
+                              Colors.amber,
                             ),
                           ),
                         ),
-                      ),
-                      const SizedBox(height: 25),
-                      Text(
-                        currentQuestion.content,
-                        style: const TextStyle(fontSize: 17, height: 1.4),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
 
-                const SizedBox(height: 30),
+                  const SizedBox(height: 20),
 
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: Column(
-                    children: List.generate(
-                      currentQuestion.answers.length,
-                      (index) => _buildAnswerOption(
-                        currentQuestion.answers[index],
-                        index,
+                  Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 16.0),
+                    padding: const EdgeInsets.all(25),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(25),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.05),
+                          blurRadius: 10,
+                          offset: const Offset(0, 5),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      children: [
+                        Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: AppColor.primary.color,
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.white, width: 3),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.1),
+                                blurRadius: 5,
+                              ),
+                            ],
+                          ),
+                          child: Center(
+                            child: Text(
+                              '${currentIndex + 1}',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 25),
+                        Text(
+                          currentQuestion.content,
+                          style: const TextStyle(fontSize: 17, height: 1.4),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 30),
+
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Column(
+                      children: List.generate(
+                        currentQuestion.answers.length,
+                        (index) => _buildAnswerOption(
+                          currentQuestion.answers[index],
+                          index,
+                        ),
                       ),
                     ),
                   ),
-                ),
 
-                const SizedBox(height: 30),
+                  const SizedBox(height: 30),
 
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 20),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      if (_quizController.currentQuestionIndex.value > 0)
-                        _buildNavButton('<<', false, _goToPreviousQuestion),
-                      if (_quizController.currentQuestionIndex.value > 0)
-                        const SizedBox(width: 30),
-                      _buildNavButton(
-                        _quizController.currentQuestionIndex.value <
-                                _quizController.currentQuestions.length - 1
-                            ? '>>'
-                            : 'Selesai',
-                        true,
-                        _goToNextQuestion,
-                      ),
-                    ],
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 20),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        if (_quizController.currentQuestionIndex.value > 0)
+                          _buildNavButton('<<', false, _goToPreviousQuestion),
+                        if (_quizController.currentQuestionIndex.value > 0)
+                          const SizedBox(width: 30),
+                        _buildNavButton(
+                          _quizController.currentQuestionIndex.value <
+                                  _quizController.currentQuestions.length - 1
+                              ? '>>'
+                              : 'Selesai',
+                          true,
+                          _goToNextQuestion,
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
-      ),
-    );
+          ],
+        ),
+      );
+    });
   }
 }

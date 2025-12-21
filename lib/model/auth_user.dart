@@ -27,11 +27,9 @@ class AuthUser {
     if (profileImagePath == null || profileImagePath!.isEmpty) {
       return null;
     }
-    // If it's already a full URL, return it as is
     if (profileImagePath!.startsWith('http')) {
       return profileImagePath;
     }
-    // Otherwise, construct the full URL
     return '$baseUrl$profileImagePath';
   }
 

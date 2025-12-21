@@ -60,6 +60,13 @@ class HomeScreenState extends State<HomeScreen> {
     _loadArticles();
     _loadTodayPoints();
     _loadWeeklyPoints();
+    _loadQuizCompletionStatus();
+  }
+
+  Future<void> _loadQuizCompletionStatus() async {
+    for (var quiz in _quizController.quizzes) {
+      await _quizController.isQuizCompleted(quiz.idQuiz);
+    }
   }
 
   Future<void> _loadTodayPoints() async {
@@ -138,6 +145,7 @@ class HomeScreenState extends State<HomeScreen> {
       _loadArticles(),
       _loadTodayPoints(),
       _loadWeeklyPoints(),
+      _loadQuizCompletionStatus(),
     ]);
   }
 
@@ -154,7 +162,6 @@ class HomeScreenState extends State<HomeScreen> {
       final token = await _authController.getToken();
       final articles = await ArticlesData.getArticles(token: token);
 
-      // Sort articles by published date (newest first)
       articles.sort((a, b) => b.publishedDate.compareTo(a.publishedDate));
 
       setState(() {
@@ -378,6 +385,12 @@ class HomeScreenState extends State<HomeScreen> {
                                                       quizType = 'daily';
                                                   }
 
+                                                  final isCompleted =
+                                                      _quizController
+                                                          .quizCompletionStatus[quiz
+                                                          .idQuiz] ??
+                                                      false;
+
                                                   return Padding(
                                                     padding:
                                                         const EdgeInsets.only(
@@ -387,14 +400,36 @@ class HomeScreenState extends State<HomeScreen> {
                                                       title: quiz.title,
                                                       points:
                                                           '${quiz.totalPoints} Pts',
-                                                      onTap: () {
-                                                        Get.toNamed(
-                                                          NavigationRoute
-                                                              .quizQuestion
-                                                              .path,
-                                                          arguments: quizType,
-                                                        );
-                                                      },
+                                                      isCompleted: isCompleted,
+                                                      onTap: isCompleted
+                                                          ? () {
+                                                              Get.snackbar(
+                                                                'Kuis Sudah Selesai',
+                                                                'Kamu sudah menyelesaikan kuis ini!',
+                                                                snackPosition:
+                                                                    SnackPosition
+                                                                        .BOTTOM,
+                                                                backgroundColor:
+                                                                    Colors
+                                                                        .orange,
+                                                                colorText:
+                                                                    Colors
+                                                                        .white,
+                                                                margin:
+                                                                    const EdgeInsets.all(
+                                                                      16,
+                                                                    ),
+                                                              );
+                                                            }
+                                                          : () {
+                                                              Get.toNamed(
+                                                                NavigationRoute
+                                                                    .quizQuestion
+                                                                    .path,
+                                                                arguments:
+                                                                    quizType,
+                                                              );
+                                                            },
                                                     ),
                                                   );
                                                 }).toList(),
@@ -544,7 +579,7 @@ class HomeScreenState extends State<HomeScreen> {
                           child: Column(
                             children: [
                               const Text(
-                                'Poin Anda Hari Ini!',
+                                'Poin Kamu Hari Ini!',
                                 style: TextStyle(
                                   fontSize: 20,
                                   color: Colors.black,

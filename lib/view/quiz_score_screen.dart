@@ -226,31 +226,6 @@ class QuizScoreScreen extends StatelessWidget {
                             ),
                           ),
                         ),
-
-                        const SizedBox(height: 30),
-
-                        // Stats
-                        Row(
-                          children: [
-                            Expanded(
-                              child: _buildStatCard(
-                                Icons.check_circle,
-                                'Poin Diraih',
-                                '$score',
-                                Colors.green,
-                              ),
-                            ),
-                            const SizedBox(width: 15),
-                            Expanded(
-                              child: _buildStatCard(
-                                Icons.grade,
-                                'Persentase',
-                                '$percentage%',
-                                Colors.amber,
-                              ),
-                            ),
-                          ],
-                        ),
                       ],
                     ),
                   ),
@@ -293,44 +268,6 @@ class QuizScoreScreen extends StatelessWidget {
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildStatCard(
-    IconData icon,
-    String label,
-    String value,
-    Color color,
-  ) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(15),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 5),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Icon(icon, color: color, size: 32),
-          const SizedBox(height: 8),
-          Text(label, style: TextStyle(fontSize: 12, color: Colors.grey[600])),
-          const SizedBox(height: 4),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: color,
-            ),
-          ),
-        ],
       ),
     );
   }

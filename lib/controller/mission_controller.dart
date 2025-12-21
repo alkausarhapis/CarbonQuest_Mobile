@@ -7,7 +7,6 @@ import 'auth_controller.dart';
 class MissionController extends GetxController {
   final AuthController _authController = Get.find<AuthController>();
 
-  // Reactive state
   final RxMap<String, List<Mission>> missions = <String, List<Mission>>{}.obs;
   final RxList<Mission> activeMissions = <Mission>[].obs;
   final RxBool isLoading = false.obs;
@@ -19,7 +18,6 @@ class MissionController extends GetxController {
     loadMissions();
   }
 
-  /// Load missions from API
   Future<void> loadMissions({bool silent = false}) async {
     if (!silent) {
       isLoading.value = true;
@@ -33,7 +31,6 @@ class MissionController extends GetxController {
         token: token,
       );
 
-      // Update mission statuses from user's missions
       if (token != null) {
         await MissionsData.updateMissionStatuses(fetchedMissions, token: token);
       }
@@ -42,7 +39,6 @@ class MissionController extends GetxController {
       _updateActiveMissions();
     } catch (e) {
       debugPrint('Error loading missions: $e');
-      // Use static data as fallback
       missions.value = MissionsData.missions;
       _updateActiveMissions();
     } finally {
@@ -51,12 +47,10 @@ class MissionController extends GetxController {
     }
   }
 
-  /// Refresh missions silently (for background updates)
   Future<void> refreshMissions() async {
     await loadMissions(silent: true);
   }
 
-  /// Update active missions list
   void _updateActiveMissions() {
     final List<Mission> active = [];
     missions.forEach((category, missionList) {
@@ -70,7 +64,6 @@ class MissionController extends GetxController {
     activeMissions.value = active;
   }
 
-  /// Start a mission
   Future<bool> startMission(Mission mission) async {
     try {
       final token = await _authController.getToken();
@@ -81,11 +74,10 @@ class MissionController extends GetxController {
       final result = await Mission.startMission(mission.id, token: token);
 
       if (result != null) {
-        // Update mission status locally
+        // Update local mission status
         mission.status = 'on_going';
         _updateActiveMissions();
 
-        // Refresh missions in background to get latest data
         refreshMissions();
 
         return true;
@@ -97,7 +89,6 @@ class MissionController extends GetxController {
     }
   }
 
-  /// Complete a mission
   Future<bool> completeMission(Mission mission, String workingId) async {
     try {
       final token = await _authController.getToken();
@@ -111,11 +102,10 @@ class MissionController extends GetxController {
         points: mission.points,
       );
 
-      // Update mission status locally
+      // Update local mission status
       mission.status = 'completed';
       _updateActiveMissions();
 
-      // Refresh missions in background to get latest data
       refreshMissions();
 
       return true;
@@ -125,11 +115,9 @@ class MissionController extends GetxController {
     }
   }
 
-  /// Get missions by category
   List<Mission> getMissionsByCategory(String category) {
     return missions[category] ?? [];
   }
 
-  /// Get all categories
   List<String> get categories => missions.keys.toList();
 }

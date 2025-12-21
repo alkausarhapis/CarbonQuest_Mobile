@@ -35,8 +35,8 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen> {
 
   Future<void> _loadQuiz() async {
     final success = await _quizController.startQuiz(widget.quizType);
-    if (mounted && !success) {
-      Navigator.pop(context);
+    if (!success) {
+      Get.back();
     }
   }
 
@@ -49,11 +49,13 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen> {
         _finishQuiz();
       }
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Silakan pilih jawaban terlebih dahulu'),
-          backgroundColor: Colors.orange,
-        ),
+      Get.snackbar(
+        'Perhatian',
+        'Silakan pilih jawaban terlebih dahulu',
+        backgroundColor: Colors.orange,
+        colorText: Colors.white,
+        snackPosition: SnackPosition.BOTTOM,
+        margin: const EdgeInsets.all(16),
       );
     }
   }
@@ -68,18 +70,13 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen> {
     final score = _quizController.totalScore.value;
     final maxScore = _quizController.getMaxScore();
 
-    if (mounted) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => QuizScoreScreen(
-            score: score,
-            maxScore: maxScore,
-            quizType: widget.quizType,
-          ),
-        ),
-      );
-    }
+    Get.off(
+      () => QuizScoreScreen(
+        score: score,
+        maxScore: maxScore,
+        quizType: widget.quizType,
+      ),
+    );
   }
 
   Widget _buildNavButton(String text, bool isPrimary, VoidCallback onTap) {
@@ -204,7 +201,7 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen> {
                             Icons.arrow_back,
                             color: Colors.white,
                           ),
-                          onPressed: () => Navigator.pop(context),
+                          onPressed: () => Get.back(),
                         ),
                         Text(
                           'Kuis ${widget.quizType == 'daily'

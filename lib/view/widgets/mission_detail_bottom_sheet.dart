@@ -38,13 +38,12 @@ class MissionDetailBottomSheet extends StatefulWidget {
 class _MissionDetailBottomSheetState extends State<MissionDetailBottomSheet> {
   late final AuthController _authController;
   late final MissionController _missionController;
-  bool _isLoading = false;
-  String? _workingId;
+  final _isLoading = false.obs;
+  final Rx<String?> _workingId = Rx<String?>(null);
 
   @override
   void initState() {
     super.initState();
-    // Get controllers
     _authController = Get.find<AuthController>();
     if (Get.isRegistered<MissionController>()) {
       _missionController = Get.find<MissionController>();
@@ -52,17 +51,14 @@ class _MissionDetailBottomSheetState extends State<MissionDetailBottomSheet> {
       _missionController = Get.put(MissionController());
     }
 
-    // Set working ID if mission is already in progress
     if (widget.mission.status == 'on_going' &&
         widget.mission.workingId != null) {
-      _workingId = widget.mission.workingId;
+      _workingId.value = widget.mission.workingId;
     }
   }
 
   Future<void> _startMission() async {
-    setState(() {
-      _isLoading = true;
-    });
+    _isLoading.value = true;
 
     try {
       final token = await _authController.getToken();
@@ -76,87 +72,73 @@ class _MissionDetailBottomSheetState extends State<MissionDetailBottomSheet> {
       );
 
       if (result != null) {
-        _workingId = result['id_working']?.toString();
-        widget.mission.workingId = _workingId; // Store in mission object
-        widget.mission.status = 'on_going'; // Update to match API status
+        _workingId.value = result['id_working']?.toString();
+        widget.mission.workingId = _workingId.value;
+        widget.mission.status = 'on_going';
 
-        if (mounted) {
-          Navigator.pop(context);
-          widget.onUpdate();
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Misi "${widget.mission.title}" telah dimulai!'),
-              backgroundColor: Colors.green,
-              behavior: SnackBarBehavior.floating,
-            ),
-          );
-        }
+        Get.back();
+        widget.onUpdate();
+        Get.snackbar(
+          'Sukses',
+          'Misi "${widget.mission.title}" telah dimulai!',
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+          snackPosition: SnackPosition.BOTTOM,
+          margin: const EdgeInsets.all(16),
+        );
       }
     } catch (e) {
       debugPrint('Error starting mission: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Gagal memulai misi: ${e.toString()}'),
-            backgroundColor: Colors.red,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      }
+      Get.snackbar(
+        'Error',
+        'Gagal memulai misi: ${e.toString()}',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+        snackPosition: SnackPosition.BOTTOM,
+        margin: const EdgeInsets.all(16),
+      );
     } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
+      _isLoading.value = false;
     }
   }
 
   Future<void> _completeMission() async {
-    setState(() {
-      _isLoading = true;
-    });
+    _isLoading.value = true;
 
     try {
-      if (_workingId == null) {
+      if (_workingId.value == null) {
         throw Exception('Working ID not found');
       }
 
       final success = await _missionController.completeMission(
         widget.mission,
-        _workingId!,
+        _workingId.value!,
       );
 
-      if (success && mounted) {
-        Navigator.pop(context);
+      if (success) {
+        Get.back();
         widget.onUpdate();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Selamat! Misi "${widget.mission.title}" telah selesai! +${widget.mission.points} poin',
-            ),
-            backgroundColor: Colors.amber[700],
-            behavior: SnackBarBehavior.floating,
-          ),
+        Get.snackbar(
+          'Selamat!',
+          'Misi "${widget.mission.title}" telah selesai! +${widget.mission.points} poin',
+          backgroundColor: Colors.amber[700],
+          colorText: Colors.white,
+          snackPosition: SnackPosition.BOTTOM,
+          margin: const EdgeInsets.all(16),
         );
       }
     } catch (e) {
       debugPrint('Error completing mission: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Gagal menyelesaikan misi: ${e.toString()}'),
-            backgroundColor: Colors.red,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      }
+      Get.snackbar(
+        'Error',
+        'Gagal menyelesaikan misi: ${e.toString()}',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+        snackPosition: SnackPosition.BOTTOM,
+        margin: const EdgeInsets.all(16),
+      );
     } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
+      _isLoading.value = false;
     }
   }
 
@@ -275,73 +257,75 @@ class _MissionDetailBottomSheetState extends State<MissionDetailBottomSheet> {
             ),
             const SizedBox(height: 24),
             // Action buttons
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: _isLoading ? null : () => Navigator.pop(context),
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      side: BorderSide(color: AppColor.primary.color),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+            Obx(
+              () => Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Get.back(),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        side: BorderSide(color: AppColor.primary.color),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
-                    ),
-                    child: Text(
-                      'Tutup',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: AppColor.primary.color,
+                      child: Text(
+                        'Tutup',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: AppColor.primary.color,
+                        ),
                       ),
                     ),
                   ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  flex: 2,
-                  child: ElevatedButton(
-                    onPressed: _isLoading
-                        ? null
-                        : (widget.mission.status == 'not_started' ||
-                              widget.mission.status == 'on_going')
-                        ? (widget.mission.status == 'not_started'
-                              ? _startMission
-                              : _completeMission)
-                        : null,
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      backgroundColor: widget.mission.status == 'completed'
-                          ? Colors.grey
-                          : AppColor.primary.color,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    flex: 2,
+                    child: ElevatedButton(
+                      onPressed: _isLoading.value
+                          ? null
+                          : (widget.mission.status == 'not_started' ||
+                                widget.mission.status == 'on_going')
+                          ? (widget.mission.status == 'not_started'
+                                ? _startMission
+                                : _completeMission)
+                          : null,
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        backgroundColor: widget.mission.status == 'completed'
+                            ? Colors.grey
+                            : AppColor.primary.color,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
+                      child: _isLoading.value
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            )
+                          : Text(
+                              widget.mission.status == 'not_started'
+                                  ? 'Mulai Misi'
+                                  : widget.mission.status == 'on_going'
+                                  ? 'Selesaikan Misi'
+                                  : 'Sudah Selesai',
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
                     ),
-                    child: _isLoading
-                        ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                              strokeWidth: 2,
-                            ),
-                          )
-                        : Text(
-                            widget.mission.status == 'not_started'
-                                ? 'Mulai Misi'
-                                : widget.mission.status == 'on_going'
-                                ? 'Selesaikan Misi'
-                                : 'Sudah Selesai',
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
             SizedBox(height: MediaQuery.of(context).viewInsets.bottom),
           ],

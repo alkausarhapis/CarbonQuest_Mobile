@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:carbonquest/controller/image_controller.dart';
 import 'package:carbonquest/core/navigation_route.dart';
 import 'package:carbonquest/core/styles/app_color.dart';
@@ -5,6 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../controller/auth_controller.dart';
+import '../core/api_service.dart';
+import '../model/Users.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -23,12 +27,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   final AuthController _authController = Get.find<AuthController>();
   late final ImageController _imageController;
+  User? _userForLevel;
 
   @override
   void initState() {
     super.initState();
     Get.put(ImageController());
     _imageController = Get.find<ImageController>();
+
+    _authController.fetchUserFromServer();
+    _fetchUserLevel();
 
     final user = _authController.currentUser.value;
     _namaController = TextEditingController(text: user?.nama ?? '');
@@ -50,6 +58,36 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     _emailController = TextEditingController(text: user?.email ?? '');
     _teleponController = TextEditingController(text: user?.telepon ?? '');
+  }
+
+  Future<void> _fetchUserLevel() async {
+    try {
+      final token = await _authController.getToken();
+      final userId = _authController.currentUser.value?.id;
+      if (userId != null) {
+        final response = await ApiService.get(
+          '/users/leaderboard',
+          token: token,
+        );
+        if (response.statusCode == 200) {
+          final jsonData = json.decode(response.body);
+          final List<dynamic> usersJson = jsonData['data'] ?? [];
+
+          final currentUserData = usersJson.firstWhere(
+            (user) => user['id_user'].toString() == userId,
+            orElse: () => null,
+          );
+
+          if (currentUserData != null) {
+            setState(() {
+              _userForLevel = User.fromJson(currentUserData);
+            });
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('Error fetching user level: $e');
+    }
   }
 
   @override
@@ -354,6 +392,48 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           ),
                         );
                       }),
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              AppColor.primary.color.withValues(alpha: 0.1),
+                              AppColor.cyan.color.withValues(alpha: 0.05),
+                            ],
+                          ),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: AppColor.primary.color.withValues(
+                              alpha: 0.3,
+                            ),
+                            width: 1,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.workspace_premium_rounded,
+                              color: AppColor.primary.color,
+                              size: 18,
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              _userForLevel?.level ?? 'Pemula',
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: AppColor.cyan.color,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 0.3,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ],
                   ),
                 ),

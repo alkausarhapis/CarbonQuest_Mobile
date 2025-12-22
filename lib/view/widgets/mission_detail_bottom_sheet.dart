@@ -84,6 +84,7 @@ class _MissionDetailBottomSheetState extends State<MissionDetailBottomSheet> {
           backgroundColor: Colors.green,
           colorText: Colors.white,
           snackPosition: SnackPosition.BOTTOM,
+          duration: const Duration(seconds: 2),
           margin: const EdgeInsets.all(16),
         );
       }
@@ -124,6 +125,7 @@ class _MissionDetailBottomSheetState extends State<MissionDetailBottomSheet> {
           backgroundColor: Colors.amber[700],
           colorText: Colors.white,
           snackPosition: SnackPosition.BOTTOM,
+          duration: const Duration(seconds: 2),
           margin: const EdgeInsets.all(16),
         );
       }

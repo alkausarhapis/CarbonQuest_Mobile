@@ -31,7 +31,6 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
       ),
     );
 
-    // Initialize or get LeaderboardController
     if (Get.isRegistered<LeaderboardController>()) {
       _leaderboardController = Get.find<LeaderboardController>();
     } else {
@@ -43,9 +42,6 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
     try {
       final currentUser = _authController.currentUser.value;
       if (currentUser == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Silakan login terlebih dahulu')),
-        );
         return;
       }
 
@@ -66,7 +62,7 @@ Peringkat: $rankText
 2️⃣ ${topUsers.length > 1 ? '${topUsers[1].name} - ${topUsers[1].totalPoints} pts' : '-'}
 3️⃣ ${topUsers.length > 2 ? '${topUsers[2].name} - ${topUsers[2].totalPoints} pts' : '-'}
 
-Bergabunglah dengan CarbonQuest dan kurangi jejak karbon Anda! 🌍''';
+Bergabunglah dengan CarbonQuest dan kurangi jejak karbon Kamu! 🌍''';
 
       final result = await Share.share(
         shareText,
@@ -74,18 +70,24 @@ Bergabunglah dengan CarbonQuest dan kurangi jejak karbon Anda! 🌍''';
       );
 
       if (result.status == ShareResultStatus.success) {
-        if (mounted) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(const SnackBar(content: Text('Berhasil dibagikan!')));
-        }
+        Get.snackbar(
+          'Berhasil',
+          'Leaderboard berhasil dibagikan!',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+        );
       }
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error: $e')));
-      }
+      Get.snackbar(
+        'Error',
+        'Leaderboard gagal dibagikan!',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+
+      debugPrint('Error sharing leaderboard: $e');
     }
   }
 
@@ -201,7 +203,14 @@ Bergabunglah dengan CarbonQuest dan kurangi jejak karbon Anda! 🌍''';
                   physics: const AlwaysScrollableScrollPhysics(),
                   itemCount: restUsers.length,
                   itemBuilder: (context, index) {
-                    return _buildUserCard(restUsers[index], index + 4);
+                    final currentUserId = _authController.currentUser.value?.id;
+                    final isCurrentUser =
+                        currentUserId == restUsers[index].id.toString();
+                    return _buildUserCard(
+                      restUsers[index],
+                      index + 4,
+                      isCurrentUser,
+                    );
                   },
                 ),
               ),
@@ -215,6 +224,8 @@ Bergabunglah dengan CarbonQuest dan kurangi jejak karbon Anda! 🌍''';
   Widget _buildPodium(List<User> topThree) {
     if (topThree.isEmpty) return const SizedBox();
 
+    final currentUserId = _authController.currentUser.value?.id;
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.end,
@@ -226,6 +237,7 @@ Bergabunglah dengan CarbonQuest dan kurangi jejak karbon Anda! 🌍''';
             height: 140,
             color: Colors.grey[400]!,
             rank: 2,
+            isCurrentUser: currentUserId == topThree[1].id.toString(),
           ),
         if (topThree.length >= 2) const SizedBox(width: 12),
         // First Place
@@ -234,6 +246,7 @@ Bergabunglah dengan CarbonQuest dan kurangi jejak karbon Anda! 🌍''';
           height: 180,
           color: Colors.amber,
           rank: 1,
+          isCurrentUser: currentUserId == topThree[0].id.toString(),
         ),
         if (topThree.length >= 3) const SizedBox(width: 12),
         // Third Place (if exists)
@@ -243,6 +256,7 @@ Bergabunglah dengan CarbonQuest dan kurangi jejak karbon Anda! 🌍''';
             height: 120,
             color: Colors.brown[400]!,
             rank: 3,
+            isCurrentUser: currentUserId == topThree[2].id.toString(),
           ),
       ],
     );
@@ -253,6 +267,7 @@ Bergabunglah dengan CarbonQuest dan kurangi jejak karbon Anda! 🌍''';
     required double height,
     required Color color,
     required int rank,
+    bool isCurrentUser = false,
   }) {
     return Column(
       children: [
@@ -285,16 +300,41 @@ Bergabunglah dengan CarbonQuest dan kurangi jejak karbon Anda! 🌍''';
         // Name
         SizedBox(
           width: 100,
-          child: Text(
-            user.name,
-            textAlign: TextAlign.center,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              fontSize: rank == 1 ? 14 : 12,
-              fontWeight: FontWeight.bold,
-              color: Colors.black87,
-            ),
+          child: Column(
+            children: [
+              Text(
+                user.name,
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: rank == 1 ? 14 : 12,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+              if (isCurrentUser) ...[
+                const SizedBox(height: 2),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.green,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Text(
+                    'Kamu',
+                    style: TextStyle(
+                      fontSize: 9,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ],
+            ],
           ),
         ),
         const SizedBox(height: 4),
@@ -362,7 +402,7 @@ Bergabunglah dengan CarbonQuest dan kurangi jejak karbon Anda! 🌍''';
     );
   }
 
-  Widget _buildUserCard(User user, int rank) {
+  Widget _buildUserCard(User user, int rank, bool isCurrentUser) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
@@ -405,7 +445,7 @@ Bergabunglah dengan CarbonQuest dan kurangi jejak karbon Anda! 🌍''';
             backgroundImage: NetworkImage(user.avatarUrl),
             backgroundColor: Colors.grey[300],
             onBackgroundImageError: (exception, stackTrace) {
-              debugPrint('❌ Error loading image for ${user.name}: $exception');
+              debugPrint('Error loading image for ${user.name}: $exception');
             },
           ),
           const SizedBox(width: 16),
@@ -414,13 +454,39 @@ Bergabunglah dengan CarbonQuest dan kurangi jejak karbon Anda! 🌍''';
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  user.name,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text(
+                      user.name,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    if (isCurrentUser)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 3,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColor.primary.color,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Text(
+                          'Kamu',
+                          style: TextStyle(
+                            fontSize: 8,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
                 const SizedBox(height: 4),
                 Row(
@@ -438,7 +504,7 @@ Bergabunglah dengan CarbonQuest dan kurangi jejak karbon Anda! 🌍''';
           ),
           // Points
           Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Text(
                 '${user.totalPoints}',
@@ -449,7 +515,7 @@ Bergabunglah dengan CarbonQuest dan kurangi jejak karbon Anda! 🌍''';
                 ),
               ),
               Text(
-                'points',
+                'pts',
                 style: TextStyle(fontSize: 11, color: Colors.grey[600]),
               ),
             ],

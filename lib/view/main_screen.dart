@@ -16,8 +16,6 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
   late PageController _pageController;
-  final GlobalKey<HomeScreenState> _homeScreenKey =
-      GlobalKey<HomeScreenState>();
 
   @override
   void initState() {
@@ -35,9 +33,6 @@ class _MainScreenState extends State<MainScreen> {
     setState(() {
       _currentIndex = index;
     });
-    if (index == 0) {
-      _homeScreenKey.currentState?.refreshMissionsOnly();
-    }
   }
 
   void _onItemTapped(int index) {
@@ -56,7 +51,7 @@ class _MainScreenState extends State<MainScreen> {
         onPageChanged: _onPageChanged,
         physics: const NeverScrollableScrollPhysics(),
         children: [
-          HomeScreen(key: _homeScreenKey),
+          const HomeScreen(),
           const QuizMenuScreen(),
           const MissionScreen(),
           const LeaderboardScreen(),

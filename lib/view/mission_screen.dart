@@ -185,14 +185,6 @@ class _MissionScreenState extends State<MissionScreen> {
                                   color: Colors.grey[600],
                                 ),
                               ),
-                              const SizedBox(height: 8),
-                              Text(
-                                'Tunggu update misi selanjutnya ya! atau coba pilih kategori lain.',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.grey[500],
-                                ),
-                              ),
                             ],
                           ),
                         )

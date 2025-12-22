@@ -9,6 +9,7 @@ class AuthUser {
   String telepon;
   String bio;
   String? profileImagePath;
+  int totalPoints;
 
   AuthUser({
     required this.id,
@@ -19,6 +20,7 @@ class AuthUser {
     required this.telepon,
     this.bio = '',
     this.profileImagePath,
+    this.totalPoints = 0,
   });
 
   String get fullName => '$nama $namaBelakang';
@@ -43,6 +45,7 @@ class AuthUser {
       'phone': telepon,
       'bio': bio,
       'profile_image': profileImagePath ?? '',
+      'total_points': totalPoints,
     };
   }
 
@@ -72,6 +75,7 @@ class AuthUser {
       telepon: json['phone'] ?? json['telepon'] ?? '',
       bio: json['bio'] ?? '',
       profileImagePath: json['profile_image'] ?? json['profileImagePath'],
+      totalPoints: json['total_points'] ?? 0,
     );
   }
 
@@ -88,6 +92,7 @@ class AuthUser {
       telepon: (userData['phone'] ?? '').toString(),
       bio: (userData['bio'] ?? '').toString(),
       profileImagePath: userData['profile_image']?.toString(),
+      totalPoints: userData['total_points'] ?? 0,
     );
   }
 }

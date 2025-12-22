@@ -109,11 +109,11 @@ class QuizController extends GetxController {
       if (completed) {
         Get.snackbar(
           'Kuis Sudah Selesai',
-          'Anda sudah menyelesaikan kuis ini. Silakan coba kuis lainnya!',
+          'Kamu sudah menyelesaikan kuis ini.',
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: Colors.orange,
           colorText: Colors.white,
-          duration: const Duration(seconds: 3),
+          duration: const Duration(seconds: 2),
         );
         return false;
       }

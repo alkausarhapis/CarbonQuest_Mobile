@@ -55,7 +55,6 @@ class User {
     );
   }
 
-  /// Fetch leaderboard from API
   static Future<List<User>> fetchLeaderboard({String? token}) async {
     try {
       final response = await ApiService.get('/users/leaderboard', token: token);

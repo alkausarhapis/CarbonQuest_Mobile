@@ -243,8 +243,7 @@ class HomeScreen extends StatelessWidget {
                                                         ),
                                                     child: QuizCardHomeWidget(
                                                       title: quiz.title,
-                                                      points:
-                                                          '${quiz.totalPoints} Pts',
+                                                      category: quiz.category,
                                                       isCompleted: isCompleted,
                                                       onTap: isCompleted
                                                           ? () {

@@ -5,14 +5,14 @@ import '../../core/styles/app_color.dart';
 
 class QuizCardHomeWidget extends StatelessWidget {
   final String title;
-  final String points;
+  final String category;
   final VoidCallback onTap;
   final bool isCompleted;
 
   const QuizCardHomeWidget({
     super.key,
     required this.title,
-    required this.points,
+    required this.category,
     required this.onTap,
     this.isCompleted = false,
   });
@@ -52,7 +52,7 @@ class QuizCardHomeWidget extends StatelessWidget {
             Row(
               children: [
                 Text(
-                  points,
+                  category,
                   style: TextStyle(
                     color: isCompleted
                         ? Colors.grey[500]

@@ -80,6 +80,11 @@ class Question {
 }
 
 class Quiz {
+  // For testing: Set to true to simulate 1 day ago
+  static bool useFakeDate = false;
+  static DateTime get testDate =>
+      useFakeDate ? DateTime.now().subtract(Duration(days: 1)) : DateTime.now();
+
   final int idQuiz;
   final String title;
   final String category;
@@ -113,7 +118,7 @@ class Quiz {
       category: json['category'] ?? '',
       totalPoints: json['total_points'] ?? 0,
       idCreator: json['id_creator'] ?? 0,
-      createdAt: DateTime.tryParse(json['created_at'] ?? '') ?? DateTime.now(),
+      createdAt: DateTime.tryParse(json['created_at'] ?? '') ?? testDate,
       questionCount: json['question_count'] ?? 0,
       questions: questions,
     );
@@ -277,6 +282,11 @@ class Quiz {
 }
 
 class QuizSession {
+  // For testing: Set to true to simulate 1 day ago
+  // static bool useFakeDate = false;
+  // static DateTime get testDate =>
+  //     useFakeDate ? DateTime.now().subtract(Duration(days: 1)) : DateTime.now();
+  static DateTime get testDate => DateTime.now();
   final int idSession;
   final DateTime startTime;
   final DateTime? endTime;
@@ -296,7 +306,7 @@ class QuizSession {
   factory QuizSession.fromJson(Map<String, dynamic> json) {
     return QuizSession(
       idSession: json['id_session'] ?? 0,
-      startTime: DateTime.tryParse(json['start_time'] ?? '') ?? DateTime.now(),
+      startTime: DateTime.tryParse(json['start_time'] ?? '') ?? testDate,
       endTime: json['end_time'] != null
           ? DateTime.tryParse(json['end_time'])
           : null,
@@ -335,7 +345,7 @@ class QuizSession {
     try {
       final response = await ApiService.put('/sessions/$sessionId', {
         'total_points': totalPoints,
-        'end_time': DateTime.now().toIso8601String(),
+        'end_time': testDate.toIso8601String(),
       }, token: token);
 
       if (response.statusCode == 200) {

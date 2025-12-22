@@ -105,6 +105,7 @@ Clean up codebase following feature-based architecture for better maintainabilit
   - [v] Validate model structure
   - [v] Add proper null safety
   - [v] Add helper methods if needed
+  - [] Remove total quiz point
 
 - [v] **quiz_menu_screen.dart**
 

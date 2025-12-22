@@ -113,6 +113,7 @@ class AuthController extends GetxController {
           'Sukses',
           'Registrasi user berhasil! Silakan login.',
           snackPosition: SnackPosition.BOTTOM,
+          duration: const Duration(seconds: 2),
           backgroundColor: Colors.green,
           colorText: Colors.white,
         );
@@ -153,9 +154,6 @@ class AuthController extends GetxController {
         AuthUser.toLoginJson(email, password),
       );
 
-      debugPrint('Login response status: ${response.statusCode}');
-      debugPrint('Login response body: ${response.body}');
-
       if (response.statusCode == 200) {
         final responseData = json.decode(response.body);
 
@@ -189,6 +187,7 @@ class AuthController extends GetxController {
           'Login berhasil',
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: Colors.green,
+          duration: const Duration(seconds: 2),
           colorText: Colors.white,
         );
 
@@ -232,9 +231,6 @@ class AuthController extends GetxController {
 
       final userId = currentUser.value!.id;
       final response = await ApiService.get('/users/$userId', token: token);
-
-      debugPrint('Fetch user response status: ${response.statusCode}');
-      debugPrint('Fetch user response body: ${response.body}');
 
       if (response.statusCode == 200) {
         final responseData = json.decode(response.body);
@@ -300,9 +296,6 @@ class AuthController extends GetxController {
         token: token,
       );
 
-      debugPrint('Update profile response status: ${response.statusCode}');
-      debugPrint('Update profile response body: ${response.body}');
-
       if (response.statusCode == 200) {
         final responseData = json.decode(response.body);
         final user = AuthUser.fromApiResponse(responseData);
@@ -319,6 +312,7 @@ class AuthController extends GetxController {
           'Data berhasil disimpan!',
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: Colors.green,
+          duration: const Duration(seconds: 2),
           colorText: Colors.white,
         );
         return true;
@@ -364,9 +358,6 @@ class AuthController extends GetxController {
 
       final response = await http.Response.fromStream(streamedResponse);
 
-      debugPrint('Upload image response status: ${response.statusCode}');
-      debugPrint('Upload image response body: ${response.body}');
-
       if (response.statusCode == 200) {
         final responseData = json.decode(response.body);
         final user = AuthUser.fromApiResponse(responseData);
@@ -383,6 +374,7 @@ class AuthController extends GetxController {
           'Foto profil berhasil diupload!',
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: Colors.green,
+          duration: const Duration(seconds: 2),
           colorText: Colors.white,
         );
         return true;

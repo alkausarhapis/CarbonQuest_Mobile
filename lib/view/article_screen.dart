@@ -2,55 +2,29 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
-import '../controller/auth_controller.dart';
+import '../controller/article_controller.dart';
 import '../core/styles/app_color.dart';
-import '../model/articles.dart';
 
-class ArticleScreen extends StatefulWidget {
+class ArticleScreen extends StatelessWidget {
   final String articleId;
 
   const ArticleScreen({super.key, required this.articleId});
 
   @override
-  State<ArticleScreen> createState() => _ArticleScreenState();
-}
+  Widget build(BuildContext context) {
+    final ArticleController controller = Get.put(ArticleController());
 
-class _ArticleScreenState extends State<ArticleScreen> {
-  Article? article;
-  bool _isLoading = true;
-  final AuthController _authController = Get.find<AuthController>();
-
-  @override
-  void initState() {
-    super.initState();
-    _loadArticle();
     SystemChrome.setSystemUIOverlayStyle(
-      SystemUiOverlayStyle(
+      const SystemUiOverlayStyle(
         statusBarColor: Colors.transparent,
         statusBarIconBrightness: Brightness.dark,
         statusBarBrightness: Brightness.light,
       ),
     );
-  }
 
-  Future<void> _loadArticle() async {
-    try {
-      final token = await _authController.getToken();
-      final loadedArticle = await ArticlesData.getArticleByIdAsync(
-        widget.articleId,
-        token: token,
-      );
-      setState(() {
-        article = loadedArticle;
-        _isLoading = false;
-      });
-    } catch (e) {
-      debugPrint('Error loading article: $e');
-      setState(() {
-        article = null;
-        _isLoading = false;
-      });
-    }
+    controller.loadArticle(articleId);
+
+    return _buildBody(controller);
   }
 
   String _formatDate(DateTime date) {
@@ -71,175 +45,176 @@ class _ArticleScreenState extends State<ArticleScreen> {
     return '${date.day} ${months[date.month - 1]} ${date.year}';
   }
 
-  @override
-  Widget build(BuildContext context) {
-    if (_isLoading) {
-      return Scaffold(
-        backgroundColor: Colors.white,
-        appBar: AppBar(
-          title: const Text('Memuat Artikel...'),
-          backgroundColor: AppColor.primary.color,
-          foregroundColor: Colors.white,
-        ),
-        body: const Center(child: CircularProgressIndicator()),
-      );
-    }
-
-    if (article == null) {
-      return Scaffold(
-        backgroundColor: Colors.white,
-        appBar: AppBar(
-          title: const Text('Artikel Tidak Ditemukan'),
-          backgroundColor: AppColor.primary.color,
-          foregroundColor: Colors.white,
-        ),
-        body: const Center(child: Text('Artikel tidak tersedia')),
-      );
-    }
-
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: CustomScrollView(
-        slivers: [
-          SliverAppBar(
-            expandedHeight: 250,
-            pinned: true,
+  Widget _buildBody(ArticleController controller) {
+    return Obx(() {
+      if (controller.isLoading.value) {
+        return Scaffold(
+          backgroundColor: Colors.white,
+          appBar: AppBar(
+            title: const Text('Memuat Artikel...'),
             backgroundColor: AppColor.primary.color,
-            leading: Container(
-              margin: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.transparent,
-                shape: BoxShape.circle,
-              ),
-              child: IconButton(
-                icon: Icon(Icons.arrow_back, color: Colors.white),
-                onPressed: () => Navigator.pop(context),
-              ),
-            ),
-            flexibleSpace: FlexibleSpaceBar(
-              background: Stack(
-                fit: StackFit.expand,
-                children: [
-                  Image.network(
-                    article!.imageUrl,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Container(
-                        color: Colors.grey[300],
-                        child: Icon(
-                          Icons.image,
-                          size: 80,
-                          color: Colors.grey[400],
-                        ),
-                      );
-                    },
-                  ),
-                  Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          Colors.transparent,
-                          Colors.black.withValues(alpha: 0.7),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            foregroundColor: Colors.white,
           ),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Category Badge
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
+          body: const Center(child: CircularProgressIndicator()),
+        );
+      }
+
+      if (controller.currentArticle.value == null) {
+        return Scaffold(
+          backgroundColor: Colors.white,
+          appBar: AppBar(
+            title: const Text('Artikel Tidak Ditemukan'),
+            backgroundColor: AppColor.primary.color,
+            foregroundColor: Colors.white,
+          ),
+          body: const Center(child: Text('Artikel tidak tersedia')),
+        );
+      }
+
+      final article = controller.currentArticle.value!;
+
+      return Scaffold(
+        backgroundColor: Colors.white,
+        body: CustomScrollView(
+          slivers: [
+            SliverAppBar(
+              expandedHeight: 250,
+              pinned: true,
+              backgroundColor: AppColor.primary.color,
+              leading: Container(
+                margin: const EdgeInsets.all(8),
+                decoration: const BoxDecoration(
+                  color: Colors.transparent,
+                  shape: BoxShape.circle,
+                ),
+                child: IconButton(
+                  icon: const Icon(Icons.arrow_back, color: Colors.white),
+                  onPressed: () {
+                    controller.clearArticle();
+                    Get.back();
+                  },
+                ),
+              ),
+              flexibleSpace: FlexibleSpaceBar(
+                background: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    Image.network(
+                      article.imageUrl,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          color: Colors.grey[300],
+                          child: Icon(
+                            Icons.image,
+                            size: 80,
+                            color: Colors.grey[400],
+                          ),
+                        );
+                      },
                     ),
-                    decoration: BoxDecoration(
-                      color: AppColor.primary.color.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      article!.category,
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: AppColor.primary.color,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  // Title
-                  Text(
-                    article!.title,
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                      height: 1.3,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  // Author and Date
-                  Row(
-                    children: [
-                      CircleAvatar(
-                        radius: 20,
-                        backgroundColor: AppColor.primary.color.withValues(
-                          alpha: 0.2,
-                        ),
-                        child: Icon(
-                          Icons.person,
-                          color: AppColor.primary.color,
-                          size: 20,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              article!.author,
-                              style: const TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.black87,
-                              ),
-                            ),
-                            Text(
-                              _formatDate(article!.publishedDate),
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.grey[600],
-                              ),
-                            ),
+                    Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.transparent,
+                            Colors.black.withValues(alpha: 0.7),
                           ],
                         ),
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: 24),
-                  // Divider
-                  Divider(color: Colors.grey[300]),
-                  const SizedBox(height: 24),
-                  // Content
-                  _buildContent(article!.content),
-                  const SizedBox(height: 40),
-                ],
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
-      ),
-    );
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColor.primary.color.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        article.category,
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: AppColor.primary.color,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      article.title,
+                      style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                        height: 1.3,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        CircleAvatar(
+                          radius: 20,
+                          backgroundColor: AppColor.primary.color.withValues(
+                            alpha: 0.2,
+                          ),
+                          child: Icon(
+                            Icons.person,
+                            color: AppColor.primary.color,
+                            size: 20,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                article.author,
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                              Text(
+                                _formatDate(article.publishedDate),
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                    Divider(color: Colors.grey[300]),
+                    const SizedBox(height: 24),
+                    _buildContent(article.content),
+                    const SizedBox(height: 40),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    });
   }
 
   Widget _buildContent(String content) {
@@ -250,7 +225,6 @@ class _ArticleScreenState extends State<ArticleScreen> {
       if (line.trim().isEmpty) {
         widgets.add(const SizedBox(height: 12));
       } else if (line.startsWith('**') && line.endsWith('**')) {
-        // Bold heading
         widgets.add(
           Padding(
             padding: const EdgeInsets.only(top: 16, bottom: 8),
@@ -296,7 +270,6 @@ class _ArticleScreenState extends State<ArticleScreen> {
           ),
         );
       } else if (line.trim().startsWith(RegExp(r'\d+\.'))) {
-        // Numbered list
         widgets.add(
           Padding(
             padding: const EdgeInsets.only(left: 16, bottom: 12),
@@ -329,7 +302,6 @@ class _ArticleScreenState extends State<ArticleScreen> {
           ),
         );
       } else {
-        // Regular paragraph
         widgets.add(
           Padding(
             padding: const EdgeInsets.only(bottom: 12),

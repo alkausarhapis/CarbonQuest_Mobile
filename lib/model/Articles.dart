@@ -34,10 +34,20 @@ class Article {
   });
 
   factory Article.fromJson(Map<String, dynamic> json) {
-    // Handle both direct article object and nested data structure
     final articleData = json['data'] ?? json;
 
-    // Parse the date
+    String? toStringOrNull(dynamic value) {
+      if (value == null) return null;
+      if (value is String) return value;
+      if (value is Map || value is List) return null;
+      return value.toString();
+    }
+
+    String toStringOrDefault(dynamic value, String defaultValue) {
+      final result = toStringOrNull(value);
+      return result ?? defaultValue;
+    }
+
     DateTime parseDate(dynamic dateValue) {
       if (dateValue == null) return DateTime.now();
       if (dateValue is DateTime) return dateValue;
@@ -48,39 +58,53 @@ class Article {
       }
     }
 
-    // Get image URL with base URL if needed
-    String getImageUrl(String? imagePath) {
-      if (imagePath == null || imagePath.isEmpty) {
-        return 'https://via.placeholder.com/800x400';
+    String getImageUrl(dynamic imagePath) {
+      final imageStr = toStringOrNull(imagePath);
+      if (imageStr == null || imageStr.isEmpty) {
+        return 'https://placehold.co/800x400';
       }
-      if (imagePath.startsWith('http')) {
-        return imagePath;
+      if (imageStr.startsWith('http')) {
+        return imageStr;
       }
-      return '${ApiService.baseUrl}$imagePath';
+      return '${ApiService.baseUrl}$imageStr';
+    }
+
+    String extractContent(dynamic contentValue) {
+      if (contentValue == null) return '';
+      if (contentValue is String) return contentValue;
+      if (contentValue is Map) {
+        return toStringOrNull(contentValue['text']) ??
+            toStringOrNull(contentValue['body']) ??
+            toStringOrNull(contentValue['value']) ??
+            '';
+      }
+      return toStringOrNull(contentValue) ?? '';
     }
 
     return Article(
-      id: (articleData['id_article'] ?? articleData['id'] ?? '').toString(),
-      title: articleData['title'] ?? 'No Title',
-      author:
-          articleData['author_name'] ??
-          articleData['author'] ??
-          'Unknown Author',
+      id: toStringOrDefault(articleData['id_article'] ?? articleData['id'], ''),
+      title: toStringOrDefault(articleData['title'], 'No Title'),
+      author: toStringOrDefault(
+        articleData['author_name'] ?? articleData['author'],
+        'Unknown Author',
+      ),
       imageUrl: getImageUrl(
         articleData['cover_image'] ?? articleData['imageUrl'],
       ),
-      content: articleData['content'] ?? '',
-      category:
-          articleData['topic'] ?? articleData['category'] ?? 'Uncategorized',
+      content: extractContent(articleData['content']),
+      category: toStringOrDefault(
+        articleData['topic'] ?? articleData['category'],
+        'Uncategorized',
+      ),
       publishedDate: parseDate(
         articleData['date_created'] ?? articleData['publishedDate'],
       ),
-      description: articleData['description'],
-      photoCaption: articleData['photo_caption'],
-      photoCredit: articleData['photo_credit'],
-      authorRole: articleData['author_role'],
-      place: articleData['place'],
-      highlights: articleData['highlights'],
+      description: toStringOrNull(articleData['description']),
+      photoCaption: toStringOrNull(articleData['photo_caption']),
+      photoCredit: toStringOrNull(articleData['photo_credit']),
+      authorRole: toStringOrNull(articleData['author_role']),
+      place: toStringOrNull(articleData['place']),
+      highlights: toStringOrNull(articleData['highlights']),
     );
   }
 
@@ -102,7 +126,6 @@ class Article {
     };
   }
 
-  /// Fetch all articles from API (accessible to users)
   static Future<List<Article>> fetchArticles({String? token}) async {
     try {
       final response = await ApiService.get('/articles', token: token);
@@ -120,7 +143,6 @@ class Article {
     }
   }
 
-  /// Fetch a single article by ID
   static Future<Article?> fetchArticleById(String id, {String? token}) async {
     try {
       final response = await ApiService.get('/articles/$id', token: token);
@@ -140,12 +162,10 @@ class Article {
 }
 
 class ArticlesData {
-  /// Fetch articles from API
   static Future<List<Article>> getArticles({String? token}) async {
     return await Article.fetchArticles(token: token);
   }
 
-  /// Fetch article by ID from API
   static Future<Article?> getArticleByIdAsync(
     String id, {
     String? token,

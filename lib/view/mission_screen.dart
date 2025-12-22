@@ -27,7 +27,6 @@ class _MissionScreenState extends State<MissionScreen> {
         statusBarBrightness: Brightness.dark,
       ),
     );
-    // Get or initialize MissionController
     if (Get.isRegistered<MissionController>()) {
       _missionController = Get.find<MissionController>();
     } else {
@@ -84,7 +83,6 @@ class _MissionScreenState extends State<MissionScreen> {
                 child: Container(color: Colors.white),
               ),
             ),
-            // Left cloud
             Positioned(
               left: -70,
               top: 10,
@@ -94,7 +92,6 @@ class _MissionScreenState extends State<MissionScreen> {
                 height: 100,
               ),
             ),
-            // Right cloud
             Positioned(
               right: -50,
               top: 50,
@@ -188,14 +185,6 @@ class _MissionScreenState extends State<MissionScreen> {
                                   color: Colors.grey[600],
                                 ),
                               ),
-                              const SizedBox(height: 8),
-                              Text(
-                                'Misi akan segera tersedia',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.grey[500],
-                                ),
-                              ),
                             ],
                           ),
                         )
@@ -220,6 +209,9 @@ class _MissionScreenState extends State<MissionScreen> {
   }
 
   Widget _buildMissionCard(Mission mission) {
+    final isOngoing =
+        mission.status == 'on_going' || mission.status == 'in_progress';
+
     return GestureDetector(
       onTap: () {
         MissionDetailBottomSheet.show(context, mission, () => setState(() {}));
@@ -230,11 +222,14 @@ class _MissionScreenState extends State<MissionScreen> {
           borderRadius: BorderRadius.circular(16),
           color: mission.status == 'completed'
               ? Colors.green[50]
-              : mission.status == 'in_progress'
-              ? Colors.blue[50]
+              : isOngoing
+              ? Colors.white
               : Colors.grey[50],
-          border: mission.status == 'in_progress'
-              ? Border.all(color: AppColor.primary.color, width: 2)
+          border: isOngoing
+              ? Border.all(
+                  color: AppColor.primary.color.withValues(alpha: 0.3),
+                  width: 1.5,
+                )
               : null,
           boxShadow: [
             BoxShadow(
@@ -317,7 +312,7 @@ class _MissionScreenState extends State<MissionScreen> {
                     'Pts',
                     style: TextStyle(fontSize: 11, color: Colors.grey[600]),
                   ),
-                  if (mission.status == 'in_progress')
+                  if (isOngoing)
                     Container(
                       margin: const EdgeInsets.only(top: 4),
                       padding: const EdgeInsets.symmetric(
@@ -325,15 +320,15 @@ class _MissionScreenState extends State<MissionScreen> {
                         vertical: 2,
                       ),
                       decoration: BoxDecoration(
-                        color: AppColor.primary.color,
+                        color: Colors.amberAccent.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: const Text(
+                      child: Text(
                         'Aktif',
                         style: TextStyle(
                           fontSize: 10,
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
+                          color: Colors.amber,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),

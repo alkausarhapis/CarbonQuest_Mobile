@@ -1,5 +1,6 @@
 import 'package:carbonquest/core/styles/app_color.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 class QuizScoreScreen extends StatelessWidget {
   final int score;
@@ -30,7 +31,7 @@ class QuizScoreScreen extends StatelessWidget {
     double percentage = (score / maxScore) * 100;
 
     if (percentage >= 90) {
-      return 'Luar biasa! Anda sangat peduli lingkungan! 🌟';
+      return 'Luar biasa! Kamu sangat peduli lingkungan! 🌟';
     } else if (percentage >= 75) {
       return 'Bagus sekali! Terus tingkatkan kepedulian lingkungan! 🌿';
     } else if (percentage >= 50) {
@@ -225,31 +226,6 @@ class QuizScoreScreen extends StatelessWidget {
                             ),
                           ),
                         ),
-
-                        const SizedBox(height: 30),
-
-                        // Stats
-                        Row(
-                          children: [
-                            Expanded(
-                              child: _buildStatCard(
-                                Icons.check_circle,
-                                'Poin Diraih',
-                                '$score',
-                                Colors.green,
-                              ),
-                            ),
-                            const SizedBox(width: 15),
-                            Expanded(
-                              child: _buildStatCard(
-                                Icons.grade,
-                                'Persentase',
-                                '$percentage%',
-                                Colors.amber,
-                              ),
-                            ),
-                          ],
-                        ),
                       ],
                     ),
                   ),
@@ -266,10 +242,7 @@ class QuizScoreScreen extends StatelessWidget {
                       width: double.infinity,
                       child: ElevatedButton(
                         onPressed: () {
-                          // Pop all routes until we reach home
-                          Navigator.of(
-                            context,
-                          ).popUntil((route) => route.isFirst);
+                          Get.until((route) => route.isFirst);
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColor.primary.color,
@@ -295,44 +268,6 @@ class QuizScoreScreen extends StatelessWidget {
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildStatCard(
-    IconData icon,
-    String label,
-    String value,
-    Color color,
-  ) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(15),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 5),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Icon(icon, color: color, size: 32),
-          const SizedBox(height: 8),
-          Text(label, style: TextStyle(fontSize: 12, color: Colors.grey[600])),
-          const SizedBox(height: 4),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: color,
-            ),
-          ),
-        ],
       ),
     );
   }

@@ -8,7 +8,7 @@ import 'package:get/get.dart';
 
 import '../controller/auth_controller.dart';
 import '../core/api_service.dart';
-import '../model/Users.dart';
+import '../model/users.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});

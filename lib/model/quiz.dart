@@ -8,13 +8,13 @@ class Answer {
   final int idAnswer;
   final int idQuestion;
   final String content;
-  final bool isCorrect;
+  final int points;
 
   Answer({
     required this.idAnswer,
     required this.idQuestion,
     required this.content,
-    required this.isCorrect,
+    required this.points,
   });
 
   factory Answer.fromJson(Map<String, dynamic> json) {
@@ -22,7 +22,7 @@ class Answer {
       idAnswer: json['id_answer'] ?? 0,
       idQuestion: json['id_question'] ?? 0,
       content: json['content'] ?? '',
-      isCorrect: json['is_correct'] ?? false,
+      points: json['points'] ?? 0,
     );
   }
 
@@ -31,7 +31,7 @@ class Answer {
       'id_answer': idAnswer,
       'id_question': idQuestion,
       'content': content,
-      'is_correct': isCorrect,
+      'points': points,
     };
   }
 }

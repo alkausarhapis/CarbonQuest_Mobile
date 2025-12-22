@@ -22,7 +22,7 @@ class QuizCardHomeWidget extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 140,
+        width: 200,
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: isCompleted
@@ -44,7 +44,7 @@ class QuizCardHomeWidget extends StatelessWidget {
               title,
               style: TextStyle(
                 color: isCompleted ? Colors.grey[600] : Colors.white,
-                fontSize: 14,
+                fontSize: 16,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -65,26 +65,6 @@ class QuizCardHomeWidget extends StatelessWidget {
                   Icon(Icons.check_circle, color: Colors.green[700], size: 14),
                 ],
               ],
-            ),
-            const SizedBox(height: 8),
-            Expanded(
-              child: Align(
-                alignment: Alignment.bottomRight,
-                child: Container(
-                  padding: const EdgeInsets.all(6),
-                  decoration: BoxDecoration(
-                    color: isCompleted ? Colors.grey[400] : Colors.white,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Icon(
-                    isCompleted ? Icons.check : Icons.arrow_forward,
-                    color: isCompleted
-                        ? Colors.grey[600]
-                        : AppColor.primary.color,
-                    size: 16,
-                  ),
-                ),
-              ),
             ),
           ],
         ),

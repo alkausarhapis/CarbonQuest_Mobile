@@ -36,7 +36,6 @@ class _QuizMenuScreenState extends State<QuizMenuScreen> {
   Widget _buildQuizItem(
     BuildContext context,
     String title,
-    String subtitle,
     String badgeText,
     IconData icon,
     String quizType,
@@ -47,7 +46,6 @@ class _QuizMenuScreenState extends State<QuizMenuScreen> {
     Color cyanColor = AppColor.cyan.color;
     Color lightBlueBg = primaryColor.withValues(alpha: 0.4);
     Color darkTextColor = cyanColor.withValues(alpha: 0.9);
-    Color secondaryTextColor = cyanColor.withValues(alpha: 0.7);
 
     return Card(
       elevation: 0,
@@ -75,7 +73,7 @@ class _QuizMenuScreenState extends State<QuizMenuScreen> {
               },
         borderRadius: BorderRadius.circular(20),
         child: Container(
-          height: 90,
+          height: 100,
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -116,13 +114,6 @@ class _QuizMenuScreenState extends State<QuizMenuScreen> {
                       ],
                     ),
                     const SizedBox(height: 4),
-                    Text(
-                      subtitle,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: isCompleted ? Colors.grey : secondaryTextColor,
-                      ),
-                    ),
                     const SizedBox(height: 5),
                     Row(
                       children: [
@@ -322,7 +313,7 @@ class _QuizMenuScreenState extends State<QuizMenuScreen> {
                               icon = Icons.today;
                               break;
                             case 'Mingguan':
-                              icon = Icons.calendar_view_week;
+                              icon = Icons.date_range;
                               break;
                             case 'Bulanan':
                               icon = Icons.calendar_month;
@@ -339,7 +330,6 @@ class _QuizMenuScreenState extends State<QuizMenuScreen> {
                           return _buildQuizItem(
                             context,
                             quiz.title,
-                            '${quiz.questionCount} pertanyaan',
                             '${quiz.questionCount} Qs',
                             icon,
                             quizType,

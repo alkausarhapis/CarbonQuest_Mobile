@@ -184,9 +184,7 @@ class QuizController extends GetxController {
         final question = currentQuestions[i];
         if (answerIndex < question.answers.length) {
           final answer = question.answers[answerIndex];
-          if (answer.isCorrect) {
-            score += question.points;
-          }
+          score += answer.points;
         }
       }
     }
@@ -195,7 +193,16 @@ class QuizController extends GetxController {
   }
 
   int getMaxScore() {
-    return currentQuestions.fold(0, (sum, q) => sum + q.points);
+    int maxScore = 0;
+    for (var question in currentQuestions) {
+      if (question.answers.isNotEmpty) {
+        final maxAnswerPoints = question.answers
+            .map((a) => a.points)
+            .reduce((a, b) => a > b ? a : b);
+        maxScore += maxAnswerPoints;
+      }
+    }
+    return maxScore;
   }
 
   Future<bool> submitQuiz() async {

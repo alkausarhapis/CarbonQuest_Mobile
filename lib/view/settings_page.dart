@@ -90,6 +90,31 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
+  Future<void> _refreshProfile() async {
+    await _authController.fetchUserFromServer();
+    await _fetchUserLevel();
+
+    final user = _authController.currentUser.value;
+    _namaController.text = user?.nama ?? '';
+    _namaBelakangController.text = user?.namaBelakang ?? '';
+
+    String formattedDate = '';
+    if (user?.tanggalLahir != null && user!.tanggalLahir.isNotEmpty) {
+      try {
+        final date = DateTime.parse(user.tanggalLahir);
+        formattedDate =
+            '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+      } catch (e) {
+        formattedDate = user.tanggalLahir;
+      }
+    }
+    _tanggalLahirController.text = formattedDate;
+    _emailController.text = user?.email ?? '';
+    _teleponController.text = user?.telepon ?? '';
+
+    setState(() {});
+  }
+
   @override
   void dispose() {
     _namaController.dispose();
@@ -288,294 +313,303 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
       ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(24),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.05),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    children: [
-                      Stack(
-                        alignment: Alignment.bottomRight,
-                        children: [
-                          Obx(() {
-                            final profileImageUrl = _authController
-                                .currentUser
-                                .value
-                                ?.profileImageUrl;
-                            return Container(
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: AppColor.primary.color.withValues(
-                                      alpha: 0.3,
-                                    ),
-                                    blurRadius: 20,
-                                    spreadRadius: 2,
-                                  ),
-                                ],
-                              ),
-                              child: CircleAvatar(
-                                radius: 60,
-                                backgroundColor: const Color(0xFFE8F4F8),
-                                backgroundImage: profileImageUrl != null
-                                    ? NetworkImage(profileImageUrl)
-                                    : const AssetImage('assets/profile.png')
-                                          as ImageProvider,
-                              ),
-                            );
-                          }),
-                          GestureDetector(
-                            onTap: () =>
-                                _imageController.showImageSourceDialog(),
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: AppColor.primary.color,
-                                shape: BoxShape.circle,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: AppColor.primary.color.withValues(
-                                      alpha: 0.4,
-                                    ),
-                                    blurRadius: 8,
-                                    offset: const Offset(0, 2),
-                                  ),
-                                ],
-                              ),
-                              padding: const EdgeInsets.all(10),
-                              child: const Icon(
-                                Icons.camera_alt_rounded,
-                                color: Colors.white,
-                                size: 20,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      Obx(() {
-                        final user = _authController.currentUser.value;
-                        return Text(
-                          '${user?.nama ?? ''} ${user?.namaBelakang ?? ''}',
-                          style: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w700,
-                            color: Color(0xFF2D3748),
-                          ),
-                        );
-                      }),
-                      const SizedBox(height: 4),
-                      Obx(() {
-                        final email = _authController.currentUser.value?.email;
-                        return Text(
-                          email ?? '',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey[600],
-                            fontWeight: FontWeight.w500,
-                          ),
-                        );
-                      }),
-                      const SizedBox(height: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 8,
+        child: RefreshIndicator(
+          onRefresh: _refreshProfile,
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(24),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.05),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
                         ),
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              AppColor.primary.color.withValues(alpha: 0.1),
-                              AppColor.cyan.color.withValues(alpha: 0.05),
-                            ],
-                          ),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: AppColor.primary.color.withValues(
-                              alpha: 0.3,
-                            ),
-                            width: 1,
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
+                      ],
+                    ),
+                    child: Column(
+                      children: [
+                        Stack(
+                          alignment: Alignment.bottomRight,
                           children: [
-                            Icon(
-                              Icons.workspace_premium_rounded,
-                              color: AppColor.primary.color,
-                              size: 18,
-                            ),
-                            const SizedBox(width: 6),
-                            Text(
-                              _userForLevel?.level ?? 'Pemula',
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: AppColor.cyan.color,
-                                fontWeight: FontWeight.w700,
-                                letterSpacing: 0.3,
+                            Obx(() {
+                              final profileImageUrl = _authController
+                                  .currentUser
+                                  .value
+                                  ?.profileImageUrl;
+                              return Container(
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: AppColor.primary.color.withValues(
+                                        alpha: 0.3,
+                                      ),
+                                      blurRadius: 20,
+                                      spreadRadius: 2,
+                                    ),
+                                  ],
+                                ),
+                                child: CircleAvatar(
+                                  radius: 60,
+                                  backgroundColor: const Color(0xFFE8F4F8),
+                                  backgroundImage: profileImageUrl != null
+                                      ? NetworkImage(profileImageUrl)
+                                      : const AssetImage('assets/profile.png')
+                                            as ImageProvider,
+                                ),
+                              );
+                            }),
+                            GestureDetector(
+                              onTap: () =>
+                                  _imageController.showImageSourceDialog(),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: AppColor.primary.color,
+                                  shape: BoxShape.circle,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: AppColor.primary.color.withValues(
+                                        alpha: 0.4,
+                                      ),
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                padding: const EdgeInsets.all(10),
+                                child: const Icon(
+                                  Icons.camera_alt_rounded,
+                                  color: Colors.white,
+                                  size: 20,
+                                ),
                               ),
                             ),
                           ],
                         ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 24),
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(24),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.05),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Informasi Pribadi',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                          color: Color(0xFF2D3748),
+                        const SizedBox(height: 16),
+                        Obx(() {
+                          final user = _authController.currentUser.value;
+                          return Text(
+                            '${user?.nama ?? ''} ${user?.namaBelakang ?? ''}',
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF2D3748),
+                            ),
+                          );
+                        }),
+                        const SizedBox(height: 4),
+                        Obx(() {
+                          final email =
+                              _authController.currentUser.value?.email;
+                          return Text(
+                            email ?? '',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey[600],
+                              fontWeight: FontWeight.w500,
+                            ),
+                          );
+                        }),
+                        const SizedBox(height: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                AppColor.primary.color.withValues(alpha: 0.1),
+                                AppColor.cyan.color.withValues(alpha: 0.05),
+                              ],
+                            ),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: AppColor.primary.color.withValues(
+                                alpha: 0.3,
+                              ),
+                              width: 1,
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.workspace_premium_rounded,
+                                color: AppColor.primary.color,
+                                size: 18,
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                _userForLevel?.level ?? 'Pemula',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: AppColor.cyan.color,
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: 0.3,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 16),
-                      _buildEditableField(
-                        'Nama',
-                        _namaController,
-                        Icons.person_outline_rounded,
-                      ),
-                      _buildEditableField(
-                        'Nama Belakang',
-                        _namaBelakangController,
-                        Icons.person_outline_rounded,
-                      ),
-                      _buildDateField(
-                        'Tanggal Lahir',
-                        _tanggalLahirController,
-                        Icons.cake_outlined,
-                      ),
-                      _buildEditableField(
-                        'Alamat Email',
-                        _emailController,
-                        Icons.email_outlined,
-                      ),
-                      _buildEditableField(
-                        'Nomor Telepon',
-                        _teleponController,
-                        Icons.phone_outlined,
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 24),
-                Container(
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(16),
-                    gradient: LinearGradient(
-                      colors: [
-                        AppColor.primary.color,
-                        AppColor.primary.color.withValues(alpha: 0.8),
                       ],
                     ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColor.primary.color.withValues(alpha: 0.3),
-                        blurRadius: 12,
-                        offset: const Offset(0, 6),
-                      ),
-                    ],
                   ),
-                  child: ElevatedButton(
-                    onPressed: _saveProfile,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.transparent,
-                      shadowColor: Colors.transparent,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                    ),
-                    child: const Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.save_outlined,
-                          color: Colors.white,
-                          size: 20,
+                  const SizedBox(height: 24),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(24),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.05),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
                         ),
-                        SizedBox(width: 8),
-                        Text(
-                          'Simpan Perubahan',
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Informasi Pribadi',
                           style: TextStyle(
                             fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF2D3748),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        _buildEditableField(
+                          'Nama',
+                          _namaController,
+                          Icons.person_outline_rounded,
+                        ),
+                        _buildEditableField(
+                          'Nama Belakang',
+                          _namaBelakangController,
+                          Icons.person_outline_rounded,
+                        ),
+                        _buildDateField(
+                          'Tanggal Lahir',
+                          _tanggalLahirController,
+                          Icons.cake_outlined,
+                        ),
+                        _buildEditableField(
+                          'Alamat Email',
+                          _emailController,
+                          Icons.email_outlined,
+                        ),
+                        _buildEditableField(
+                          'Nomor Telepon',
+                          _teleponController,
+                          Icons.phone_outlined,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  Container(
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(16),
+                      gradient: LinearGradient(
+                        colors: [
+                          AppColor.primary.color,
+                          AppColor.primary.color.withValues(alpha: 0.8),
+                        ],
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColor.primary.color.withValues(alpha: 0.3),
+                          blurRadius: 12,
+                          offset: const Offset(0, 6),
+                        ),
+                      ],
+                    ),
+                    child: ElevatedButton(
+                      onPressed: _saveProfile,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.transparent,
+                        shadowColor: Colors.transparent,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                      ),
+                      child: const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.save_outlined,
                             color: Colors.white,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: 0.5,
+                            size: 20,
                           ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                SizedBox(
-                  width: double.infinity,
-                  child: OutlinedButton(
-                    onPressed: () {
-                      _showLogoutDialog(context);
-                    },
-                    style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: Colors.red, width: 2),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
+                          SizedBox(width: 8),
+                          Text(
+                            'Simpan Perubahan',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.white,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ],
                       ),
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                    ),
-                    child: const Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.logout_rounded, color: Colors.red, size: 20),
-                        SizedBox(width: 8),
-                        Text(
-                          'Keluar',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.red,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: 0.5,
-                          ),
-                        ),
-                      ],
                     ),
                   ),
-                ),
-              ],
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton(
+                      onPressed: () {
+                        _showLogoutDialog(context);
+                      },
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(color: Colors.red, width: 2),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                      ),
+                      child: const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.logout_rounded,
+                            color: Colors.red,
+                            size: 20,
+                          ),
+                          SizedBox(width: 8),
+                          Text(
+                            'Keluar',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.red,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),

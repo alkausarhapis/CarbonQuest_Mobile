@@ -288,55 +288,95 @@ class _QuizMenuScreenState extends State<QuizMenuScreen> {
                       );
                     }
 
+                    final Map<String, List<dynamic>> groupedQuizzes = {};
+                    for (var quiz in _quizController.quizzes) {
+                      if (!groupedQuizzes.containsKey(quiz.category)) {
+                        groupedQuizzes[quiz.category] = [];
+                      }
+                      groupedQuizzes[quiz.category]!.add(quiz);
+                    }
+
+                    final categoryOrder = ['Harian', 'Mingguan', 'Bulanan'];
+                    final orderedCategories = categoryOrder
+                        .where((cat) => groupedQuizzes.containsKey(cat))
+                        .toList();
+
                     return RefreshIndicator(
                       onRefresh: () => _quizController.loadQuizzes(),
-                      child: ListView(
-                        children: _quizController.quizzes.map((quiz) {
-                          String quizType;
-                          switch (quiz.category) {
-                            case 'Harian':
-                              quizType = 'daily';
-                              break;
-                            case 'Mingguan':
-                              quizType = 'weekly';
-                              break;
-                            case 'Bulanan':
-                              quizType = 'monthly';
-                              break;
-                            default:
-                              quizType = 'daily';
-                          }
+                      child: ListView.builder(
+                        itemCount: orderedCategories.length,
+                        itemBuilder: (context, categoryIndex) {
+                          final category = orderedCategories[categoryIndex];
+                          final quizzes = groupedQuizzes[category]!;
 
-                          IconData icon;
-                          switch (quiz.category) {
-                            case 'Harian':
-                              icon = Icons.today;
-                              break;
-                            case 'Mingguan':
-                              icon = Icons.date_range;
-                              break;
-                            case 'Bulanan':
-                              icon = Icons.calendar_month;
-                              break;
-                            default:
-                              icon = Icons.quiz;
-                          }
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.fromLTRB(
+                                  4,
+                                  16,
+                                  4,
+                                  12,
+                                ),
+                                child: Text(
+                                  category,
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColor.cyan.color,
+                                  ),
+                                ),
+                              ),
+                              ...quizzes.map((quiz) {
+                                String quizType;
+                                switch (quiz.category) {
+                                  case 'Harian':
+                                    quizType = 'daily';
+                                    break;
+                                  case 'Mingguan':
+                                    quizType = 'weekly';
+                                    break;
+                                  case 'Bulanan':
+                                    quizType = 'monthly';
+                                    break;
+                                  default:
+                                    quizType = 'daily';
+                                }
 
-                          final isCompleted =
-                              _quizController.quizCompletionStatus[quiz
-                                  .idQuiz] ??
-                              false;
+                                IconData icon;
+                                switch (quiz.category) {
+                                  case 'Harian':
+                                    icon = Icons.today;
+                                    break;
+                                  case 'Mingguan':
+                                    icon = Icons.date_range;
+                                    break;
+                                  case 'Bulanan':
+                                    icon = Icons.calendar_month;
+                                    break;
+                                  default:
+                                    icon = Icons.quiz;
+                                }
 
-                          return _buildQuizItem(
-                            context,
-                            quiz.title,
-                            '${quiz.questionCount} Qs',
-                            icon,
-                            quizType,
-                            quiz.idQuiz,
-                            isCompleted,
+                                final isCompleted =
+                                    _quizController.quizCompletionStatus[quiz
+                                        .idQuiz] ??
+                                    false;
+
+                                return _buildQuizItem(
+                                  context,
+                                  quiz.title,
+                                  '${quiz.questionCount} Qs',
+                                  icon,
+                                  quizType,
+                                  quiz.idQuiz,
+                                  isCompleted,
+                                );
+                              }).toList(),
+                            ],
                           );
-                        }).toList(),
+                        },
                       ),
                     );
                   }),

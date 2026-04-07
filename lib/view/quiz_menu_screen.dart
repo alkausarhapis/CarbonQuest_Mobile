@@ -1,3 +1,4 @@
+import 'package:carbonquest/core/cooldown_helper.dart';
 import 'package:carbonquest/core/navigation_route.dart';
 import 'package:carbonquest/core/styles/app_color.dart';
 import 'package:flutter/material.dart';
@@ -24,13 +25,16 @@ class _QuizMenuScreenState extends State<QuizMenuScreen> {
     } else {
       _quizController = Get.put(QuizController());
     }
-    _loadQuizCompletionStatus();
+
+    if (_quizController.quizzes.isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _loadQuizCompletionStatus();
+      });
+    }
   }
 
   Future<void> _loadQuizCompletionStatus() async {
-    for (var quiz in _quizController.quizzes) {
-      await _quizController.isQuizCompleted(quiz.idQuiz);
-    }
+    await _quizController.refreshCompletionStatuses();
   }
 
   Widget _buildQuizItem(
@@ -41,11 +45,17 @@ class _QuizMenuScreenState extends State<QuizMenuScreen> {
     String quizType,
     int quizId,
     bool isCompleted,
+    String category,
   ) {
-    Color primaryColor = AppColor.primary.color;
-    Color cyanColor = AppColor.cyan.color;
-    Color lightBlueBg = primaryColor.withValues(alpha: 0.4);
-    Color darkTextColor = cyanColor.withValues(alpha: 0.9);
+    final Color primaryColor = AppColor.primary.color;
+    final Color cyanColor = AppColor.cyan.color;
+    final Color lightBlueBg = primaryColor.withValues(alpha: 0.4);
+    final Color darkTextColor = cyanColor.withValues(alpha: 0.9);
+
+    final QuizCategory cat = CooldownHelper.parseCategory(category);
+    final String? nextLabel = isCompleted
+        ? CooldownHelper.getNextAvailableLabel(cat)
+        : null;
 
     return Card(
       elevation: 0,
@@ -58,11 +68,12 @@ class _QuizMenuScreenState extends State<QuizMenuScreen> {
         onTap: isCompleted
             ? () {
                 Get.snackbar(
-                  'Kuis Sudah Selesai',
-                  'Anda sudah menyelesaikan kuis ini!',
+                  CooldownHelper.getLimitSnackbarTitle(cat),
+                  nextLabel ?? 'Coba lagi nanti',
                   snackPosition: SnackPosition.BOTTOM,
                   backgroundColor: Colors.orange,
                   colorText: Colors.white,
+                  duration: const Duration(seconds: 4),
                 );
               }
             : () {
@@ -72,9 +83,8 @@ class _QuizMenuScreenState extends State<QuizMenuScreen> {
                 );
               },
         borderRadius: BorderRadius.circular(20),
-        child: Container(
-          height: 100,
-          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
@@ -97,24 +107,17 @@ class _QuizMenuScreenState extends State<QuizMenuScreen> {
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            title,
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                              color: isCompleted ? Colors.grey : darkTextColor,
-                            ),
-                          ),
-                        ),
-                      ],
+                    Text(
+                      title,
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        color: isCompleted ? Colors.grey : darkTextColor,
+                      ),
                     ),
-                    const SizedBox(height: 4),
-                    const SizedBox(height: 5),
+                    const SizedBox(height: 6),
                     Row(
                       children: [
                         Container(
@@ -168,27 +171,46 @@ class _QuizMenuScreenState extends State<QuizMenuScreen> {
                           ),
                       ],
                     ),
+                    if (isCompleted && nextLabel != null) ...[
+                      const SizedBox(height: 5),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.lock_clock,
+                            size: 11,
+                            color: Colors.grey.shade500,
+                          ),
+                          const SizedBox(width: 4),
+                          Expanded(
+                            child: Text(
+                              nextLabel,
+                              style: TextStyle(
+                                fontSize: 10,
+                                color: Colors.grey.shade500,
+                                fontStyle: FontStyle.italic,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ],
                 ),
               ),
 
-              Stack(
-                alignment: Alignment.center,
-                children: [
-                  Container(
-                    width: 70,
-                    height: 70,
-                    decoration: BoxDecoration(
-                      color: isCompleted ? Colors.grey.shade300 : lightBlueBg,
-                      borderRadius: BorderRadius.circular(15),
-                    ),
-                  ),
-                  Icon(
-                    Icons.arrow_forward_ios,
-                    color: isCompleted ? Colors.grey : primaryColor,
-                    size: 20,
-                  ),
-                ],
+              const SizedBox(width: 8),
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: isCompleted ? Colors.grey.shade300 : lightBlueBg,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  isCompleted ? Icons.lock_outline : Icons.arrow_forward_ios,
+                  color: isCompleted ? Colors.grey : primaryColor,
+                  size: 18,
+                ),
               ),
             ],
           ),
@@ -301,83 +323,76 @@ class _QuizMenuScreenState extends State<QuizMenuScreen> {
                         .where((cat) => groupedQuizzes.containsKey(cat))
                         .toList();
 
-                    return RefreshIndicator(
-                      onRefresh: () => _quizController.loadQuizzes(),
-                      child: ListView.builder(
-                        itemCount: orderedCategories.length,
-                        itemBuilder: (context, categoryIndex) {
-                          final category = orderedCategories[categoryIndex];
-                          final quizzes = groupedQuizzes[category]!;
+                    return ListView.builder(
+                      itemCount: orderedCategories.length,
+                      itemBuilder: (context, categoryIndex) {
+                        final category = orderedCategories[categoryIndex];
+                        final quizzes = groupedQuizzes[category]!;
 
-                          return Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.fromLTRB(
-                                  4,
-                                  16,
-                                  4,
-                                  12,
-                                ),
-                                child: Text(
-                                  category,
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                    color: AppColor.cyan.color,
-                                  ),
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(4, 16, 4, 12),
+                              child: Text(
+                                category,
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColor.cyan.color,
                                 ),
                               ),
-                              ...quizzes.map((quiz) {
-                                String quizType;
-                                switch (quiz.category) {
-                                  case 'Harian':
-                                    quizType = 'daily';
-                                    break;
-                                  case 'Mingguan':
-                                    quizType = 'weekly';
-                                    break;
-                                  case 'Bulanan':
-                                    quizType = 'monthly';
-                                    break;
-                                  default:
-                                    quizType = 'daily';
-                                }
+                            ),
+                            ...quizzes.map((quiz) {
+                              String quizType;
+                              switch (quiz.category) {
+                                case 'Harian':
+                                  quizType = 'daily';
+                                  break;
+                                case 'Mingguan':
+                                  quizType = 'weekly';
+                                  break;
+                                case 'Bulanan':
+                                  quizType = 'monthly';
+                                  break;
+                                default:
+                                  quizType = 'daily';
+                              }
 
-                                IconData icon;
-                                switch (quiz.category) {
-                                  case 'Harian':
-                                    icon = Icons.today;
-                                    break;
-                                  case 'Mingguan':
-                                    icon = Icons.date_range;
-                                    break;
-                                  case 'Bulanan':
-                                    icon = Icons.calendar_month;
-                                    break;
-                                  default:
-                                    icon = Icons.quiz;
-                                }
+                              IconData icon;
+                              switch (quiz.category) {
+                                case 'Harian':
+                                  icon = Icons.today;
+                                  break;
+                                case 'Mingguan':
+                                  icon = Icons.date_range;
+                                  break;
+                                case 'Bulanan':
+                                  icon = Icons.calendar_month;
+                                  break;
+                                default:
+                                  icon = Icons.quiz;
+                              }
 
-                                final isCompleted =
-                                    _quizController.quizCompletionStatus[quiz
-                                        .idQuiz] ??
-                                    false;
+                              final isCompleted =
+                                  _quizController.quizCompletionStatus[quiz
+                                      .idQuiz] ??
+                                  false;
 
-                                return _buildQuizItem(
-                                  context,
-                                  quiz.title,
-                                  '${quiz.questionCount} Qs',
-                                  icon,
-                                  quizType,
-                                  quiz.idQuiz,
-                                  isCompleted,
-                                );
-                              }).toList(),
-                            ],
-                          );
-                        },
-                      ),
+                              return _buildQuizItem(
+                                context,
+                                quiz.title,
+                                '${quiz.questionCount} Qs',
+                                icon,
+                                quizType,
+                                quiz.idQuiz,
+                                isCompleted,
+                                quiz.category,
+                              );
+                            }),
+                          ],
+                        );
+                      },
                     );
                   }),
                 ),

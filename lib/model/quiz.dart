@@ -3,6 +3,16 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 
 import '../core/api_service.dart';
+import '../core/cooldown_helper.dart';
+
+class QuizLimitExceededException implements Exception {
+  final String message;
+
+  const QuizLimitExceededException(this.message);
+
+  @override
+  String toString() => message;
+}
 
 class Answer {
   final int idAnswer;
@@ -80,7 +90,6 @@ class Question {
 }
 
 class Quiz {
-  // For testing: Set to true to simulate 1 day ago
   static bool useFakeDate = false;
   static DateTime get testDate =>
       useFakeDate ? DateTime.now().subtract(Duration(days: 1)) : DateTime.now();
@@ -238,15 +247,34 @@ class Quiz {
         final jsonData = json.decode(response.body);
         return jsonData['data'];
       } else {
-        throw Exception('Failed to submit answer: ${response.statusCode}');
+        String errorMessage = 'Failed to submit answer: ${response.statusCode}';
+        try {
+          final jsonData = json.decode(response.body);
+          final message =
+              jsonData['message'] as String? ??
+              jsonData['error'] as String? ??
+              errorMessage;
+
+          if (message.contains('1x per hari') ||
+              message.contains('1x per minggu') ||
+              message.contains('1x per bulan')) {
+            throw QuizLimitExceededException(message);
+          }
+          errorMessage = message;
+        } catch (parseError) {
+          if (parseError is QuizLimitExceededException) rethrow;
+        }
+        throw Exception(errorMessage);
       }
     } catch (e) {
+      if (e is QuizLimitExceededException) rethrow;
       throw Exception('Error submitting answer: $e');
     }
   }
 
   static Future<bool> isQuizCompleted(
-    int quizId, {
+    int quizId,
+    String category, {
     required String token,
   }) async {
     try {
@@ -256,24 +284,53 @@ class Quiz {
       if (questionCount == 0) return false;
 
       final response = await ApiService.get('/me/sessions', token: token);
+      if (response.statusCode != 200) return false;
 
-      if (response.statusCode == 200) {
-        final jsonData = json.decode(response.body);
-        final List<dynamic> sessionsJson = jsonData['data'] ?? [];
+      final jsonData = json.decode(response.body);
+      final List<dynamic> sessionsJson = jsonData['data'] ?? [];
 
-        final quizSessions = sessionsJson.where((session) {
-          final answer = session['answer'];
-          if (answer != null && answer['question'] != null) {
-            final question = answer['question'];
-            return question['id_quiz'] == quizId;
-          }
-          return false;
+      final quizCategory = CooldownHelper.parseCategory(category);
+      final window = CooldownHelper.getWindow(quizCategory);
+
+      List<dynamic> periodSessions;
+      if (window != null) {
+        periodSessions = sessionsJson.where((session) {
+          final raw = session['start_time'] as String?;
+          if (raw == null) return false;
+          final t = DateTime.tryParse(raw)?.toUtc();
+          return t != null && window.contains(t);
         }).toList();
-
-        return quizSessions.length >= questionCount;
+      } else {
+        periodSessions = sessionsJson;
       }
 
-      return false;
+      final newSchemaMatches = periodSessions.where((s) {
+        return s['session_type'] == 'quiz' && s['id_quiz'] == quizId;
+      }).toList();
+
+      if (newSchemaMatches.isNotEmpty) {
+        final answeredIds = newSchemaMatches
+            .map((s) => s['id_question'] as int?)
+            .whereType<int>()
+            .toSet();
+        final answeredCount = answeredIds.isNotEmpty
+            ? answeredIds.length
+            : newSchemaMatches.length;
+        return answeredCount >= questionCount;
+      }
+
+      final answeredQuestionIds = periodSessions
+          .where((s) {
+            final answer = s['answer'];
+            if (answer == null) return false;
+            final question = answer['question'];
+            return question != null && question['id_quiz'] == quizId;
+          })
+          .map((s) => s['answer']?['question']?['id_question'] as int?)
+          .whereType<int>()
+          .toSet();
+
+      return answeredQuestionIds.length >= questionCount;
     } catch (e) {
       debugPrint('Error checking quiz completion: $e');
       return false;
@@ -282,10 +339,6 @@ class Quiz {
 }
 
 class QuizSession {
-  // For testing: Set to true to simulate 1 day ago
-  // static bool useFakeDate = false;
-  // static DateTime get testDate =>
-  //     useFakeDate ? DateTime.now().subtract(Duration(days: 1)) : DateTime.now();
   static DateTime get testDate => DateTime.now();
   final int idSession;
   final DateTime startTime;

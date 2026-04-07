@@ -1,6 +1,10 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../core/api_service.dart';
+import '../core/cooldown_helper.dart';
 import '../model/quiz.dart';
 import 'auth_controller.dart';
 
@@ -14,6 +18,7 @@ class QuizController extends GetxController {
   final RxInt currentQuestionIndex = 0.obs;
   final RxList<int?> userAnswers = <int?>[].obs;
   final RxInt totalScore = 0.obs;
+
   final RxMap<int, bool> quizCompletionStatus = <int, bool>{}.obs;
 
   @override
@@ -25,11 +30,16 @@ class QuizController extends GetxController {
   Future<void> loadQuizzes() async {
     isLoading.value = true;
 
+    quizCompletionStatus.clear();
+
     try {
       final token = await _authController.getToken();
       final fetchedQuizzes = await Quiz.fetchQuizzes(token: token);
-
       quizzes.value = fetchedQuizzes;
+
+      isLoading.value = false;
+
+      await refreshCompletionStatuses();
     } catch (e) {
       debugPrint('Error loading quizzes: $e');
       Get.snackbar(
@@ -44,13 +54,64 @@ class QuizController extends GetxController {
     }
   }
 
-  Quiz? getQuizByCategory(String category) {
+  Future<void> refreshCompletionStatuses() async {
+    if (quizzes.isEmpty) return;
+
     try {
-      return quizzes.firstWhere(
-        (quiz) => quiz.category.toLowerCase() == category.toLowerCase(),
-      );
+      final token = await _authController.getToken();
+      if (token == null) return;
+
+      final response = await ApiService.get('/me/sessions', token: token);
+      if (response.statusCode != 200) return;
+
+      final jsonData = json.decode(response.body);
+      final List<dynamic> allSessions = jsonData['data'] ?? [];
+
+      for (final quiz in quizzes) {
+        final cat = CooldownHelper.parseCategory(quiz.category);
+        final window = CooldownHelper.getWindow(cat);
+
+        final List<dynamic> periodSessions;
+        if (window != null) {
+          periodSessions = allSessions.where((s) {
+            final raw = s['start_time'] as String?;
+            if (raw == null) return false;
+            final t = DateTime.tryParse(raw)?.toUtc();
+            return t != null && window.contains(t);
+          }).toList();
+        } else {
+          periodSessions = allSessions;
+        }
+
+        final newSchema = periodSessions
+            .where(
+              (s) => s['session_type'] == 'quiz' && s['id_quiz'] == quiz.idQuiz,
+            )
+            .toList();
+
+        bool completed;
+        if (newSchema.isNotEmpty) {
+          final answered = newSchema
+              .map((s) => s['id_question'] as int?)
+              .whereType<int>()
+              .toSet();
+          final count = answered.isNotEmpty
+              ? answered.length
+              : newSchema.length;
+          completed = count >= quiz.questionCount;
+        } else {
+          final answered = periodSessions
+              .where((s) => s['answer']?['question']?['id_quiz'] == quiz.idQuiz)
+              .map((s) => s['answer']?['question']?['id_question'] as int?)
+              .whereType<int>()
+              .toSet();
+          completed = answered.length >= quiz.questionCount;
+        }
+
+        quizCompletionStatus[quiz.idQuiz] = completed;
+      }
     } catch (e) {
-      return null;
+      debugPrint('Error refreshing completion statuses: $e');
     }
   }
 
@@ -59,16 +120,17 @@ class QuizController extends GetxController {
       return quizCompletionStatus[quizId]!;
     }
 
-    try {
-      final token = await _authController.getToken();
-      if (token == null) return false;
+    await refreshCompletionStatuses();
+    return quizCompletionStatus[quizId] ?? false;
+  }
 
-      final completed = await Quiz.isQuizCompleted(quizId, token: token);
-      quizCompletionStatus[quizId] = completed;
-      return completed;
-    } catch (e) {
-      debugPrint('Error checking quiz completion: $e');
-      return false;
+  Quiz? getQuizByCategory(String category) {
+    try {
+      return quizzes.firstWhere(
+        (quiz) => quiz.category.toLowerCase() == category.toLowerCase(),
+      );
+    } catch (_) {
+      return null;
     }
   }
 
@@ -76,23 +138,10 @@ class QuizController extends GetxController {
     isLoading.value = true;
 
     try {
-      String category;
-      switch (quizType) {
-        case 'daily':
-          category = 'Harian';
-          break;
-        case 'weekly':
-          category = 'Mingguan';
-          break;
-        case 'monthly':
-          category = 'Bulanan';
-          break;
-        default:
-          category = 'Harian';
-      }
+      final category = _quizTypeToCategory(quizType);
 
       if (quizzes.isEmpty) {
-        debugPrint('Quizzes not loaded yet, loading now...');
+        debugPrint('Quizzes not loaded yet, loading now…');
         await loadQuizzes();
       }
 
@@ -107,13 +156,18 @@ class QuizController extends GetxController {
 
       final completed = await isQuizCompleted(quiz.idQuiz);
       if (completed) {
+        final quizCategory = CooldownHelper.parseCategory(quiz.category);
+        final nextLabel =
+            CooldownHelper.getNextAvailableLabel(quizCategory) ??
+            'Coba lagi nanti';
+
         Get.snackbar(
-          'Kuis Sudah Selesai',
-          'Kamu sudah menyelesaikan kuis ini.',
+          CooldownHelper.getLimitSnackbarTitle(quizCategory),
+          nextLabel,
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: Colors.orange,
           colorText: Colors.white,
-          duration: const Duration(seconds: 2),
+          duration: const Duration(seconds: 4),
         );
         return false;
       }
@@ -129,6 +183,8 @@ class QuizController extends GetxController {
       if (questions.isEmpty) {
         throw Exception('Tidak ada pertanyaan untuk kuis ini');
       }
+
+      questions.sort((a, b) => a.order.compareTo(b.order));
 
       debugPrint('Loaded ${questions.length} questions');
       currentQuestions.value = questions;
@@ -177,29 +233,24 @@ class QuizController extends GetxController {
 
   int calculateScore() {
     int score = 0;
-
     for (int i = 0; i < currentQuestions.length; i++) {
       final answerIndex = userAnswers[i];
-      if (answerIndex != null) {
-        final question = currentQuestions[i];
-        if (answerIndex < question.answers.length) {
-          final answer = question.answers[answerIndex];
-          score += answer.points;
-        }
+      if (answerIndex != null &&
+          answerIndex < currentQuestions[i].answers.length) {
+        score += currentQuestions[i].answers[answerIndex].points;
       }
     }
-
     return score;
   }
 
   int getMaxScore() {
     int maxScore = 0;
-    for (var question in currentQuestions) {
+    for (final question in currentQuestions) {
       if (question.answers.isNotEmpty) {
-        final maxAnswerPoints = question.answers
+        final maxPts = question.answers
             .map((a) => a.points)
             .reduce((a, b) => a > b ? a : b);
-        maxScore += maxAnswerPoints;
+        maxScore += maxPts;
       }
     }
     return maxScore;
@@ -208,30 +259,35 @@ class QuizController extends GetxController {
   Future<bool> submitQuiz() async {
     try {
       final token = await _authController.getToken();
-      if (token == null) {
-        throw Exception('Please login first');
-      }
+      if (token == null) throw Exception('Please login first');
 
       int accumulatedScore = 0;
+      bool limitExceeded = false;
+      String limitMessage = '';
 
       for (int i = 0; i < currentQuestions.length; i++) {
         final answerIndex = userAnswers[i];
-        if (answerIndex != null) {
-          final question = currentQuestions[i];
-          final answer = question.answers[answerIndex];
+        if (answerIndex == null) continue;
 
-          try {
-            final result = await Quiz.submitAnswer(
-              question.idQuestion,
-              answer.idAnswer,
-              token: token,
-            );
+        final question = currentQuestions[i];
+        final answer = question.answers[answerIndex];
 
-            final pointsEarned = result['points_earned'] ?? 0;
-            accumulatedScore += pointsEarned as int;
-          } catch (e) {
-            debugPrint('Error submitting answer for question ${i + 1}: $e');
-          }
+        try {
+          final result = await Quiz.submitAnswer(
+            question.idQuestion,
+            answer.idAnswer,
+            token: token,
+          );
+
+          final pointsEarned = result['points_earned'] ?? 0;
+          accumulatedScore += pointsEarned as int;
+        } on QuizLimitExceededException catch (e) {
+          limitExceeded = true;
+          limitMessage = e.message;
+          debugPrint('Quiz limit exceeded for question ${i + 1}: $e');
+          break;
+        } catch (e) {
+          debugPrint('Error submitting answer for question ${i + 1}: $e');
         }
       }
 
@@ -239,6 +295,23 @@ class QuizController extends GetxController {
 
       if (currentQuiz.value != null) {
         quizCompletionStatus[currentQuiz.value!.idQuiz] = true;
+      }
+
+      if (limitExceeded) {
+        final cat = CooldownHelper.parseCategory(
+          currentQuiz.value?.category ?? '',
+        );
+        final nextLabel =
+            CooldownHelper.getNextAvailableLabel(cat) ?? 'Coba lagi nanti';
+
+        Get.snackbar(
+          CooldownHelper.getLimitSnackbarTitle(cat),
+          '$limitMessage\n$nextLabel',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.orange,
+          colorText: Colors.white,
+          duration: const Duration(seconds: 4),
+        );
       }
 
       return true;
@@ -261,5 +334,18 @@ class QuizController extends GetxController {
     currentQuestionIndex.value = 0;
     userAnswers.clear();
     totalScore.value = 0;
+  }
+
+  static String _quizTypeToCategory(String quizType) {
+    switch (quizType) {
+      case 'daily':
+        return 'Harian';
+      case 'weekly':
+        return 'Mingguan';
+      case 'monthly':
+        return 'Bulanan';
+      default:
+        return 'Harian';
+    }
   }
 }

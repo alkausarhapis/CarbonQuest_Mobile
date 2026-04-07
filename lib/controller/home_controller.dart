@@ -33,10 +33,13 @@ class HomeController extends GetxController {
     ]);
   }
 
+  /// Delegates to the batch refresh in [QuizController] so a single
+  /// `/me/sessions` call covers all quizzes with correct period-window
+  /// filtering.  If quizzes haven't loaded yet this returns early — they
+  /// will be covered automatically when [QuizController.loadQuizzes]
+  /// finishes and calls [refreshCompletionStatuses] internally.
   Future<void> loadQuizCompletionStatus() async {
-    for (var quiz in _quizController.quizzes) {
-      await _quizController.isQuizCompleted(quiz.idQuiz);
-    }
+    await _quizController.refreshCompletionStatuses();
   }
 
   Future<void> loadTodayPoints() async {
@@ -100,7 +103,9 @@ class HomeController extends GetxController {
       loadArticles(),
       loadTodayPoints(),
       loadWeeklyPoints(),
-      loadQuizCompletionStatus(),
+      // Also reload the quiz catalogue so any newly available quizzes
+      // appear, and completion statuses are refreshed in one batch call.
+      _quizController.loadQuizzes(),
     ]);
   }
 

@@ -6,6 +6,7 @@ import '../controller/home_controller.dart';
 import '../controller/mission_controller.dart';
 import '../controller/quiz_controller.dart';
 import '../core/navigation_route.dart';
+import '../core/cooldown_helper.dart';
 import '../core/styles/app_color.dart';
 import 'article_list_screen.dart';
 import 'article_screen.dart';
@@ -247,9 +248,20 @@ class HomeScreen extends StatelessWidget {
                                                       isCompleted: isCompleted,
                                                       onTap: isCompleted
                                                           ? () {
+                                                              final cat =
+                                                                  CooldownHelper.parseCategory(
+                                                                    quiz.category,
+                                                                  );
+                                                              final nextLabel =
+                                                                  CooldownHelper.getNextAvailableLabel(
+                                                                    cat,
+                                                                  ) ??
+                                                                  'Coba lagi nanti';
                                                               Get.snackbar(
-                                                                'Kuis Sudah Selesai',
-                                                                'Kamu sudah menyelesaikan kuis ini!',
+                                                                CooldownHelper.getLimitSnackbarTitle(
+                                                                  cat,
+                                                                ),
+                                                                nextLabel,
                                                                 snackPosition:
                                                                     SnackPosition
                                                                         .BOTTOM,
@@ -266,7 +278,7 @@ class HomeScreen extends StatelessWidget {
                                                                 duration:
                                                                     const Duration(
                                                                       seconds:
-                                                                          2,
+                                                                          4,
                                                                     ),
                                                               );
                                                             }

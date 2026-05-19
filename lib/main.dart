@@ -1,5 +1,7 @@
 import 'package:carbonquest/controller/auth_controller.dart';
 import 'package:carbonquest/core/auth_middleware.dart';
+import 'package:carbonquest/core/navigation_route.dart';
+import 'package:carbonquest/core/styles/app_theme.dart';
 import 'package:carbonquest/view/login_screen.dart';
 import 'package:carbonquest/view/main_screen.dart';
 import 'package:carbonquest/view/mission_screen.dart';
@@ -8,13 +10,12 @@ import 'package:carbonquest/view/quiz_question_screen.dart';
 import 'package:carbonquest/view/register_screen.dart';
 import 'package:carbonquest/view/settings_page.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get.dart';
-
-import 'core/navigation_route.dart';
-import 'core/styles/app_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: ".env");
 
   final authController = Get.put(AuthController());
 

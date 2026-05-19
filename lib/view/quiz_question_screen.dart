@@ -70,11 +70,29 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen> {
     final score = _quizController.totalScore.value;
     final maxScore = _quizController.getMaxScore();
 
+    final questions = _quizController.currentQuestions;
+    final userAnswers = _quizController.userAnswers;
+
+    String qaSummary = '';
+    for (int i = 0; i < questions.length; i++) {
+      qaSummary += 'Pertanyaan ${i + 1}: ${questions[i].content}\n';
+      final ansIndex = userAnswers.length > i ? userAnswers[i] : null;
+      if (ansIndex != null &&
+          ansIndex >= 0 &&
+          ansIndex < questions[i].answers.length) {
+        qaSummary +=
+            'Jawaban Pengguna: ${questions[i].answers[ansIndex].content}\n';
+      } else {
+        qaSummary += 'Jawaban Pengguna: Kosong/Tidak dijawab\n';
+      }
+    }
+
     Get.off(
       () => QuizScoreScreen(
         score: score,
         maxScore: maxScore,
         quizType: widget.quizType,
+        qaSummary: qaSummary,
       ),
     );
   }

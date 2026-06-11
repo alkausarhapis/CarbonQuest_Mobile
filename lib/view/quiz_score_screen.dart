@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:carbonquest/core/styles/app_color.dart';
 import 'package:flutter/material.dart';
@@ -35,7 +37,7 @@ class _QuizScoreScreenState extends State<QuizScoreScreen> {
   }
 
   Future<void> _fetchAIFeedback() async {
-    final apiKey = dotenv.env['OPENROUTER_API_KEY'];
+    final apiKey = dotenv.env['SUMOPOD_API_KEY'];
     if (apiKey == null || apiKey.isEmpty) {
       if (mounted) {
         setState(() {
@@ -47,36 +49,38 @@ class _QuizScoreScreenState extends State<QuizScoreScreen> {
     }
 
     try {
-      final response = await http.post(
-        Uri.parse('https://openrouter.ai/api/v1/chat/completions'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $apiKey',
-        },
-        body: jsonEncode({
-          'model': 'openai/gpt-oss-120b:free',
-          'messages': [
-            {
-              'role': 'system',
-              'content':
-                  'Kamu adalah ahli lingkungan. Berikan rekomendasi tindakan nyata dalam bahasa Indonesia. Maksimal 1 paragraf. Boleh gunakan emoji. Jangan beri penjelasan tambahan.',
+      final response = await http
+          .post(
+            Uri.parse('https://ai.sumopod.com/v1/chat/completions'),
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer $apiKey',
             },
-            {
-              'role': 'user',
-              'content':
-                  'Saya menyelesaikan ${widget.quizType == "daily"
-                      ? "Kuis Harian"
-                      : widget.quizType == "weekly"
-                      ? "Kuis Mingguan"
-                      : widget.quizType == "monthly"
-                      ? "Kuis Bulanan"
-                      : "Kuis"} dengan skor ${widget.score} dari ${widget.maxScore}.\n\nBerikut adalah soal dan jawaban yang saya pilih:\n${widget.qaSummary}\n\nBerikan komentar singkat dan rekomendasi spesifik.',
-            },
-          ],
-          'max_tokens': 200,
-          'temperature': 0.7,
-        }),
-      );
+            body: jsonEncode({
+              'model': 'gpt-4o-mini',
+              'messages': [
+                {
+                  'role': 'system',
+                  'content':
+                      'Kamu adalah ahli lingkungan. Berikan rekomendasi tindakan nyata dalam bahasa Indonesia. Maksimal 1 paragraf. Boleh gunakan emoji. Jangan beri penjelasan tambahan.',
+                },
+                {
+                  'role': 'user',
+                  'content':
+                      'Saya menyelesaikan ${widget.quizType == "daily"
+                          ? "Kuis Harian"
+                          : widget.quizType == "weekly"
+                          ? "Kuis Mingguan"
+                          : widget.quizType == "monthly"
+                          ? "Kuis Bulanan"
+                          : "Kuis"} dengan skor ${widget.score} dari ${widget.maxScore}.\n\nBerikut adalah soal dan jawaban yang saya pilih:\n${widget.qaSummary}\n\nBerikan komentar singkat dan rekomendasi spesifik.',
+                },
+              ],
+              'max_tokens': 200,
+              'temperature': 0.7,
+            }),
+          )
+          .timeout(const Duration(seconds: 15));
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -93,6 +97,22 @@ class _QuizScoreScreenState extends State<QuizScoreScreen> {
             _isLoadingFeedback = false;
           });
         }
+      }
+    } on TimeoutException catch (e) {
+      debugPrint('[Err] AI API Timeout: $e');
+      if (mounted) {
+        setState(() {
+          _aiFeedback =
+              'Waktu permintaan habis (Timeout). Pastikan koneksi internet stabil.';
+          _isLoadingFeedback = false;
+        });
+      }
+    } on SocketException {
+      if (mounted) {
+        setState(() {
+          _aiFeedback = 'Gagal terhubung ke API AI. Pastikan internet aktif.';
+          _isLoadingFeedback = false;
+        });
       }
     } catch (e) {
       if (mounted) {

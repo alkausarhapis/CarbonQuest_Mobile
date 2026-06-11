@@ -34,7 +34,9 @@ class _QuizMenuScreenState extends State<QuizMenuScreen> {
   }
 
   Future<void> _loadQuizCompletionStatus() async {
+    _quizController.isLoading.value = true;
     await _quizController.refreshCompletionStatuses();
+    _quizController.isLoading.value = false;
   }
 
   Widget _buildQuizItem(
@@ -323,76 +325,88 @@ class _QuizMenuScreenState extends State<QuizMenuScreen> {
                         .where((cat) => groupedQuizzes.containsKey(cat))
                         .toList();
 
-                    return ListView.builder(
-                      itemCount: orderedCategories.length,
-                      itemBuilder: (context, categoryIndex) {
-                        final category = orderedCategories[categoryIndex];
-                        final quizzes = groupedQuizzes[category]!;
+                    return RefreshIndicator(
+                      onRefresh: () async {
+                        await _quizController.loadQuizzes();
+                      },
+                      color: AppColor.primary.color,
+                      child: ListView.builder(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        itemCount: orderedCategories.length,
+                        itemBuilder: (context, categoryIndex) {
+                          final category = orderedCategories[categoryIndex];
+                          final quizzes = groupedQuizzes[category]!;
 
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.fromLTRB(4, 16, 4, 12),
-                              child: Text(
-                                category,
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColor.cyan.color,
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.fromLTRB(
+                                  4,
+                                  16,
+                                  4,
+                                  12,
+                                ),
+                                child: Text(
+                                  category,
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColor.cyan.color,
+                                  ),
                                 ),
                               ),
-                            ),
-                            ...quizzes.map((quiz) {
-                              String quizType;
-                              switch (quiz.category) {
-                                case 'Harian':
-                                  quizType = 'daily';
-                                  break;
-                                case 'Mingguan':
-                                  quizType = 'weekly';
-                                  break;
-                                case 'Bulanan':
-                                  quizType = 'monthly';
-                                  break;
-                                default:
-                                  quizType = 'daily';
-                              }
+                              ...quizzes.map((quiz) {
+                                String quizType;
+                                switch (quiz.category) {
+                                  case 'Harian':
+                                    quizType = 'daily';
+                                    break;
+                                  case 'Mingguan':
+                                    quizType = 'weekly';
+                                    break;
+                                  case 'Bulanan':
+                                    quizType = 'monthly';
+                                    break;
+                                  default:
+                                    quizType = 'daily';
+                                }
 
-                              IconData icon;
-                              switch (quiz.category) {
-                                case 'Harian':
-                                  icon = Icons.today;
-                                  break;
-                                case 'Mingguan':
-                                  icon = Icons.date_range;
-                                  break;
-                                case 'Bulanan':
-                                  icon = Icons.calendar_month;
-                                  break;
-                                default:
-                                  icon = Icons.quiz;
-                              }
+                                IconData icon;
+                                switch (quiz.category) {
+                                  case 'Harian':
+                                    icon = Icons.today;
+                                    break;
+                                  case 'Mingguan':
+                                    icon = Icons.date_range;
+                                    break;
+                                  case 'Bulanan':
+                                    icon = Icons.calendar_month;
+                                    break;
+                                  default:
+                                    icon = Icons.quiz;
+                                }
 
-                              final isCompleted =
-                                  _quizController.quizCompletionStatus[quiz
-                                      .idQuiz] ??
-                                  false;
+                                final isCompleted =
+                                    _quizController.quizCompletionStatus[quiz
+                                        .idQuiz] ??
+                                    false;
 
-                              return _buildQuizItem(
-                                context,
-                                quiz.title,
-                                '${quiz.questionCount} Qs',
-                                icon,
-                                quizType,
-                                quiz.idQuiz,
-                                isCompleted,
-                                quiz.category,
-                              );
-                            }),
-                          ],
-                        );
-                      },
+                                return _buildQuizItem(
+                                  context,
+                                  quiz.title,
+                                  '${quiz.questionCount} Qs',
+                                  icon,
+                                  quizType,
+                                  quiz.idQuiz,
+                                  isCompleted,
+                                  quiz.category,
+                                );
+                              }),
+                            ],
+                          );
+                        },
+                      ),
                     );
                   }),
                 ),

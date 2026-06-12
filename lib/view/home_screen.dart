@@ -326,11 +326,11 @@ class HomeScreen extends StatelessWidget {
                                         ),
                                         child:
                                             controller.isLoadingArticles.value
-                                            ? const Center(
+                                            ? Center(
                                                 child: Padding(
-                                                  padding: EdgeInsets.all(20),
+                                                  padding: const EdgeInsets.all(20),
                                                   child:
-                                                      CircularProgressIndicator(),
+                                                      CircularProgressIndicator(color: AppColor.primary.color),
                                                 ),
                                               )
                                             : controller.articles.isEmpty

@@ -55,7 +55,7 @@ class ArticleScreen extends StatelessWidget {
             backgroundColor: AppColor.primary.color,
             foregroundColor: Colors.white,
           ),
-          body: const Center(child: CircularProgressIndicator()),
+          body: Center(child: CircularProgressIndicator(color: AppColor.primary.color)),
         );
       }
 

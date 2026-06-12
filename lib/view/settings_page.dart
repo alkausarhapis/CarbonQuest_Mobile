@@ -419,7 +419,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const CircularProgressIndicator(),
+                CircularProgressIndicator(color: AppColor.primary.color),
                 const SizedBox(height: 16),
                 const Text(
                   'Menguji koneksi AI...',

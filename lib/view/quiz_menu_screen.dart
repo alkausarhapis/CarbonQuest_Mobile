@@ -306,7 +306,7 @@ class _QuizMenuScreenState extends State<QuizMenuScreen> {
                   padding: const EdgeInsets.all(16.0),
                   child: Obx(() {
                     if (_quizController.isLoading.value) {
-                      return const Center(child: CircularProgressIndicator());
+                      return Center(child: CircularProgressIndicator(color: AppColor.primary.color));
                     }
 
                     if (_quizController.quizzes.isEmpty) {

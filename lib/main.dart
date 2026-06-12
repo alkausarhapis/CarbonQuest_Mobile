@@ -78,7 +78,16 @@ class MainApp extends StatelessWidget {
         GetPage(
           name: NavigationRoute.quizQuestion.path,
           page: () {
-            final quizType = Get.arguments as String?;
+            final args = Get.arguments;
+            if (args is Map) {
+              final quizType = (args['quizType'] as String?) ?? 'daily';
+              final quizId = args['quizId'] as int?;
+              return QuizQuestionScreen(
+                quizType: quizType,
+                quizId: quizId,
+              );
+            }
+            final quizType = args as String?;
             return QuizQuestionScreen(quizType: quizType ?? 'daily');
           },
           middlewares: [AuthMiddleware()],

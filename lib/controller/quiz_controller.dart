@@ -144,7 +144,7 @@ class QuizController extends GetxController {
     }
   }
 
-  Future<bool> startQuiz(String quizType) async {
+  Future<bool> startQuiz(String quizType, {int? quizId}) async {
     isLoading.value = true;
 
     try {
@@ -155,7 +155,13 @@ class QuizController extends GetxController {
         await loadQuizzes();
       }
 
-      final quiz = getQuizByCategory(category);
+      Quiz? quiz;
+      if (quizId != null) {
+        try {
+          quiz = quizzes.firstWhere((q) => q.idQuiz == quizId);
+        } catch (_) {}
+      }
+      quiz ??= getQuizByCategory(category);
       if (quiz == null) {
         debugPrint('Quiz not found for category: $category');
         debugPrint(

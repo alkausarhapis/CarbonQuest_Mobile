@@ -287,8 +287,12 @@ class HomeScreen extends StatelessWidget {
                                                                 NavigationRoute
                                                                     .quizQuestion
                                                                     .path,
-                                                                arguments:
-                                                                    quizType,
+                                                                arguments: {
+                                                                  'quizType':
+                                                                      quizType,
+                                                                  'quizId':
+                                                                      quiz.idQuiz,
+                                                                },
                                                               );
                                                             },
                                                     ),

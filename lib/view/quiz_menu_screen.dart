@@ -81,7 +81,10 @@ class _QuizMenuScreenState extends State<QuizMenuScreen> {
             : () {
                 Get.toNamed(
                   NavigationRoute.quizQuestion.path,
-                  arguments: quizType,
+                  arguments: {
+                    'quizType': quizType,
+                    'quizId': quizId,
+                  },
                 );
               },
         borderRadius: BorderRadius.circular(20),

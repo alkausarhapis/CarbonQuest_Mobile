@@ -9,8 +9,13 @@ import '../model/quiz.dart';
 
 class QuizQuestionScreen extends StatefulWidget {
   final String quizType;
+  final int? quizId;
 
-  const QuizQuestionScreen({super.key, this.quizType = 'daily'});
+  const QuizQuestionScreen({
+    super.key,
+    this.quizType = 'daily',
+    this.quizId,
+  });
 
   @override
   State<QuizQuestionScreen> createState() => _QuizQuestionScreenState();
@@ -34,7 +39,10 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen> {
   }
 
   Future<void> _loadQuiz() async {
-    final success = await _quizController.startQuiz(widget.quizType);
+    final success = await _quizController.startQuiz(
+      widget.quizType,
+      quizId: widget.quizId,
+    );
     if (!success) {
       Get.back();
     }

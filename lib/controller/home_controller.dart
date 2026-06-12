@@ -5,6 +5,7 @@ import '../model/daily_points.dart';
 import '../view/widgets/weekly_chart_widget.dart';
 import 'auth_controller.dart';
 import 'mission_controller.dart';
+import 'mock_data_controller.dart';
 import 'quiz_controller.dart';
 
 class HomeController extends GetxController {
@@ -43,6 +44,12 @@ class HomeController extends GetxController {
   }
 
   Future<void> loadTodayPoints() async {
+    final mockController = Get.find<MockDataController>();
+    if (mockController.isMockEnabled.value) {
+      todayPoints.value = mockController.mockTodayPoints.value;
+      return;
+    }
+
     isLoadingPoints.value = true;
 
     try {
@@ -62,6 +69,21 @@ class HomeController extends GetxController {
   }
 
   Future<void> loadWeeklyPoints() async {
+    final mockController = Get.find<MockDataController>();
+    if (mockController.isMockEnabled.value) {
+      if (mockController.mockWeeklyData.isNotEmpty) {
+        final data = mockController.mockWeeklyData;
+        final values = data.map((e) => e.value).toSet().toList()..sort((a, b) => b.compareTo(a));
+        final topTwo = values.take(2).toSet();
+        weeklyData.value = data.map((e) => ChartData(
+          value: e.value,
+          label: e.label,
+          isHighlighted: topTwo.contains(e.value),
+        )).toList();
+      }
+      return;
+    }
+
     try {
       final token = await _authController.getToken();
       final points = await DailyPoint.fetchDailyPoints(token: token, days: 7);

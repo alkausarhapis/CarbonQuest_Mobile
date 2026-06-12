@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../core/custom_snackbar.dart';
 import 'auth_controller.dart';
 
 class ImageController extends GetxController {
@@ -22,10 +23,9 @@ class ImageController extends GetxController {
         await _authController.updateProfileImage(savedPath);
       }
     } catch (e) {
-      Get.snackbar(
-        'Error',
-        'Gagal memilih gambar: $e',
-        snackPosition: SnackPosition.BOTTOM,
+      showCustomSnackbar(
+        title: 'Error',
+        message: 'Gagal memilih gambar: $e',
       );
     }
   }
@@ -44,10 +44,9 @@ class ImageController extends GetxController {
         await _authController.updateProfileImage(savedPath);
       }
     } catch (e) {
-      Get.snackbar(
-        'Error',
-        'Gagal mengambil foto: $e',
-        snackPosition: SnackPosition.BOTTOM,
+      showCustomSnackbar(
+        title: 'Error',
+        message: 'Gagal mengambil foto: $e',
       );
     }
   }

@@ -1,3 +1,4 @@
+import 'package:carbonquest/core/custom_snackbar.dart';
 import 'package:carbonquest/core/styles/app_color.dart';
 import 'package:carbonquest/view/quiz_score_screen.dart';
 import 'package:flutter/material.dart';
@@ -63,13 +64,11 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen> {
         _finishQuiz();
       }
     } else {
-      Get.snackbar(
-        'Perhatian',
-        'Silakan pilih jawaban terlebih dahulu',
+      showCustomSnackbar(
+        title: 'Perhatian',
+        message: 'Silakan pilih jawaban terlebih dahulu',
         backgroundColor: Colors.orange,
         colorText: Colors.white,
-        snackPosition: SnackPosition.BOTTOM,
-        margin: const EdgeInsets.all(16),
       );
     }
   }

@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 
 import '../../controller/auth_controller.dart';
 import '../../controller/mission_controller.dart';
+import '../../core/custom_snackbar.dart';
 import '../../core/styles/app_color.dart';
 import '../../model/missions.dart';
 
@@ -78,25 +79,21 @@ class _MissionDetailBottomSheetState extends State<MissionDetailBottomSheet> {
 
         Get.back();
         widget.onUpdate();
-        Get.snackbar(
-          'Sukses',
-          'Misi "${widget.mission.title}" telah dimulai!',
+        showCustomSnackbar(
+          title: 'Sukses',
+          message: 'Misi "${widget.mission.title}" telah dimulai!',
           backgroundColor: Colors.green,
           colorText: Colors.white,
-          snackPosition: SnackPosition.BOTTOM,
           duration: const Duration(seconds: 2),
-          margin: const EdgeInsets.all(16),
         );
       }
     } catch (e) {
       debugPrint('Error starting mission: $e');
-      Get.snackbar(
-        'Error',
-        'Gagal memulai misi: ${e.toString()}',
+      showCustomSnackbar(
+        title: 'Error',
+        message: 'Gagal memulai misi: ${e.toString()}',
         backgroundColor: Colors.red,
         colorText: Colors.white,
-        snackPosition: SnackPosition.BOTTOM,
-        margin: const EdgeInsets.all(16),
       );
     } finally {
       _isLoading.value = false;
@@ -119,25 +116,21 @@ class _MissionDetailBottomSheetState extends State<MissionDetailBottomSheet> {
       if (success) {
         Get.back();
         widget.onUpdate();
-        Get.snackbar(
-          'Selamat!',
-          'Misi "${widget.mission.title}" telah selesai! +${widget.mission.points} poin',
-          backgroundColor: Colors.amber[700],
+        showCustomSnackbar(
+          title: 'Selamat!',
+          message: 'Misi "${widget.mission.title}" telah selesai! +${widget.mission.points} poin',
+          backgroundColor: Colors.amber.shade700,
           colorText: Colors.white,
-          snackPosition: SnackPosition.BOTTOM,
           duration: const Duration(seconds: 2),
-          margin: const EdgeInsets.all(16),
         );
       }
     } catch (e) {
       debugPrint('Error completing mission: $e');
-      Get.snackbar(
-        'Error',
-        'Gagal menyelesaikan misi: ${e.toString()}',
+      showCustomSnackbar(
+        title: 'Error',
+        message: 'Gagal menyelesaikan misi: ${e.toString()}',
         backgroundColor: Colors.red,
         colorText: Colors.white,
-        snackPosition: SnackPosition.BOTTOM,
-        margin: const EdgeInsets.all(16),
       );
     } finally {
       _isLoading.value = false;

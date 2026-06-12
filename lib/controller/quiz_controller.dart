@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 
 import '../core/api_service.dart';
 import '../core/cooldown_helper.dart';
+import '../core/custom_snackbar.dart';
 import '../model/quiz.dart';
 import 'auth_controller.dart';
 
@@ -41,10 +42,9 @@ class QuizController extends GetxController {
       await refreshCompletionStatuses();
     } catch (e) {
       debugPrint('Error loading quizzes: $e');
-      Get.snackbar(
-        'Error',
-        'Gagal memuat kuis: ${e.toString()}',
-        snackPosition: SnackPosition.BOTTOM,
+      showCustomSnackbar(
+        title: 'Error',
+        message: 'Gagal memuat kuis: ${e.toString()}',
         backgroundColor: Colors.red,
         colorText: Colors.white,
       );
@@ -178,10 +178,9 @@ class QuizController extends GetxController {
             CooldownHelper.getNextAvailableLabel(quizCategory) ??
             'Coba lagi nanti';
 
-        Get.snackbar(
-          CooldownHelper.getLimitSnackbarTitle(quizCategory),
-          nextLabel,
-          snackPosition: SnackPosition.BOTTOM,
+        showCustomSnackbar(
+          title: CooldownHelper.getLimitSnackbarTitle(quizCategory),
+          message: nextLabel,
           backgroundColor: Colors.orange,
           colorText: Colors.white,
           duration: const Duration(seconds: 4),
@@ -212,10 +211,9 @@ class QuizController extends GetxController {
       return true;
     } catch (e) {
       debugPrint('Error starting quiz: $e');
-      Get.snackbar(
-        'Error',
-        'Gagal memuat pertanyaan kuis: ${e.toString()}',
-        snackPosition: SnackPosition.BOTTOM,
+      showCustomSnackbar(
+        title: 'Error',
+        message: 'Gagal memuat pertanyaan kuis: ${e.toString()}',
         backgroundColor: Colors.red,
         colorText: Colors.white,
         duration: const Duration(seconds: 5),
@@ -418,10 +416,9 @@ class QuizController extends GetxController {
         final nextLabel =
             CooldownHelper.getNextAvailableLabel(cat) ?? 'Coba lagi nanti';
 
-        Get.snackbar(
-          CooldownHelper.getLimitSnackbarTitle(cat),
-          '$limitMessage\n$nextLabel',
-          snackPosition: SnackPosition.BOTTOM,
+        showCustomSnackbar(
+          title: CooldownHelper.getLimitSnackbarTitle(cat),
+          message: '$limitMessage\n$nextLabel',
           backgroundColor: Colors.orange,
           colorText: Colors.white,
           duration: const Duration(seconds: 4),
@@ -431,10 +428,9 @@ class QuizController extends GetxController {
       return true;
     } catch (e) {
       debugPrint('Error submitting quiz: $e');
-      Get.snackbar(
-        'Error',
-        'Gagal mengirim hasil kuis: ${e.toString()}',
-        snackPosition: SnackPosition.BOTTOM,
+      showCustomSnackbar(
+        title: 'Error',
+        message: 'Gagal mengirim hasil kuis: ${e.toString()}',
         backgroundColor: Colors.red,
         colorText: Colors.white,
       );

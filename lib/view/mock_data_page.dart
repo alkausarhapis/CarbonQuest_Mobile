@@ -4,6 +4,7 @@ import 'package:iconsax_plus/iconsax_plus.dart';
 
 import '../controller/home_controller.dart';
 import '../controller/mock_data_controller.dart';
+import '../core/custom_snackbar.dart';
 import '../core/navigation_route.dart';
 import '../core/styles/app_color.dart';
 
@@ -42,20 +43,18 @@ class _MockDataPageState extends State<MockDataPage> {
     final today = int.tryParse(_todayPointsController.text);
 
     if (total == null || total < 0) {
-      Get.snackbar(
-        'Error',
-        'Total poin harus angka positif',
-        snackPosition: SnackPosition.BOTTOM,
+      showCustomSnackbar(
+        title: 'Error',
+        message: 'Total poin harus angka positif',
         backgroundColor: Colors.red,
         colorText: Colors.white,
       );
       return;
     }
     if (today == null || today < 0) {
-      Get.snackbar(
-        'Error',
-        'Poin hari ini harus angka positif',
-        snackPosition: SnackPosition.BOTTOM,
+      showCustomSnackbar(
+        title: 'Error',
+        message: 'Poin hari ini harus angka positif',
         backgroundColor: Colors.red,
         colorText: Colors.white,
       );
@@ -68,10 +67,9 @@ class _MockDataPageState extends State<MockDataPage> {
 
     _refreshHome();
 
-    Get.snackbar(
-      'Sukses',
-      'Data demo berhasil diterapkan!',
-      snackPosition: SnackPosition.BOTTOM,
+    showCustomSnackbar(
+      title: 'Sukses',
+      message: 'Data demo berhasil diterapkan!',
       backgroundColor: Colors.green,
       duration: const Duration(seconds: 2),
       colorText: Colors.white,
@@ -89,10 +87,9 @@ class _MockDataPageState extends State<MockDataPage> {
 
     _refreshHome();
 
-    Get.snackbar(
-      'Sukses',
-      'Data demo default berhasil dibuat!',
-      snackPosition: SnackPosition.BOTTOM,
+    showCustomSnackbar(
+      title: 'Sukses',
+      message: 'Data demo default berhasil dibuat!',
       backgroundColor: Colors.green,
       duration: const Duration(seconds: 2),
       colorText: Colors.white,
@@ -111,10 +108,9 @@ class _MockDataPageState extends State<MockDataPage> {
   Future<void> _disableMock() async {
     await _mockController.clearMockData();
     _refreshHome();
-    Get.snackbar(
-      'Berhasil',
-      'Data demo dinonaktifkan',
-      snackPosition: SnackPosition.BOTTOM,
+    showCustomSnackbar(
+      title: 'Berhasil',
+      message: 'Data demo dinonaktifkan',
       backgroundColor: Colors.blue,
       duration: const Duration(seconds: 2),
       colorText: Colors.white,

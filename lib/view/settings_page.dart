@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:carbonquest/core/custom_snackbar.dart';
 import 'package:carbonquest/core/navigation_route.dart';
 import 'package:carbonquest/core/styles/app_color.dart';
 import 'package:flutter/material.dart';
@@ -448,12 +449,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
       if (apiKey == null || apiKey.isEmpty) {
         await Future.delayed(const Duration(seconds: 1));
         Get.back();
-        Get.snackbar(
-          'Gagal',
-          'API Key (SUMOPOD_API_KEY) tidak ditemukan di file .env',
+        showCustomSnackbar(
+          title: 'Gagal',
+          message: 'API Key (SUMOPOD_API_KEY) tidak ditemukan di file .env',
           backgroundColor: Colors.red,
           colorText: Colors.white,
-          snackPosition: SnackPosition.BOTTOM,
         );
         return;
       }
@@ -480,49 +480,44 @@ class _SettingsScreenState extends State<SettingsScreen> {
       Get.back();
 
       if (response.statusCode == 200) {
-        Get.snackbar(
-          'Berhasil',
-          'Koneksi AI berhasil (${stopwatch.elapsed.inMilliseconds}ms)',
+        showCustomSnackbar(
+          title: 'Berhasil',
+          message: 'Koneksi AI berhasil (${stopwatch.elapsed.inMilliseconds}ms)',
           backgroundColor: Colors.green,
           colorText: Colors.white,
-          snackPosition: SnackPosition.BOTTOM,
         );
       } else {
-        Get.snackbar(
-          'Gagal (${response.statusCode})',
-          'Server merespon dengan error: ${response.body.length > 100 ? '${response.body.substring(0, 100)}...' : response.body}',
+        showCustomSnackbar(
+          title: 'Gagal (${response.statusCode})',
+          message: 'Server merespon dengan error: ${response.body.length > 100 ? '${response.body.substring(0, 100)}...' : response.body}',
           backgroundColor: Colors.orange,
           colorText: Colors.white,
-          snackPosition: SnackPosition.BOTTOM,
           duration: const Duration(seconds: 6),
         );
       }
     } on TimeoutException {
       Get.back();
-      Get.snackbar(
-        'Timeout',
-        'Koneksi ke server AI tidak merespon dalam 10 detik',
+      showCustomSnackbar(
+        title: 'Timeout',
+        message: 'Koneksi ke server AI tidak merespon dalam 10 detik',
         backgroundColor: Colors.red,
         colorText: Colors.white,
-        snackPosition: SnackPosition.BOTTOM,
       );
     } on SocketException {
       Get.back();
-      Get.snackbar(
-        'Gagal',
-        'Tidak dapat terhubung ke server AI. Periksa koneksi internet.',
+      showCustomSnackbar(
+        title: 'Gagal',
+        message: 'Tidak dapat terhubung ke server AI. Periksa koneksi internet.',
         backgroundColor: Colors.red,
         colorText: Colors.white,
-        snackPosition: SnackPosition.BOTTOM,
       );
     } catch (e) {
       Get.back();
-      Get.snackbar(
-        'Error',
-        'Terjadi kesalahan: $e',
+      showCustomSnackbar(
+        title: 'Error',
+        message: 'Terjadi kesalahan: $e',
         backgroundColor: Colors.red,
         colorText: Colors.white,
-        snackPosition: SnackPosition.BOTTOM,
       );
     }
   }

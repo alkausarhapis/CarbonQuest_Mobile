@@ -1,4 +1,5 @@
 import 'package:carbonquest/core/cooldown_helper.dart';
+import 'package:carbonquest/core/custom_snackbar.dart';
 import 'package:carbonquest/core/navigation_route.dart';
 import 'package:carbonquest/core/styles/app_color.dart';
 import 'package:flutter/material.dart';
@@ -70,10 +71,9 @@ class _QuizMenuScreenState extends State<QuizMenuScreen> {
       child: InkWell(
         onTap: isCompleted
             ? () {
-                Get.snackbar(
-                  CooldownHelper.getLimitSnackbarTitle(cat),
-                  nextLabel ?? 'Coba lagi nanti',
-                  snackPosition: SnackPosition.BOTTOM,
+                showCustomSnackbar(
+                  title: CooldownHelper.getLimitSnackbarTitle(cat),
+                  message: nextLabel ?? 'Coba lagi nanti',
                   backgroundColor: Colors.orange,
                   colorText: Colors.white,
                   duration: const Duration(seconds: 4),

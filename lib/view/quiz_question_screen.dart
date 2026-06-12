@@ -10,11 +10,13 @@ import '../model/quiz.dart';
 class QuizQuestionScreen extends StatefulWidget {
   final String quizType;
   final int? quizId;
+  final bool isDummy;
 
   const QuizQuestionScreen({
     super.key,
     this.quizType = 'daily',
     this.quizId,
+    this.isDummy = false,
   });
 
   @override
@@ -39,6 +41,10 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen> {
   }
 
   Future<void> _loadQuiz() async {
+    if (widget.isDummy) {
+      _quizController.startDummyQuiz();
+      return;
+    }
     final success = await _quizController.startQuiz(
       widget.quizType,
       quizId: widget.quizId,
@@ -99,7 +105,7 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen> {
       () => QuizScoreScreen(
         score: score,
         maxScore: maxScore,
-        quizType: widget.quizType,
+        quizType: widget.isDummy ? 'demo' : widget.quizType,
         qaSummary: qaSummary,
       ),
     );
@@ -227,7 +233,9 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen> {
                               ? 'Harian'
                               : widget.quizType == 'weekly'
                               ? 'Mingguan'
-                              : 'Bulanan'}',
+                              : widget.quizType == 'monthly'
+                              ? 'Bulanan'
+                              : 'Demo'}',
                           style: TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,

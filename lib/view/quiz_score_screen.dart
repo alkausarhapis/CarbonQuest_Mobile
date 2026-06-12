@@ -73,6 +73,8 @@ class _QuizScoreScreenState extends State<QuizScoreScreen> {
                           ? "Kuis Mingguan"
                           : widget.quizType == "monthly"
                           ? "Kuis Bulanan"
+                          : widget.quizType == "demo"
+                          ? "Kuis Demo"
                           : "Kuis"} dengan skor ${widget.score} dari ${widget.maxScore}.\n\nBerikut adalah soal dan jawaban yang saya pilih:\n${widget.qaSummary}\n\nBerikan komentar singkat dan rekomendasi spesifik.',
                 },
               ],
@@ -132,6 +134,8 @@ class _QuizScoreScreenState extends State<QuizScoreScreen> {
         return 'Kuis Mingguan';
       case 'monthly':
         return 'Kuis Bulanan';
+      case 'demo':
+        return 'Kuis Demo';
       default:
         return 'Kuis';
     }

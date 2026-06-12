@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 
 import '../controller/auth_controller.dart';
 import '../controller/quiz_controller.dart';
+import 'quiz_question_screen.dart';
 
 class QuizMenuScreen extends StatefulWidget {
   const QuizMenuScreen({super.key});
@@ -79,13 +80,15 @@ class _QuizMenuScreenState extends State<QuizMenuScreen> {
                 );
               }
             : () {
-                Get.toNamed(
-                  NavigationRoute.quizQuestion.path,
-                  arguments: {
-                    'quizType': quizType,
-                    'quizId': quizId,
-                  },
-                );
+                if (quizType == 'demo') {
+                  _quizController.resetQuiz();
+                  Get.to(() => const QuizQuestionScreen(isDummy: true));
+                } else {
+                  Get.toNamed(
+                    NavigationRoute.quizQuestion.path,
+                    arguments: {'quizType': quizType, 'quizId': quizId},
+                  );
+                }
               },
         borderRadius: BorderRadius.circular(20),
         child: Padding(
@@ -328,6 +331,33 @@ class _QuizMenuScreenState extends State<QuizMenuScreen> {
                         .where((cat) => groupedQuizzes.containsKey(cat))
                         .toList();
 
+                    final demoQuizItem = Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(4, 0, 4, 12),
+                          child: Text(
+                            'Demo',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: AppColor.cyan.color,
+                            ),
+                          ),
+                        ),
+                        _buildQuizItem(
+                          context,
+                          'Demo Quiz Lingkungan',
+                          '5 Qs',
+                          Icons.school,
+                          'demo',
+                          0,
+                          false,
+                          'Demo',
+                        ),
+                      ],
+                    );
+
                     return RefreshIndicator(
                       onRefresh: () async {
                         await _quizController.loadQuizzes();
@@ -335,8 +365,13 @@ class _QuizMenuScreenState extends State<QuizMenuScreen> {
                       color: AppColor.primary.color,
                       child: ListView.builder(
                         physics: const AlwaysScrollableScrollPhysics(),
-                        itemCount: orderedCategories.length,
-                        itemBuilder: (context, categoryIndex) {
+                        itemCount: orderedCategories.length + 1,
+                        itemBuilder: (context, index) {
+                          if (index == 0) {
+                            return demoQuizItem;
+                          }
+
+                          final categoryIndex = index - 1;
                           final category = orderedCategories[categoryIndex];
                           final quizzes = groupedQuizzes[category]!;
 

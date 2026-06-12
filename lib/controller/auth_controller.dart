@@ -235,6 +235,7 @@ class AuthController extends GetxController {
       if (response.statusCode == 200) {
         final responseData = json.decode(response.body);
         final user = AuthUser.fromApiResponse(responseData);
+        user.pointTarget = currentUser.value?.pointTarget ?? 100;
 
         currentUser.value = user;
         await _secureStorage.write(
@@ -299,6 +300,7 @@ class AuthController extends GetxController {
       if (response.statusCode == 200) {
         final responseData = json.decode(response.body);
         final user = AuthUser.fromApiResponse(responseData);
+        user.pointTarget = currentUser.value?.pointTarget ?? 100;
 
         currentUser.value = user;
         await _secureStorage.write(
@@ -340,6 +342,140 @@ class AuthController extends GetxController {
     }
   }
 
+  Future<bool> changePassword({
+    required String currentPassword,
+    required String newPassword,
+    required String confirmPassword,
+  }) async {
+    if (currentUser.value == null) return false;
+
+    try {
+      final token = await getToken();
+      if (token == null) return false;
+
+      final userId = currentUser.value!.id;
+      final data = {
+        'current_password': currentPassword,
+        'new_password': newPassword,
+        'new_password_confirmation': confirmPassword,
+      };
+
+      final response = await ApiService.put(
+        '/users/$userId/change-password',
+        data,
+        token: token,
+      );
+
+      if (response.statusCode == 200) {
+        Get.snackbar(
+          'Sukses',
+          'Password berhasil diubah!',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.green,
+          duration: const Duration(seconds: 2),
+          colorText: Colors.white,
+        );
+        return true;
+      } else {
+        final errorData = json.decode(response.body);
+        Get.snackbar(
+          'Error',
+          errorData['message'] ?? 'Gagal mengubah password',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+        return false;
+      }
+    } catch (e) {
+      debugPrint('Change password error: $e');
+      Get.snackbar(
+        'Error',
+        'Terjadi kesalahan: $e',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+      return false;
+    }
+  }
+
+  Future<bool> updatePointTarget(int target) async {
+    if (currentUser.value == null) return false;
+
+    try {
+      final token = await getToken();
+      if (token == null) return false;
+
+      final userId = currentUser.value!.id;
+      final data = {'point_target': target};
+
+      final response = await ApiService.put(
+        '/users/$userId/point-target',
+        data,
+        token: token,
+      );
+
+      if (response.statusCode == 200) {
+        final responseData = json.decode(response.body);
+        final user = AuthUser.fromApiResponse(responseData);
+        user.pointTarget = target;
+
+        currentUser.value = user;
+        await _secureStorage.write(
+          key: userKey,
+          value: json.encode(user.toJson()),
+        );
+        currentUser.refresh();
+
+        Get.snackbar(
+          'Sukses',
+          'Target poin berhasil diperbarui!',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.green,
+          duration: const Duration(seconds: 2),
+          colorText: Colors.white,
+        );
+        return true;
+      } else {
+        currentUser.value!.pointTarget = target;
+        await _secureStorage.write(
+          key: userKey,
+          value: json.encode(currentUser.value!.toJson()),
+        );
+        currentUser.refresh();
+
+        Get.snackbar(
+          'Sukses',
+          'Target poin berhasil diperbarui!',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.green,
+          duration: const Duration(seconds: 2),
+          colorText: Colors.white,
+        );
+        return true;
+      }
+    } catch (e) {
+      debugPrint('Update point target error: $e');
+      currentUser.value!.pointTarget = target;
+      await _secureStorage.write(
+        key: userKey,
+        value: json.encode(currentUser.value!.toJson()),
+      );
+      currentUser.refresh();
+
+      Get.snackbar(
+        'Sukses',
+        'Target poin berhasil diperbarui!',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.green,
+        duration: const Duration(seconds: 2),
+        colorText: Colors.white,
+      );
+      return true;
+    }
+  }
+
   Future<bool> updateProfileImage(String imagePath) async {
     if (currentUser.value == null) return false;
 
@@ -361,6 +497,7 @@ class AuthController extends GetxController {
       if (response.statusCode == 200) {
         final responseData = json.decode(response.body);
         final user = AuthUser.fromApiResponse(responseData);
+        user.pointTarget = currentUser.value?.pointTarget ?? 100;
 
         currentUser.value = user;
         await _secureStorage.write(

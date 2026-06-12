@@ -497,11 +497,19 @@ class HomeScreen extends StatelessWidget {
                                                 width: 140,
                                                 height: 140,
                                                 child: CircularProgressIndicator(
-                                                  value:
-                                                      controller
-                                                          .todayPoints
-                                                          .value /
-                                                      100,
+                                                  value: controller
+                                                              .todayPoints
+                                                              .value >
+                                                          0
+                                                      ? (controller.todayPoints
+                                                                  .value /
+                                                              (authController
+                                                                      .currentUser
+                                                                      .value
+                                                                      ?.pointTarget ??
+                                                                  100))
+                                                          .clamp(0.0, 1.0)
+                                                      : 0,
                                                   strokeWidth: 12,
                                                   backgroundColor:
                                                       Colors.grey[200],
@@ -546,7 +554,7 @@ class HomeScreen extends StatelessWidget {
                                                     ),
                                                     const SizedBox(height: 4),
                                                     Text(
-                                                      '/100 Pts',
+                                                      '/${authController.currentUser.value?.pointTarget ?? 100} Pts',
                                                       style: TextStyle(
                                                         fontSize: 12,
                                                         color: Colors.grey[600],
@@ -563,7 +571,12 @@ class HomeScreen extends StatelessWidget {
                                 ),
                                 const SizedBox(height: 20),
                                 Text(
-                                  controller.todayPoints.value >= 100
+                                  controller.todayPoints.value >=
+                                          (authController
+                                                  .currentUser
+                                                  .value
+                                                  ?.pointTarget ??
+                                              100)
                                       ? 'Target Tercapai! 🎉'
                                       : controller.todayPoints.value > 0
                                       ? 'Kerja Bagus! Terus Lanjutkan!'

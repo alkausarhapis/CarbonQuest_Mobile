@@ -1,13 +1,19 @@
 import 'package:carbonquest/controller/auth_controller.dart';
+import 'package:carbonquest/controller/mock_data_controller.dart';
 import 'package:carbonquest/core/auth_middleware.dart';
 import 'package:carbonquest/core/navigation_route.dart';
 import 'package:carbonquest/core/styles/app_theme.dart';
+import 'package:carbonquest/view/change_password_page.dart';
+import 'package:carbonquest/view/change_point_target_page.dart';
+import 'package:carbonquest/view/edit_profile_page.dart';
 import 'package:carbonquest/view/login_screen.dart';
 import 'package:carbonquest/view/main_screen.dart';
+import 'package:carbonquest/view/mock_data_page.dart';
 import 'package:carbonquest/view/mission_screen.dart';
 import 'package:carbonquest/view/quiz_menu_screen.dart';
 import 'package:carbonquest/view/quiz_question_screen.dart';
 import 'package:carbonquest/view/register_screen.dart';
+import 'package:carbonquest/view/settings_menu_page.dart';
 import 'package:carbonquest/view/settings_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -18,6 +24,7 @@ void main() async {
   await dotenv.load(fileName: ".env");
 
   final authController = Get.put(AuthController());
+  Get.put(MockDataController());
 
   while (!authController.isInitialized.value) {
     await Future.delayed(const Duration(milliseconds: 50));
@@ -84,6 +91,31 @@ class MainApp extends StatelessWidget {
         GetPage(
           name: NavigationRoute.profileRoute.path,
           page: () => const SettingsScreen(),
+          middlewares: [AuthMiddleware()],
+        ),
+        GetPage(
+          name: NavigationRoute.settingsRoute.path,
+          page: () => const SettingsMenuPage(),
+          middlewares: [AuthMiddleware()],
+        ),
+        GetPage(
+          name: NavigationRoute.changePasswordRoute.path,
+          page: () => const ChangePasswordPage(),
+          middlewares: [AuthMiddleware()],
+        ),
+        GetPage(
+          name: NavigationRoute.editProfileRoute.path,
+          page: () => const EditProfilePage(),
+          middlewares: [AuthMiddleware()],
+        ),
+        GetPage(
+          name: NavigationRoute.changePointTargetRoute.path,
+          page: () => const ChangePointTargetPage(),
+          middlewares: [AuthMiddleware()],
+        ),
+        GetPage(
+          name: NavigationRoute.mockDataRoute.path,
+          page: () => const MockDataPage(),
           middlewares: [AuthMiddleware()],
         ),
       ],

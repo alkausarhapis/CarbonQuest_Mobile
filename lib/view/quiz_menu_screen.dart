@@ -1,4 +1,5 @@
 import 'package:carbonquest/core/cooldown_helper.dart';
+import 'package:carbonquest/core/custom_snackbar.dart';
 import 'package:carbonquest/core/navigation_route.dart';
 import 'package:carbonquest/core/styles/app_color.dart';
 import 'package:flutter/material.dart';
@@ -6,6 +7,7 @@ import 'package:get/get.dart';
 
 import '../controller/auth_controller.dart';
 import '../controller/quiz_controller.dart';
+import 'quiz_question_screen.dart';
 
 class QuizMenuScreen extends StatefulWidget {
   const QuizMenuScreen({super.key});
@@ -69,20 +71,24 @@ class _QuizMenuScreenState extends State<QuizMenuScreen> {
       child: InkWell(
         onTap: isCompleted
             ? () {
-                Get.snackbar(
-                  CooldownHelper.getLimitSnackbarTitle(cat),
-                  nextLabel ?? 'Coba lagi nanti',
-                  snackPosition: SnackPosition.BOTTOM,
+                showCustomSnackbar(
+                  title: CooldownHelper.getLimitSnackbarTitle(cat),
+                  message: nextLabel ?? 'Coba lagi nanti',
                   backgroundColor: Colors.orange,
                   colorText: Colors.white,
                   duration: const Duration(seconds: 4),
                 );
               }
             : () {
-                Get.toNamed(
-                  NavigationRoute.quizQuestion.path,
-                  arguments: quizType,
-                );
+                if (quizType == 'demo') {
+                  _quizController.resetQuiz();
+                  Get.to(() => const QuizQuestionScreen(isDummy: true));
+                } else {
+                  Get.toNamed(
+                    NavigationRoute.quizQuestion.path,
+                    arguments: {'quizType': quizType, 'quizId': quizId},
+                  );
+                }
               },
         borderRadius: BorderRadius.circular(20),
         child: Padding(
@@ -300,7 +306,7 @@ class _QuizMenuScreenState extends State<QuizMenuScreen> {
                   padding: const EdgeInsets.all(16.0),
                   child: Obx(() {
                     if (_quizController.isLoading.value) {
-                      return const Center(child: CircularProgressIndicator());
+                      return Center(child: CircularProgressIndicator(color: AppColor.primary.color));
                     }
 
                     if (_quizController.quizzes.isEmpty) {
@@ -325,6 +331,33 @@ class _QuizMenuScreenState extends State<QuizMenuScreen> {
                         .where((cat) => groupedQuizzes.containsKey(cat))
                         .toList();
 
+                    final demoQuizItem = Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(4, 0, 4, 12),
+                          child: Text(
+                            'Demo',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: AppColor.cyan.color,
+                            ),
+                          ),
+                        ),
+                        _buildQuizItem(
+                          context,
+                          'Demo Quiz Lingkungan',
+                          '5 Qs',
+                          Icons.school,
+                          'demo',
+                          0,
+                          false,
+                          'Demo',
+                        ),
+                      ],
+                    );
+
                     return RefreshIndicator(
                       onRefresh: () async {
                         await _quizController.loadQuizzes();
@@ -332,8 +365,13 @@ class _QuizMenuScreenState extends State<QuizMenuScreen> {
                       color: AppColor.primary.color,
                       child: ListView.builder(
                         physics: const AlwaysScrollableScrollPhysics(),
-                        itemCount: orderedCategories.length,
-                        itemBuilder: (context, categoryIndex) {
+                        itemCount: orderedCategories.length + 1,
+                        itemBuilder: (context, index) {
+                          if (index == 0) {
+                            return demoQuizItem;
+                          }
+
+                          final categoryIndex = index - 1;
                           final category = orderedCategories[categoryIndex];
                           final quizzes = groupedQuizzes[category]!;
 

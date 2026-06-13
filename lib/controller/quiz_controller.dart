@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 
 import '../core/api_service.dart';
 import '../core/cooldown_helper.dart';
+import '../core/custom_snackbar.dart';
 import '../model/quiz.dart';
 import 'auth_controller.dart';
 
@@ -18,6 +19,7 @@ class QuizController extends GetxController {
   final RxInt currentQuestionIndex = 0.obs;
   final RxList<int?> userAnswers = <int?>[].obs;
   final RxInt totalScore = 0.obs;
+  final RxBool isDummyQuiz = false.obs;
 
   final RxMap<int, bool> quizCompletionStatus = <int, bool>{}.obs;
 
@@ -40,10 +42,9 @@ class QuizController extends GetxController {
       await refreshCompletionStatuses();
     } catch (e) {
       debugPrint('Error loading quizzes: $e');
-      Get.snackbar(
-        'Error',
-        'Gagal memuat kuis: ${e.toString()}',
-        snackPosition: SnackPosition.BOTTOM,
+      showCustomSnackbar(
+        title: 'Error',
+        message: 'Gagal memuat kuis: ${e.toString()}',
         backgroundColor: Colors.red,
         colorText: Colors.white,
       );
@@ -144,7 +145,7 @@ class QuizController extends GetxController {
     }
   }
 
-  Future<bool> startQuiz(String quizType) async {
+  Future<bool> startQuiz(String quizType, {int? quizId}) async {
     isLoading.value = true;
 
     try {
@@ -155,7 +156,13 @@ class QuizController extends GetxController {
         await loadQuizzes();
       }
 
-      final quiz = getQuizByCategory(category);
+      Quiz? quiz;
+      if (quizId != null) {
+        try {
+          quiz = quizzes.firstWhere((q) => q.idQuiz == quizId);
+        } catch (_) {}
+      }
+      quiz ??= getQuizByCategory(category);
       if (quiz == null) {
         debugPrint('Quiz not found for category: $category');
         debugPrint(
@@ -171,10 +178,9 @@ class QuizController extends GetxController {
             CooldownHelper.getNextAvailableLabel(quizCategory) ??
             'Coba lagi nanti';
 
-        Get.snackbar(
-          CooldownHelper.getLimitSnackbarTitle(quizCategory),
-          nextLabel,
-          snackPosition: SnackPosition.BOTTOM,
+        showCustomSnackbar(
+          title: CooldownHelper.getLimitSnackbarTitle(quizCategory),
+          message: nextLabel,
           backgroundColor: Colors.orange,
           colorText: Colors.white,
           duration: const Duration(seconds: 4),
@@ -205,10 +211,9 @@ class QuizController extends GetxController {
       return true;
     } catch (e) {
       debugPrint('Error starting quiz: $e');
-      Get.snackbar(
-        'Error',
-        'Gagal memuat pertanyaan kuis: ${e.toString()}',
-        snackPosition: SnackPosition.BOTTOM,
+      showCustomSnackbar(
+        title: 'Error',
+        message: 'Gagal memuat pertanyaan kuis: ${e.toString()}',
         backgroundColor: Colors.red,
         colorText: Colors.white,
         duration: const Duration(seconds: 5),
@@ -217,6 +222,91 @@ class QuizController extends GetxController {
     } finally {
       isLoading.value = false;
     }
+  }
+
+  void startDummyQuiz() {
+    isDummyQuiz.value = true;
+    currentQuiz.value = Quiz(
+      idQuiz: 0,
+      title: 'Kuis Demo Lingkungan',
+      category: 'Demo',
+      totalPoints: 50,
+      idCreator: 0,
+      createdAt: DateTime.now(),
+      questionCount: 5,
+    );
+
+    currentQuestions.value = [
+      Question(
+        idQuestion: 1,
+        idQuiz: 0,
+        content: 'Apa gas rumah kaca utama yang dihasilkan dari pembakaran bahan bakar fosil?',
+        points: 10,
+        order: 1,
+        answers: [
+          Answer(idAnswer: 1, idQuestion: 1, content: 'Karbon Dioksida (CO₂)', points: 10),
+          Answer(idAnswer: 2, idQuestion: 1, content: 'Oksigen (O₂)', points: 0),
+          Answer(idAnswer: 3, idQuestion: 1, content: 'Nitrogen (N₂)', points: 0),
+          Answer(idAnswer: 4, idQuestion: 1, content: 'Hidrogen (H₂)', points: 0),
+        ],
+      ),
+      Question(
+        idQuestion: 2,
+        idQuiz: 0,
+        content: 'Apa cara paling efektif untuk mengurangi jejak karbon pribadi?',
+        points: 10,
+        order: 2,
+        answers: [
+          Answer(idAnswer: 5, idQuestion: 2, content: 'Mengurangi konsumsi daging merah', points: 8),
+          Answer(idAnswer: 6, idQuestion: 2, content: 'Menggunakan transportasi umum', points: 10),
+          Answer(idAnswer: 7, idQuestion: 2, content: 'Membeli produk baru setiap bulan', points: 0),
+          Answer(idAnswer: 8, idQuestion: 2, content: 'Menggunakan pendingin ruangan terus menerus', points: 0),
+        ],
+      ),
+      Question(
+        idQuestion: 3,
+        idQuiz: 0,
+        content: 'Berapa lama waktu yang dibutuhkan sampah plastik untuk terurai di alam?',
+        points: 10,
+        order: 3,
+        answers: [
+          Answer(idAnswer: 9, idQuestion: 3, content: '1-5 tahun', points: 0),
+          Answer(idAnswer: 10, idQuestion: 3, content: '10-20 tahun', points: 0),
+          Answer(idAnswer: 11, idQuestion: 3, content: '100-500 tahun', points: 10),
+          Answer(idAnswer: 12, idQuestion: 3, content: '1000+ tahun', points: 5),
+        ],
+      ),
+      Question(
+        idQuestion: 4,
+        idQuiz: 0,
+        content: 'Apa sumber energi terbarukan yang paling banyak digunakan di dunia?',
+        points: 10,
+        order: 4,
+        answers: [
+          Answer(idAnswer: 13, idQuestion: 4, content: 'Tenaga Surya', points: 8),
+          Answer(idAnswer: 14, idQuestion: 4, content: 'Tenaga Angin', points: 5),
+          Answer(idAnswer: 15, idQuestion: 4, content: 'Tenaga Air (Hidroelektrik)', points: 10),
+          Answer(idAnswer: 16, idQuestion: 4, content: 'Tenaga Panas Bumi', points: 3),
+        ],
+      ),
+      Question(
+        idQuestion: 5,
+        idQuiz: 0,
+        content: 'Apa yang dimaksud dengan "carbon footprint"?',
+        points: 10,
+        order: 5,
+        answers: [
+          Answer(idAnswer: 17, idQuestion: 5, content: 'Jumlah pohon yang kita tanam', points: 0),
+          Answer(idAnswer: 18, idQuestion: 5, content: 'Jejak kaki di atas karbon', points: 0),
+          Answer(idAnswer: 19, idQuestion: 5, content: 'Total emisi CO₂ yang dihasilkan oleh aktivitas kita', points: 10),
+          Answer(idAnswer: 20, idQuestion: 5, content: 'Jenis bahan bakar yang kita gunakan', points: 3),
+        ],
+      ),
+    ];
+
+    currentQuestionIndex.value = 0;
+    userAnswers.value = List.filled(currentQuestions.length, null);
+    totalScore.value = 0;
   }
 
   void selectAnswer(int answerIndex) {
@@ -267,6 +357,18 @@ class QuizController extends GetxController {
   }
 
   Future<bool> submitQuiz() async {
+    if (isDummyQuiz.value) {
+      int score = 0;
+      for (int i = 0; i < currentQuestions.length; i++) {
+        final answerIndex = userAnswers[i];
+        if (answerIndex != null && answerIndex < currentQuestions[i].answers.length) {
+          score += currentQuestions[i].answers[answerIndex].points;
+        }
+      }
+      totalScore.value = score;
+      return true;
+    }
+
     try {
       final token = await _authController.getToken();
       if (token == null) throw Exception('Please login first');
@@ -314,10 +416,9 @@ class QuizController extends GetxController {
         final nextLabel =
             CooldownHelper.getNextAvailableLabel(cat) ?? 'Coba lagi nanti';
 
-        Get.snackbar(
-          CooldownHelper.getLimitSnackbarTitle(cat),
-          '$limitMessage\n$nextLabel',
-          snackPosition: SnackPosition.BOTTOM,
+        showCustomSnackbar(
+          title: CooldownHelper.getLimitSnackbarTitle(cat),
+          message: '$limitMessage\n$nextLabel',
           backgroundColor: Colors.orange,
           colorText: Colors.white,
           duration: const Duration(seconds: 4),
@@ -327,10 +428,9 @@ class QuizController extends GetxController {
       return true;
     } catch (e) {
       debugPrint('Error submitting quiz: $e');
-      Get.snackbar(
-        'Error',
-        'Gagal mengirim hasil kuis: ${e.toString()}',
-        snackPosition: SnackPosition.BOTTOM,
+      showCustomSnackbar(
+        title: 'Error',
+        message: 'Gagal mengirim hasil kuis: ${e.toString()}',
         backgroundColor: Colors.red,
         colorText: Colors.white,
       );

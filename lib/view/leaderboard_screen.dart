@@ -6,6 +6,7 @@ import 'package:share_plus/share_plus.dart';
 
 import '../controller/auth_controller.dart';
 import '../controller/leaderboard_controller.dart';
+import '../core/custom_snackbar.dart';
 import '../core/styles/app_color.dart';
 import '../model/users.dart';
 
@@ -31,11 +32,10 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
       ),
     );
 
-    if (Get.isRegistered<LeaderboardController>()) {
-      _leaderboardController = Get.find<LeaderboardController>();
-    } else {
-      _leaderboardController = Get.put(LeaderboardController());
-    }
+    _leaderboardController = Get.put(
+      LeaderboardController(),
+      permanent: true,
+    );
   }
 
   Future<void> _shareLeaderboard() async {
@@ -70,19 +70,17 @@ Bergabunglah dengan CarbonQuest dan kurangi jejak karbon Kamu! 🌍''';
       );
 
       if (result.status == ShareResultStatus.success) {
-        Get.snackbar(
-          'Berhasil',
-          'Leaderboard berhasil dibagikan!',
-          snackPosition: SnackPosition.BOTTOM,
+        showCustomSnackbar(
+          title: 'Berhasil',
+          message: 'Leaderboard berhasil dibagikan!',
           backgroundColor: Colors.green,
           colorText: Colors.white,
         );
       }
     } catch (e) {
-      Get.snackbar(
-        'Error',
-        'Leaderboard gagal dibagikan!',
-        snackPosition: SnackPosition.BOTTOM,
+      showCustomSnackbar(
+        title: 'Error',
+        message: 'Leaderboard gagal dibagikan!',
         backgroundColor: Colors.red,
         colorText: Colors.white,
       );

@@ -63,7 +63,7 @@ class _ArticleListScreenState extends State<ArticleListScreen> {
       body: RefreshIndicator(
         onRefresh: _refreshArticles,
         child: _isLoading
-            ? const Center(child: CircularProgressIndicator())
+            ? Center(child: CircularProgressIndicator(color: AppColor.primary.color))
             : _articles.isEmpty
             ? Center(
                 child: Column(

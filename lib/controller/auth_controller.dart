@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 
 import '../core/api_service.dart';
+import '../core/custom_snackbar.dart';
 import '../model/auth_user.dart';
 
 class AuthController extends GetxController {
@@ -109,10 +110,9 @@ class AuthController extends GetxController {
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        Get.snackbar(
-          'Sukses',
-          'Registrasi user berhasil! Silakan login.',
-          snackPosition: SnackPosition.BOTTOM,
+        showCustomSnackbar(
+          title: 'Sukses',
+          message: 'Registrasi user berhasil! Silakan login.',
           duration: const Duration(seconds: 2),
           backgroundColor: Colors.green,
           colorText: Colors.white,
@@ -122,10 +122,9 @@ class AuthController extends GetxController {
         return true;
       } else {
         final errorData = json.decode(response.body);
-        Get.snackbar(
-          'Error',
-          errorData['message'] ?? 'Registrasi gagal',
-          snackPosition: SnackPosition.BOTTOM,
+        showCustomSnackbar(
+          title: 'Error',
+          message: errorData['message'] ?? 'Registrasi gagal',
           backgroundColor: Colors.red,
           colorText: Colors.white,
         );
@@ -133,10 +132,9 @@ class AuthController extends GetxController {
         return false;
       }
     } catch (e) {
-      Get.snackbar(
-        'Error',
-        'Terjadi kesalahan: $e',
-        snackPosition: SnackPosition.BOTTOM,
+      showCustomSnackbar(
+        title: 'Error',
+        message: 'Terjadi kesalahan: $e',
         backgroundColor: Colors.red,
         colorText: Colors.white,
       );
@@ -165,10 +163,9 @@ class AuthController extends GetxController {
 
         if (token == null || token.isEmpty) {
           debugPrint('Full response data: $responseData');
-          Get.snackbar(
-            'Error',
-            'Token tidak ditemukan. Response: ${responseData.keys.join(", ")}',
-            snackPosition: SnackPosition.BOTTOM,
+          showCustomSnackbar(
+            title: 'Error',
+            message: 'Token tidak ditemukan. Response: ${responseData.keys.join(", ")}',
             backgroundColor: Colors.red,
             colorText: Colors.white,
             duration: const Duration(seconds: 5),
@@ -182,10 +179,9 @@ class AuthController extends GetxController {
         await _saveAuthData(token, user);
         currentUser.value = user;
 
-        Get.snackbar(
-          'Sukses',
-          'Login berhasil',
-          snackPosition: SnackPosition.BOTTOM,
+        showCustomSnackbar(
+          title: 'Sukses',
+          message: 'Login berhasil',
           backgroundColor: Colors.green,
           duration: const Duration(seconds: 2),
           colorText: Colors.white,
@@ -199,10 +195,9 @@ class AuthController extends GetxController {
       }
     } catch (e) {
       debugPrint('Login error: $e');
-      Get.snackbar(
-        'Error',
-        'Terjadi kesalahan: $e',
-        snackPosition: SnackPosition.BOTTOM,
+      showCustomSnackbar(
+        title: 'Error',
+        message: 'Terjadi kesalahan: $e',
         backgroundColor: Colors.red,
         colorText: Colors.white,
       );
@@ -213,10 +208,9 @@ class AuthController extends GetxController {
 
   Future<void> logout() async {
     await _clearAuthData();
-    Get.snackbar(
-      'Logout',
-      'Anda telah keluar',
-      snackPosition: SnackPosition.BOTTOM,
+    showCustomSnackbar(
+      title: 'Logout',
+      message: 'Anda telah keluar',
       backgroundColor: Colors.blue,
       colorText: Colors.white,
     );
@@ -247,10 +241,9 @@ class AuthController extends GetxController {
         return true;
       } else {
         final errorData = json.decode(response.body);
-        Get.snackbar(
-          'Error',
-          errorData['message'] ?? 'Gagal mengambil data user',
-          snackPosition: SnackPosition.BOTTOM,
+        showCustomSnackbar(
+          title: 'Error',
+          message: errorData['message'] ?? 'Gagal mengambil data user',
           backgroundColor: Colors.red,
           colorText: Colors.white,
         );
@@ -258,10 +251,9 @@ class AuthController extends GetxController {
       }
     } catch (e) {
       debugPrint('Fetch user error: $e');
-      Get.snackbar(
-        'Error',
-        'Terjadi kesalahan: $e',
-        snackPosition: SnackPosition.BOTTOM,
+      showCustomSnackbar(
+        title: 'Error',
+        message: 'Terjadi kesalahan: $e',
         backgroundColor: Colors.red,
         colorText: Colors.white,
       );
@@ -309,10 +301,9 @@ class AuthController extends GetxController {
         );
         currentUser.refresh();
 
-        Get.snackbar(
-          'Sukses',
-          'Data berhasil disimpan!',
-          snackPosition: SnackPosition.BOTTOM,
+        showCustomSnackbar(
+          title: 'Sukses',
+          message: 'Data berhasil disimpan!',
           backgroundColor: Colors.green,
           duration: const Duration(seconds: 2),
           colorText: Colors.white,
@@ -320,10 +311,9 @@ class AuthController extends GetxController {
         return true;
       } else {
         final errorData = json.decode(response.body);
-        Get.snackbar(
-          'Error',
-          errorData['message'] ?? 'Gagal menyimpan data',
-          snackPosition: SnackPosition.BOTTOM,
+        showCustomSnackbar(
+          title: 'Error',
+          message: errorData['message'] ?? 'Gagal menyimpan data',
           backgroundColor: Colors.red,
           colorText: Colors.white,
         );
@@ -331,10 +321,9 @@ class AuthController extends GetxController {
       }
     } catch (e) {
       debugPrint('Update profile error: $e');
-      Get.snackbar(
-        'Error',
-        'Gagal menyimpan data: $e',
-        snackPosition: SnackPosition.BOTTOM,
+      showCustomSnackbar(
+        title: 'Error',
+        message: 'Gagal menyimpan data: $e',
         backgroundColor: Colors.red,
         colorText: Colors.white,
       );
@@ -367,10 +356,9 @@ class AuthController extends GetxController {
       );
 
       if (response.statusCode == 200) {
-        Get.snackbar(
-          'Sukses',
-          'Password berhasil diubah!',
-          snackPosition: SnackPosition.BOTTOM,
+        showCustomSnackbar(
+          title: 'Sukses',
+          message: 'Password berhasil diubah!',
           backgroundColor: Colors.green,
           duration: const Duration(seconds: 2),
           colorText: Colors.white,
@@ -378,10 +366,9 @@ class AuthController extends GetxController {
         return true;
       } else {
         final errorData = json.decode(response.body);
-        Get.snackbar(
-          'Error',
-          errorData['message'] ?? 'Gagal mengubah password',
-          snackPosition: SnackPosition.BOTTOM,
+        showCustomSnackbar(
+          title: 'Error',
+          message: errorData['message'] ?? 'Gagal mengubah password',
           backgroundColor: Colors.red,
           colorText: Colors.white,
         );
@@ -389,10 +376,9 @@ class AuthController extends GetxController {
       }
     } catch (e) {
       debugPrint('Change password error: $e');
-      Get.snackbar(
-        'Error',
-        'Terjadi kesalahan: $e',
-        snackPosition: SnackPosition.BOTTOM,
+      showCustomSnackbar(
+        title: 'Error',
+        message: 'Terjadi kesalahan: $e',
         backgroundColor: Colors.red,
         colorText: Colors.white,
       );
@@ -428,10 +414,9 @@ class AuthController extends GetxController {
         );
         currentUser.refresh();
 
-        Get.snackbar(
-          'Sukses',
-          'Target poin berhasil diperbarui!',
-          snackPosition: SnackPosition.BOTTOM,
+        showCustomSnackbar(
+          title: 'Sukses',
+          message: 'Target poin berhasil diperbarui!',
           backgroundColor: Colors.green,
           duration: const Duration(seconds: 2),
           colorText: Colors.white,
@@ -445,10 +430,9 @@ class AuthController extends GetxController {
         );
         currentUser.refresh();
 
-        Get.snackbar(
-          'Sukses',
-          'Target poin berhasil diperbarui!',
-          snackPosition: SnackPosition.BOTTOM,
+        showCustomSnackbar(
+          title: 'Sukses',
+          message: 'Target poin berhasil diperbarui!',
           backgroundColor: Colors.green,
           duration: const Duration(seconds: 2),
           colorText: Colors.white,
@@ -464,10 +448,9 @@ class AuthController extends GetxController {
       );
       currentUser.refresh();
 
-      Get.snackbar(
-        'Sukses',
-        'Target poin berhasil diperbarui!',
-        snackPosition: SnackPosition.BOTTOM,
+      showCustomSnackbar(
+        title: 'Sukses',
+        message: 'Target poin berhasil diperbarui!',
         backgroundColor: Colors.green,
         duration: const Duration(seconds: 2),
         colorText: Colors.white,
@@ -506,10 +489,9 @@ class AuthController extends GetxController {
         );
         currentUser.refresh();
 
-        Get.snackbar(
-          'Sukses',
-          'Foto profil berhasil diupload!',
-          snackPosition: SnackPosition.BOTTOM,
+        showCustomSnackbar(
+          title: 'Sukses',
+          message: 'Foto profil berhasil diupload!',
           backgroundColor: Colors.green,
           duration: const Duration(seconds: 2),
           colorText: Colors.white,
@@ -517,10 +499,9 @@ class AuthController extends GetxController {
         return true;
       } else {
         final errorData = json.decode(response.body);
-        Get.snackbar(
-          'Error',
-          errorData['message'] ?? 'Gagal upload foto',
-          snackPosition: SnackPosition.BOTTOM,
+        showCustomSnackbar(
+          title: 'Error',
+          message: errorData['message'] ?? 'Gagal upload foto',
           backgroundColor: Colors.red,
           colorText: Colors.white,
         );
@@ -528,10 +509,9 @@ class AuthController extends GetxController {
       }
     } catch (e) {
       debugPrint('Upload image error: $e');
-      Get.snackbar(
-        'Error',
-        'Gagal menyimpan foto: $e',
-        snackPosition: SnackPosition.BOTTOM,
+      showCustomSnackbar(
+        title: 'Error',
+        message: 'Gagal menyimpan foto: $e',
         backgroundColor: Colors.red,
         colorText: Colors.white,
       );

@@ -1,3 +1,4 @@
+import 'package:carbonquest/core/custom_snackbar.dart';
 import 'package:carbonquest/core/styles/app_color.dart';
 import 'package:carbonquest/view/quiz_score_screen.dart';
 import 'package:flutter/material.dart';
@@ -9,8 +10,15 @@ import '../model/quiz.dart';
 
 class QuizQuestionScreen extends StatefulWidget {
   final String quizType;
+  final int? quizId;
+  final bool isDummy;
 
-  const QuizQuestionScreen({super.key, this.quizType = 'daily'});
+  const QuizQuestionScreen({
+    super.key,
+    this.quizType = 'daily',
+    this.quizId,
+    this.isDummy = false,
+  });
 
   @override
   State<QuizQuestionScreen> createState() => _QuizQuestionScreenState();
@@ -34,7 +42,14 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen> {
   }
 
   Future<void> _loadQuiz() async {
-    final success = await _quizController.startQuiz(widget.quizType);
+    if (widget.isDummy) {
+      _quizController.startDummyQuiz();
+      return;
+    }
+    final success = await _quizController.startQuiz(
+      widget.quizType,
+      quizId: widget.quizId,
+    );
     if (!success) {
       Get.back();
     }
@@ -49,13 +64,11 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen> {
         _finishQuiz();
       }
     } else {
-      Get.snackbar(
-        'Perhatian',
-        'Silakan pilih jawaban terlebih dahulu',
+      showCustomSnackbar(
+        title: 'Perhatian',
+        message: 'Silakan pilih jawaban terlebih dahulu',
         backgroundColor: Colors.orange,
         colorText: Colors.white,
-        snackPosition: SnackPosition.BOTTOM,
-        margin: const EdgeInsets.all(16),
       );
     }
   }
@@ -91,7 +104,7 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen> {
       () => QuizScoreScreen(
         score: score,
         maxScore: maxScore,
-        quizType: widget.quizType,
+        quizType: widget.isDummy ? 'demo' : widget.quizType,
         qaSummary: qaSummary,
       ),
     );
@@ -219,7 +232,9 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen> {
                               ? 'Harian'
                               : widget.quizType == 'weekly'
                               ? 'Mingguan'
-                              : 'Bulanan'}',
+                              : widget.quizType == 'monthly'
+                              ? 'Bulanan'
+                              : 'Demo'}',
                           style: TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,

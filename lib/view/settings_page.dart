@@ -1,9 +1,14 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
+import 'package:carbonquest/core/custom_snackbar.dart';
 import 'package:carbonquest/core/navigation_route.dart';
 import 'package:carbonquest/core/styles/app_color.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get.dart';
+import 'package:http/http.dart' as http;
 import 'package:iconsax_plus/iconsax_plus.dart';
 
 import '../controller/auth_controller.dart';
@@ -400,6 +405,123 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
+  Future<void> _testAIConnectivity() async {
+    final apiKey = dotenv.env['SUMOPOD_API_KEY'];
+
+    Get.dialog(
+      Center(
+        child: Card(
+          margin: const EdgeInsets.symmetric(horizontal: 40),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(color: AppColor.primary.color),
+                const SizedBox(height: 16),
+                const Text(
+                  'Menguji koneksi AI...',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                ),
+                if (apiKey == null || apiKey.isEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: Text(
+                      'API Key tidak ditemukan di .env',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.red.shade400,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
+      barrierDismissible: false,
+    );
+
+    try {
+      if (apiKey == null || apiKey.isEmpty) {
+        await Future.delayed(const Duration(seconds: 1));
+        Get.back();
+        showCustomSnackbar(
+          title: 'Gagal',
+          message: 'API Key (SUMOPOD_API_KEY) tidak ditemukan di file .env',
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+        return;
+      }
+
+      final stopwatch = Stopwatch()..start();
+      final response = await http
+          .post(
+            Uri.parse('https://ai.sumopod.com/v1/chat/completions'),
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer $apiKey',
+            },
+            body: jsonEncode({
+              'model': 'gpt-4.1-nano',
+              'messages': [
+                {'role': 'user', 'content': 'Kata sandi: test'},
+              ],
+              'max_tokens': 1,
+            }),
+          )
+          .timeout(const Duration(seconds: 10));
+      stopwatch.stop();
+
+      Get.back();
+
+      if (response.statusCode == 200) {
+        showCustomSnackbar(
+          title: 'Berhasil',
+          message: 'Koneksi AI berhasil (${stopwatch.elapsed.inMilliseconds}ms)',
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+        );
+      } else {
+        showCustomSnackbar(
+          title: 'Gagal (${response.statusCode})',
+          message: 'Server merespon dengan error: ${response.body.length > 100 ? '${response.body.substring(0, 100)}...' : response.body}',
+          backgroundColor: Colors.orange,
+          colorText: Colors.white,
+          duration: const Duration(seconds: 6),
+        );
+      }
+    } on TimeoutException {
+      Get.back();
+      showCustomSnackbar(
+        title: 'Timeout',
+        message: 'Koneksi ke server AI tidak merespon dalam 10 detik',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    } on SocketException {
+      Get.back();
+      showCustomSnackbar(
+        title: 'Gagal',
+        message: 'Tidak dapat terhubung ke server AI. Periksa koneksi internet.',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    } catch (e) {
+      Get.back();
+      showCustomSnackbar(
+        title: 'Error',
+        message: 'Terjadi kesalahan: $e',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    }
+  }
+
   Widget _buildMenuCard() {
     return Container(
       width: double.infinity,
@@ -424,6 +546,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
             onTap: () {
               Get.toNamed(NavigationRoute.settingsRoute.path);
             },
+          ),
+          Container(
+            margin: const EdgeInsets.symmetric(horizontal: 20),
+            height: 1,
+            color: Colors.grey.withValues(alpha: 0.1),
+          ),
+          _buildMenuItem(
+            icon: IconsaxPlusLinear.info_circle,
+            title: 'Debug AI',
+            subtitle: 'Uji koneksi ke server AI',
+            iconColor: Colors.amber.shade700,
+            onTap: () => _testAIConnectivity(),
           ),
           Container(
             margin: const EdgeInsets.symmetric(horizontal: 20),

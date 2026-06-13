@@ -8,8 +8,8 @@ import 'package:carbonquest/view/change_point_target_page.dart';
 import 'package:carbonquest/view/edit_profile_page.dart';
 import 'package:carbonquest/view/login_screen.dart';
 import 'package:carbonquest/view/main_screen.dart';
-import 'package:carbonquest/view/mock_data_page.dart';
 import 'package:carbonquest/view/mission_screen.dart';
+import 'package:carbonquest/view/mock_data_page.dart';
 import 'package:carbonquest/view/quiz_menu_screen.dart';
 import 'package:carbonquest/view/quiz_question_screen.dart';
 import 'package:carbonquest/view/register_screen.dart';
@@ -78,7 +78,13 @@ class MainApp extends StatelessWidget {
         GetPage(
           name: NavigationRoute.quizQuestion.path,
           page: () {
-            final quizType = Get.arguments as String?;
+            final args = Get.arguments;
+            if (args is Map) {
+              final quizType = (args['quizType'] as String?) ?? 'daily';
+              final quizId = args['quizId'] as int?;
+              return QuizQuestionScreen(quizType: quizType, quizId: quizId);
+            }
+            final quizType = args as String?;
             return QuizQuestionScreen(quizType: quizType ?? 'daily');
           },
           middlewares: [AuthMiddleware()],

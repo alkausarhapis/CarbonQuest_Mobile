@@ -63,43 +63,11 @@ class User {
         final jsonData = json.decode(response.body);
         final List<dynamic> usersJson = jsonData['data'] ?? [];
 
-        final List<User> users = [];
-        for (var userJson in usersJson) {
-          final userId = userJson['id_user'];
+        final users = usersJson
+            .map((json) => User.fromJson(json as Map<String, dynamic>))
+            .toList();
 
-          try {
-            final userDetailResponse = await ApiService.get(
-              '/users/$userId',
-              token: token,
-            );
-
-            if (userDetailResponse.statusCode == 200) {
-              final userDetailJson = json.decode(userDetailResponse.body);
-              final userData = userDetailJson['data'];
-
-              final user = User(
-                id: userId ?? 0,
-                name: userData['name'] ?? userJson['name'] ?? '',
-                email: userData['email'] ?? userJson['email'] ?? '',
-                profileImage: userData['profile_image'],
-                totalPoints: userJson['total_points'] ?? 0,
-                sessionPoints: userJson['session_points'] ?? 0,
-                missionPoints: userJson['mission_points'] ?? 0,
-              );
-              users.add(user);
-            } else {
-              debugPrint(
-                'Failed to fetch profile for user $userId, using leaderboard data only',
-              );
-              users.add(User.fromJson(userJson));
-            }
-          } catch (e) {
-            debugPrint('Error fetching profile for user $userId: $e');
-            users.add(User.fromJson(userJson));
-          }
-        }
-
-        debugPrint('Successfully loaded ${users.length} users with profiles');
+        debugPrint('Successfully loaded ${users.length} users');
         return users;
       } else {
         throw Exception('Failed to load leaderboard: ${response.statusCode}');

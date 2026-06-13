@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../core/custom_snackbar.dart';
 import '../model/users.dart';
 import 'auth_controller.dart';
 
@@ -18,6 +19,7 @@ class LeaderboardController extends GetxController {
   }
 
   Future<void> loadLeaderboard() async {
+    if (isLoading.value) return;
     isLoading.value = true;
 
     try {
@@ -40,10 +42,9 @@ class LeaderboardController extends GetxController {
       }
     } catch (e, stackTrace) {
       debugPrint('Stack trace: $stackTrace');
-      Get.snackbar(
-        'Error',
-        'Gagal memuat leaderboard: ${e.toString()}',
-        snackPosition: SnackPosition.BOTTOM,
+      showCustomSnackbar(
+        title: 'Error',
+        message: 'Gagal memuat leaderboard: ${e.toString()}',
         backgroundColor: Colors.red,
         colorText: Colors.white,
         duration: const Duration(seconds: 5),

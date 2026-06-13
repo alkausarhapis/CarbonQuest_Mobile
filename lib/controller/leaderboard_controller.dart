@@ -19,6 +19,7 @@ class LeaderboardController extends GetxController {
   }
 
   Future<void> loadLeaderboard() async {
+    if (isLoading.value) return;
     isLoading.value = true;
 
     try {

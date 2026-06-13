@@ -32,11 +32,10 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
       ),
     );
 
-    if (Get.isRegistered<LeaderboardController>()) {
-      _leaderboardController = Get.find<LeaderboardController>();
-    } else {
-      _leaderboardController = Get.put(LeaderboardController());
-    }
+    _leaderboardController = Get.put(
+      LeaderboardController(),
+      permanent: true,
+    );
   }
 
   Future<void> _shareLeaderboard() async {

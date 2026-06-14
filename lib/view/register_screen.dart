@@ -60,7 +60,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     if (picked != null) {
       setState(() {
         _tanggalLahirController.text =
-            '${picked.day.toString().padLeft(2, '0')}-${picked.month.toString().padLeft(2, '0')}-${picked.year}';
+            '${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}';
       });
     }
   }

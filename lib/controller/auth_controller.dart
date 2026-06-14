@@ -116,6 +116,7 @@ class AuthController extends GetxController {
           duration: const Duration(seconds: 2),
           backgroundColor: Colors.green,
           colorText: Colors.white,
+          margin: EdgeInsets.all(20),
         );
 
         isLoading.value = false;
@@ -127,6 +128,7 @@ class AuthController extends GetxController {
           message: errorData['message'] ?? 'Registrasi gagal',
           backgroundColor: Colors.red,
           colorText: Colors.white,
+          margin: EdgeInsets.all(20),
         );
         isLoading.value = false;
         return false;
@@ -137,6 +139,7 @@ class AuthController extends GetxController {
         message: 'Terjadi kesalahan: $e',
         backgroundColor: Colors.red,
         colorText: Colors.white,
+        margin: EdgeInsets.all(20),
       );
       isLoading.value = false;
       return false;
@@ -165,10 +168,12 @@ class AuthController extends GetxController {
           debugPrint('Full response data: $responseData');
           showCustomSnackbar(
             title: 'Error',
-            message: 'Token tidak ditemukan. Response: ${responseData.keys.join(", ")}',
+            message:
+                'Token tidak ditemukan. Response: ${responseData.keys.join(", ")}',
             backgroundColor: Colors.red,
             colorText: Colors.white,
             duration: const Duration(seconds: 5),
+            margin: EdgeInsets.all(20),
           );
           isLoading.value = false;
           return false;
@@ -185,6 +190,7 @@ class AuthController extends GetxController {
           backgroundColor: Colors.green,
           duration: const Duration(seconds: 2),
           colorText: Colors.white,
+          margin: EdgeInsets.all(20),
         );
 
         isLoading.value = false;
@@ -200,6 +206,7 @@ class AuthController extends GetxController {
         message: 'Terjadi kesalahan: $e',
         backgroundColor: Colors.red,
         colorText: Colors.white,
+        margin: EdgeInsets.all(20),
       );
       isLoading.value = false;
       return false;
@@ -213,6 +220,7 @@ class AuthController extends GetxController {
       message: 'Anda telah keluar',
       backgroundColor: Colors.blue,
       colorText: Colors.white,
+      margin: EdgeInsets.all(20),
     );
   }
 
@@ -246,6 +254,7 @@ class AuthController extends GetxController {
           message: errorData['message'] ?? 'Gagal mengambil data user',
           backgroundColor: Colors.red,
           colorText: Colors.white,
+          margin: EdgeInsets.all(20),
         );
         return false;
       }
@@ -256,6 +265,7 @@ class AuthController extends GetxController {
         message: 'Terjadi kesalahan: $e',
         backgroundColor: Colors.red,
         colorText: Colors.white,
+        margin: EdgeInsets.all(20),
       );
       return false;
     }
@@ -307,6 +317,7 @@ class AuthController extends GetxController {
           backgroundColor: Colors.green,
           duration: const Duration(seconds: 2),
           colorText: Colors.white,
+          margin: EdgeInsets.all(20),
         );
         return true;
       } else {
@@ -316,6 +327,7 @@ class AuthController extends GetxController {
           message: errorData['message'] ?? 'Gagal menyimpan data',
           backgroundColor: Colors.red,
           colorText: Colors.white,
+          margin: EdgeInsets.all(20),
         );
         return false;
       }
@@ -326,6 +338,7 @@ class AuthController extends GetxController {
         message: 'Gagal menyimpan data: $e',
         backgroundColor: Colors.red,
         colorText: Colors.white,
+        margin: EdgeInsets.all(20),
       );
       return false;
     }
@@ -362,6 +375,7 @@ class AuthController extends GetxController {
           backgroundColor: Colors.green,
           duration: const Duration(seconds: 2),
           colorText: Colors.white,
+          margin: EdgeInsets.all(20),
         );
         return true;
       } else {
@@ -371,6 +385,7 @@ class AuthController extends GetxController {
           message: errorData['message'] ?? 'Gagal mengubah password',
           backgroundColor: Colors.red,
           colorText: Colors.white,
+          margin: EdgeInsets.all(20),
         );
         return false;
       }
@@ -381,6 +396,7 @@ class AuthController extends GetxController {
         message: 'Terjadi kesalahan: $e',
         backgroundColor: Colors.red,
         colorText: Colors.white,
+        margin: EdgeInsets.all(20),
       );
       return false;
     }
@@ -420,6 +436,7 @@ class AuthController extends GetxController {
           backgroundColor: Colors.green,
           duration: const Duration(seconds: 2),
           colorText: Colors.white,
+          margin: EdgeInsets.all(20),
         );
         return true;
       } else {
@@ -436,6 +453,7 @@ class AuthController extends GetxController {
           backgroundColor: Colors.green,
           duration: const Duration(seconds: 2),
           colorText: Colors.white,
+          margin: EdgeInsets.all(20),
         );
         return true;
       }
@@ -454,6 +472,7 @@ class AuthController extends GetxController {
         backgroundColor: Colors.green,
         duration: const Duration(seconds: 2),
         colorText: Colors.white,
+        margin: EdgeInsets.all(20),
       );
       return true;
     }
@@ -495,6 +514,7 @@ class AuthController extends GetxController {
           backgroundColor: Colors.green,
           duration: const Duration(seconds: 2),
           colorText: Colors.white,
+          margin: EdgeInsets.all(20),
         );
         return true;
       } else {
@@ -504,6 +524,7 @@ class AuthController extends GetxController {
           message: errorData['message'] ?? 'Gagal upload foto',
           backgroundColor: Colors.red,
           colorText: Colors.white,
+          margin: EdgeInsets.all(20),
         );
         return false;
       }
@@ -514,6 +535,7 @@ class AuthController extends GetxController {
         message: 'Gagal menyimpan foto: $e',
         backgroundColor: Colors.red,
         colorText: Colors.white,
+        margin: EdgeInsets.all(20),
       );
       return false;
     }

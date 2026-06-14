@@ -1,5 +1,6 @@
 import 'package:carbonquest/controller/auth_controller.dart';
 import 'package:carbonquest/controller/mock_data_controller.dart';
+import 'package:carbonquest/controller/quiz_controller.dart';
 import 'package:carbonquest/core/auth_middleware.dart';
 import 'package:carbonquest/core/navigation_route.dart';
 import 'package:carbonquest/core/styles/app_theme.dart';
@@ -25,6 +26,7 @@ void main() async {
 
   final authController = Get.put(AuthController());
   Get.put(MockDataController());
+  Get.put(QuizController(), permanent: true);
 
   while (!authController.isInitialized.value) {
     await Future.delayed(const Duration(milliseconds: 50));

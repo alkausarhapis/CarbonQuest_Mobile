@@ -482,14 +482,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
       if (response.statusCode == 200) {
         showCustomSnackbar(
           title: 'Berhasil',
-          message: 'Koneksi AI berhasil (${stopwatch.elapsed.inMilliseconds}ms)',
+          message:
+              'Koneksi AI berhasil (${stopwatch.elapsed.inMilliseconds}ms)',
           backgroundColor: Colors.green,
           colorText: Colors.white,
+          margin: EdgeInsets.all(20),
         );
       } else {
         showCustomSnackbar(
           title: 'Gagal (${response.statusCode})',
-          message: 'Server merespon dengan error: ${response.body.length > 100 ? '${response.body.substring(0, 100)}...' : response.body}',
+          message:
+              'Server merespon dengan error: ${response.body.length > 100 ? '${response.body.substring(0, 100)}...' : response.body}',
           backgroundColor: Colors.orange,
           colorText: Colors.white,
           duration: const Duration(seconds: 6),
@@ -507,7 +510,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
       Get.back();
       showCustomSnackbar(
         title: 'Gagal',
-        message: 'Tidak dapat terhubung ke server AI. Periksa koneksi internet.',
+        message:
+            'Tidak dapat terhubung ke server AI. Periksa koneksi internet.',
         backgroundColor: Colors.red,
         colorText: Colors.white,
       );

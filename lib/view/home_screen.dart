@@ -29,9 +29,7 @@ class HomeScreen extends StatelessWidget {
         ? Get.find<MissionController>()
         : Get.put(MissionController());
 
-    final QuizController quizController = Get.isRegistered<QuizController>()
-        ? Get.find<QuizController>()
-        : Get.put(QuizController());
+    final QuizController quizController = Get.find<QuizController>();
 
     final HomeController controller = Get.put(HomeController());
 

@@ -31,11 +31,7 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen> {
   @override
   void initState() {
     super.initState();
-    if (Get.isRegistered<QuizController>()) {
-      _quizController = Get.find<QuizController>();
-    } else {
-      _quizController = Get.put(QuizController());
-    }
+    _quizController = Get.find<QuizController>();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadQuiz();
     });

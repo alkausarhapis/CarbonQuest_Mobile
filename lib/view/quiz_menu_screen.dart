@@ -17,16 +17,12 @@ class QuizMenuScreen extends StatefulWidget {
 }
 
 class _QuizMenuScreenState extends State<QuizMenuScreen> {
-  late final QuizController _quizController;
+  late QuizController _quizController;
 
   @override
   void initState() {
     super.initState();
-    if (Get.isRegistered<QuizController>()) {
-      _quizController = Get.find<QuizController>();
-    } else {
-      _quizController = Get.put(QuizController());
-    }
+    _quizController = Get.find<QuizController>();
 
     if (_quizController.quizzes.isNotEmpty) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -61,36 +57,36 @@ class _QuizMenuScreenState extends State<QuizMenuScreen> {
         ? CooldownHelper.getNextAvailableLabel(cat)
         : null;
 
-    return Card(
-      elevation: 0,
-      color: isCompleted
-          ? Colors.grey.withValues(alpha: 0.2)
-          : lightBlueBg.withValues(alpha: 0.2),
-      margin: const EdgeInsets.only(bottom: 20),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      child: InkWell(
-        onTap: isCompleted
-            ? () {
-                showCustomSnackbar(
-                  title: CooldownHelper.getLimitSnackbarTitle(cat),
-                  message: nextLabel ?? 'Coba lagi nanti',
-                  backgroundColor: Colors.orange,
-                  colorText: Colors.white,
-                  duration: const Duration(seconds: 4),
+    return InkWell(
+      onTap: isCompleted
+          ? () {
+              showCustomSnackbar(
+                title: CooldownHelper.getLimitSnackbarTitle(cat),
+                message: nextLabel ?? 'Coba lagi nanti',
+                backgroundColor: Colors.orange,
+                colorText: Colors.white,
+                duration: const Duration(seconds: 4),
+              );
+            }
+          : () {
+              if (quizType == 'demo') {
+                _quizController.resetQuiz();
+                Get.to(() => const QuizQuestionScreen(isDummy: true));
+              } else {
+                Get.toNamed(
+                  NavigationRoute.quizQuestion.path,
+                  arguments: {'quizType': quizType, 'quizId': quizId},
                 );
               }
-            : () {
-                if (quizType == 'demo') {
-                  _quizController.resetQuiz();
-                  Get.to(() => const QuizQuestionScreen(isDummy: true));
-                } else {
-                  Get.toNamed(
-                    NavigationRoute.quizQuestion.path,
-                    arguments: {'quizType': quizType, 'quizId': quizId},
-                  );
-                }
-              },
-        borderRadius: BorderRadius.circular(20),
+            },
+      borderRadius: BorderRadius.circular(20),
+      child: Card(
+        elevation: 0,
+        color: isCompleted
+            ? Colors.grey.withValues(alpha: 0.2)
+            : lightBlueBg.withValues(alpha: 0.2),
+        margin: const EdgeInsets.only(bottom: 20),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
           child: Row(
@@ -332,6 +328,7 @@ class _QuizMenuScreenState extends State<QuizMenuScreen> {
                         .toList();
 
                     final demoQuizItem = Column(
+                      key: const ValueKey('demo_quiz'),
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Padding(
@@ -379,12 +376,7 @@ class _QuizMenuScreenState extends State<QuizMenuScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Padding(
-                                padding: const EdgeInsets.fromLTRB(
-                                  4,
-                                  16,
-                                  4,
-                                  12,
-                                ),
+                                padding: const EdgeInsets.fromLTRB(4, 16, 4, 12),
                                 child: Text(
                                   category,
                                   style: TextStyle(
@@ -426,8 +418,7 @@ class _QuizMenuScreenState extends State<QuizMenuScreen> {
                                 }
 
                                 final isCompleted =
-                                    _quizController.quizCompletionStatus[quiz
-                                        .idQuiz] ??
+                                    _quizController.quizCompletionStatus[quiz.idQuiz] ??
                                     false;
 
                                 return _buildQuizItem(

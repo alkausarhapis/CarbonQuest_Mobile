@@ -442,7 +442,7 @@ class QuizController extends GetxController {
     currentQuiz.value = null;
     currentQuestions.clear();
     currentQuestionIndex.value = 0;
-    userAnswers.clear();
+    userAnswers.value = <int?>[];
     totalScore.value = 0;
   }
 

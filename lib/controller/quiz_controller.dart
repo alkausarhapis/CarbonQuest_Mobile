@@ -8,6 +8,7 @@ import '../core/cooldown_helper.dart';
 import '../core/custom_snackbar.dart';
 import '../model/quiz.dart';
 import 'auth_controller.dart';
+import 'home_controller.dart';
 
 class QuizController extends GetxController {
   final AuthController _authController = Get.find<AuthController>();
@@ -66,9 +67,6 @@ class QuizController extends GetxController {
       final jsonData = json.decode(response.body);
       final List<dynamic> allSessions = jsonData['data'] ?? [];
 
-      final Map<String, bool> categoryIsCompleted = {};
-      final Map<int, bool> individualCompletion = {};
-
       for (final quiz in quizzes) {
         final cat = CooldownHelper.parseCategory(quiz.category);
         final window = CooldownHelper.getWindow(cat);
@@ -110,16 +108,7 @@ class QuizController extends GetxController {
           completed = answered.length >= quiz.questionCount;
         }
 
-        individualCompletion[quiz.idQuiz] = completed;
-        if (completed) {
-          categoryIsCompleted[quiz.category] = true;
-        }
-      }
-
-      for (final quiz in quizzes) {
-        quizCompletionStatus[quiz.idQuiz] =
-            (categoryIsCompleted[quiz.category] == true) ||
-            (individualCompletion[quiz.idQuiz] == true);
+        quizCompletionStatus[quiz.idQuiz] = completed;
       }
     } catch (e) {
       debugPrint('Error refreshing completion statuses: $e');
@@ -407,6 +396,12 @@ class QuizController extends GetxController {
 
       if (currentQuiz.value != null) {
         quizCompletionStatus[currentQuiz.value!.idQuiz] = true;
+      }
+
+      if (!limitExceeded && currentQuiz.value != null) {
+        Get.find<HomeController>().loadTodayPoints();
+        Get.find<HomeController>().loadWeeklyPoints();
+        refreshCompletionStatuses();
       }
 
       if (limitExceeded) {

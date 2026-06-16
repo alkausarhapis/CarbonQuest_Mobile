@@ -48,6 +48,7 @@ class QuizController extends GetxController {
         message: 'Gagal memuat kuis: ${e.toString()}',
         backgroundColor: Colors.red,
         colorText: Colors.white,
+        margin: const EdgeInsets.only(bottom: 80, left: 16, right: 16),
       );
     } finally {
       isLoading.value = false;
@@ -173,6 +174,7 @@ class QuizController extends GetxController {
           backgroundColor: Colors.orange,
           colorText: Colors.white,
           duration: const Duration(seconds: 4),
+          margin: const EdgeInsets.only(bottom: 80, left: 16, right: 16),
         );
         return false;
       }
@@ -206,6 +208,7 @@ class QuizController extends GetxController {
         backgroundColor: Colors.red,
         colorText: Colors.white,
         duration: const Duration(seconds: 5),
+        margin: const EdgeInsets.only(bottom: 80, left: 16, right: 16),
       );
       return false;
     } finally {

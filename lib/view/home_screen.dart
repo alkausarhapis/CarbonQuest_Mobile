@@ -268,8 +268,10 @@ class HomeScreen extends StatelessWidget {
                                                                     Colors
                                                                         .white,
                                                                 margin:
-                                                                    const EdgeInsets.all(
-                                                                      16,
+                                                                    const EdgeInsets.only(
+                                                                      bottom: 80,
+                                                                      left: 16,
+                                                                      right: 16,
                                                                     ),
                                                                 duration:
                                                                     const Duration(

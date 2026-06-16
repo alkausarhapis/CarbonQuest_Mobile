@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:get/get.dart';
 
 import '../model/articles.dart';
@@ -57,12 +59,10 @@ class HomeController extends GetxController {
       final points = await DailyPoint.fetchDailyPoints(token: token, days: 1);
 
       if (points.isNotEmpty) {
-        todayPoints.value = points.first.totalPoints;
-      } else {
-        todayPoints.value = 0;
+        todayPoints.value = max(todayPoints.value, points.first.totalPoints);
       }
     } catch (e) {
-      todayPoints.value = 0;
+      todayPoints.value = max(todayPoints.value, 0);
     } finally {
       isLoadingPoints.value = false;
     }
@@ -125,8 +125,6 @@ class HomeController extends GetxController {
       loadArticles(),
       loadTodayPoints(),
       loadWeeklyPoints(),
-      // Also reload the quiz catalogue so any newly available quizzes
-      // appear, and completion statuses are refreshed in one batch call.
       _quizController.loadQuizzes(),
     ]);
   }

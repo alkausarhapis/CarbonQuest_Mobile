@@ -24,6 +24,18 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
   bool _obscureConfirm = true;
   bool _isLoading = false;
 
+  bool get _hasMinLength => _newPasswordController.text.length >= 8;
+  bool get _hasUpperAndLower {
+    final text = _newPasswordController.text;
+    return text.contains(RegExp(r'[A-Z]')) && text.contains(RegExp(r'[a-z]'));
+  }
+
+  bool get _hasLetterAndNumber {
+    final text = _newPasswordController.text;
+    return text.contains(RegExp(r'[a-zA-Z]')) &&
+        text.contains(RegExp(r'[0-9]'));
+  }
+
   @override
   void dispose() {
     _currentPasswordController.dispose();
@@ -131,6 +143,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                         obscure: _obscureNew,
                         toggleObscure: () =>
                             setState(() => _obscureNew = !_obscureNew),
+                        onChanged: (_) => setState(() {}),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return 'Password baru tidak boleh kosong';
@@ -141,6 +154,8 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                           return null;
                         },
                       ),
+                      const SizedBox(height: 12),
+                      _buildPasswordRequirements(),
                       const SizedBox(height: 16),
                       _buildPasswordField(
                         label: 'Konfirmasi Password Baru',
@@ -235,6 +250,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
     required bool obscure,
     required VoidCallback toggleObscure,
     required String? Function(String?)? validator,
+    void Function(String)? onChanged,
   }) {
     return TextFormField(
       controller: controller,
@@ -294,7 +310,59 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
         color: Color(0xFF2D3748),
         fontWeight: FontWeight.w500,
       ),
+      onChanged: onChanged,
       validator: validator,
+    );
+  }
+
+  Widget _buildPasswordRequirements() {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.grey[100],
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey[300]!, width: 1),
+      ),
+      child: Column(
+        children: [
+          _buildRequirement(
+            'Password minimal 8 karakter',
+            _hasMinLength,
+          ),
+          const SizedBox(height: 6),
+          _buildRequirement(
+            'Password mengandung kombinasi huruf kapital dan kecil',
+            _hasUpperAndLower,
+          ),
+          const SizedBox(height: 6),
+          _buildRequirement(
+            'Password harus kombinasi huruf dan angka',
+            _hasLetterAndNumber,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRequirement(String text, bool isMet) {
+    return Row(
+      children: [
+        Icon(
+          isMet ? Icons.check_circle : Icons.check_circle_outline,
+          color: isMet ? AppColor.primary.color : Colors.grey[400],
+          size: 20,
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            text,
+            style: TextStyle(
+              color: isMet ? AppColor.primary.color : Colors.grey[600],
+              fontSize: 13,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

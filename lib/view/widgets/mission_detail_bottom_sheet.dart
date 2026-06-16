@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../../controller/auth_controller.dart';
 import '../../controller/mission_controller.dart';
 import '../../core/custom_snackbar.dart';
 import '../../core/styles/app_color.dart';
@@ -37,7 +36,6 @@ class MissionDetailBottomSheet extends StatefulWidget {
 }
 
 class _MissionDetailBottomSheetState extends State<MissionDetailBottomSheet> {
-  late final AuthController _authController;
   late final MissionController _missionController;
   final _isLoading = false.obs;
   final Rx<String?> _workingId = Rx<String?>(null);
@@ -45,7 +43,6 @@ class _MissionDetailBottomSheetState extends State<MissionDetailBottomSheet> {
   @override
   void initState() {
     super.initState();
-    _authController = Get.find<AuthController>();
     if (Get.isRegistered<MissionController>()) {
       _missionController = Get.find<MissionController>();
     } else {
@@ -62,21 +59,9 @@ class _MissionDetailBottomSheetState extends State<MissionDetailBottomSheet> {
     _isLoading.value = true;
 
     try {
-      final token = await _authController.getToken();
-      if (token == null) {
-        throw Exception('Please login first');
-      }
+      final success = await _missionController.startMission(widget.mission);
 
-      final result = await Mission.startMission(
-        widget.mission.id,
-        token: token,
-      );
-
-      if (result != null) {
-        _workingId.value = result['id_working']?.toString();
-        widget.mission.workingId = _workingId.value;
-        widget.mission.status = 'on_going';
-
+      if (success) {
         Get.back();
         widget.onUpdate();
         showCustomSnackbar(
@@ -85,6 +70,7 @@ class _MissionDetailBottomSheetState extends State<MissionDetailBottomSheet> {
           backgroundColor: Colors.green,
           colorText: Colors.white,
           duration: const Duration(seconds: 2),
+          margin: const EdgeInsets.only(bottom: 80, left: 16, right: 16),
         );
       }
     } catch (e) {
@@ -94,6 +80,7 @@ class _MissionDetailBottomSheetState extends State<MissionDetailBottomSheet> {
         message: 'Gagal memulai misi: ${e.toString()}',
         backgroundColor: Colors.red,
         colorText: Colors.white,
+        margin: const EdgeInsets.only(bottom: 80, left: 16, right: 16),
       );
     } finally {
       _isLoading.value = false;
@@ -122,6 +109,7 @@ class _MissionDetailBottomSheetState extends State<MissionDetailBottomSheet> {
           backgroundColor: Colors.amber.shade700,
           colorText: Colors.white,
           duration: const Duration(seconds: 2),
+          margin: const EdgeInsets.only(bottom: 80, left: 16, right: 16),
         );
       }
     } catch (e) {
@@ -131,6 +119,7 @@ class _MissionDetailBottomSheetState extends State<MissionDetailBottomSheet> {
         message: 'Gagal menyelesaikan misi: ${e.toString()}',
         backgroundColor: Colors.red,
         colorText: Colors.white,
+        margin: const EdgeInsets.only(bottom: 80, left: 16, right: 16),
       );
     } finally {
       _isLoading.value = false;

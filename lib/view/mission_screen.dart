@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
-import '../controller/home_controller.dart';
 import '../controller/mission_controller.dart';
 import '../core/styles/app_color.dart';
 import '../model/missions.dart';
@@ -217,11 +216,6 @@ class _MissionScreenState extends State<MissionScreen> {
       onTap: () {
         MissionDetailBottomSheet.show(context, mission, () {
           setState(() {});
-          if (mission.status == 'completed') {
-            final homeController = Get.find<HomeController>();
-            homeController.loadTodayPoints();
-            homeController.loadWeeklyPoints();
-          }
         });
       },
       child: Container(

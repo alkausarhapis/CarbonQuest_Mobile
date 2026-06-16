@@ -9,7 +9,7 @@ void showCustomSnackbar({
   Color backgroundColor = const Color(0xFF303030),
   Color colorText = Colors.white,
   Duration duration = const Duration(seconds: 2),
-  EdgeInsets margin = const EdgeInsets.only(bottom: 80, left: 16, right: 16),
+  EdgeInsets margin = const EdgeInsets.all(20),
 }) {
   OverlayEntry? entry;
   entry = OverlayEntry(

@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 
 import '../model/missions.dart';
 import 'auth_controller.dart';
+import 'home_controller.dart';
 
 class MissionController extends GetxController {
   final AuthController _authController = Get.find<AuthController>();
@@ -106,7 +107,12 @@ class MissionController extends GetxController {
       mission.status = 'completed';
       _updateActiveMissions();
 
-      refreshMissions();
+      // Optimistically update today's points so the UI reflects mission
+      // rewards immediately, even if the daily-points API is stale.
+      final homeController = Get.find<HomeController>();
+      homeController.todayPoints.value += mission.points;
+
+      await refreshMissions();
 
       return true;
     } catch (e) {

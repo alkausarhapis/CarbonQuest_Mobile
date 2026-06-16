@@ -116,7 +116,6 @@ class AuthController extends GetxController {
           duration: const Duration(seconds: 2),
           backgroundColor: Colors.green,
           colorText: Colors.white,
-          margin: EdgeInsets.all(20),
         );
 
         isLoading.value = false;
@@ -128,7 +127,6 @@ class AuthController extends GetxController {
           message: errorData['message'] ?? 'Registrasi gagal',
           backgroundColor: Colors.red,
           colorText: Colors.white,
-          margin: EdgeInsets.all(20),
         );
         isLoading.value = false;
         return false;
@@ -139,7 +137,6 @@ class AuthController extends GetxController {
         message: 'Terjadi kesalahan: $e',
         backgroundColor: Colors.red,
         colorText: Colors.white,
-        margin: EdgeInsets.all(20),
       );
       isLoading.value = false;
       return false;
@@ -190,7 +187,7 @@ class AuthController extends GetxController {
           backgroundColor: Colors.green,
           duration: const Duration(seconds: 2),
           colorText: Colors.white,
-          margin: EdgeInsets.all(20),
+          margin: const EdgeInsets.only(bottom: 80, left: 16, right: 16),
         );
 
         isLoading.value = false;
@@ -254,7 +251,6 @@ class AuthController extends GetxController {
           message: errorData['message'] ?? 'Gagal mengambil data user',
           backgroundColor: Colors.red,
           colorText: Colors.white,
-          margin: EdgeInsets.all(20),
         );
         return false;
       }
@@ -265,7 +261,6 @@ class AuthController extends GetxController {
         message: 'Terjadi kesalahan: $e',
         backgroundColor: Colors.red,
         colorText: Colors.white,
-        margin: EdgeInsets.all(20),
       );
       return false;
     }
@@ -355,15 +350,10 @@ class AuthController extends GetxController {
       final token = await getToken();
       if (token == null) return false;
 
-      final userId = currentUser.value!.id;
-      final data = {
-        'current_password': currentPassword,
-        'new_password': newPassword,
-        'new_password_confirmation': confirmPassword,
-      };
+      final data = {'oldPassword': currentPassword, 'newPassword': newPassword};
 
       final response = await ApiService.put(
-        '/users/$userId/change-password',
+        '/users/password',
         data,
         token: token,
       );

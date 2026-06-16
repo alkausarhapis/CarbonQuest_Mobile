@@ -75,6 +75,7 @@ Bergabunglah dengan CarbonQuest dan kurangi jejak karbon Kamu! 🌍''';
           message: 'Leaderboard berhasil dibagikan!',
           backgroundColor: Colors.green,
           colorText: Colors.white,
+          margin: const EdgeInsets.only(bottom: 80, left: 16, right: 16),
         );
       }
     } catch (e) {
@@ -83,6 +84,7 @@ Bergabunglah dengan CarbonQuest dan kurangi jejak karbon Kamu! 🌍''';
         message: 'Leaderboard gagal dibagikan!',
         backgroundColor: Colors.red,
         colorText: Colors.white,
+        margin: const EdgeInsets.only(bottom: 80, left: 16, right: 16),
       );
 
       debugPrint('Error sharing leaderboard: $e');

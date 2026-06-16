@@ -66,6 +66,7 @@ class _QuizMenuScreenState extends State<QuizMenuScreen> {
                 backgroundColor: Colors.orange,
                 colorText: Colors.white,
                 duration: const Duration(seconds: 4),
+                margin: const EdgeInsets.only(bottom: 80, left: 16, right: 16),
               );
             }
           : () {

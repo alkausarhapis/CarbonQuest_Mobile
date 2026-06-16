@@ -86,7 +86,7 @@ class Article {
       title: toStringOrDefault(articleData['title'], 'No Title'),
       author: toStringOrDefault(
         articleData['author_name'] ?? articleData['author'],
-        'Unknown Author',
+        'Admin',
       ),
       imageUrl: getImageUrl(
         articleData['cover_image'] ?? articleData['imageUrl'],
